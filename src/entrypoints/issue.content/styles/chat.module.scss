@@ -1,0 +1,287 @@
+@use '../../../assets/styles/variables' as *;
+
+// Chat preview & messenger
+.chatPreview {
+  background: $pure-white;
+  padding: 14px;
+  border-radius: 6px;
+  border: 1px solid $grey-border;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 12px;
+
+  .chatPreviewHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 10px 0;
+    border-bottom: 1px solid $grey-border;
+    padding-bottom: 6px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: $dawn-grey;
+  }
+
+  .chatHeaderButtons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .chatContent {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 13px;
+    color: $grey-dark;
+    padding: 4px 0;
+  }
+}
+
+.chatHeaderButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background-color: $pure-white;
+  border: 1px solid $grey-border-dark;
+  border-radius: 6px;
+  cursor: pointer;
+  color: $dawn-grey;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: $grey-surface;
+    border-color: $grey-border;
+  }
+
+  &:active {
+    background-color: $grey-border;
+    transform: scale(0.95);
+  }
+}
+
+.messengerContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: $pure-white;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.newCommentsBanner {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: $happy-red;
+  color: $pure-white;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  pointer-events: auto;
+
+  &:hover {
+    background-color: $cozy-brown;
+    transform: translateX(-50%) scale(1.05);
+  }
+
+  &:active {
+    transform: translateX(-50%) scale(0.98);
+  }
+}
+
+.blinkingDot {
+  width: 8px;
+  height: 8px;
+  background-color: $pure-white;
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.messagesArea {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background-color: $pure-white;
+  position: relative;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $grey-border-dark;
+    border-radius: 3px;
+
+    &:hover {
+      background: $grey-hover;
+    }
+  }
+}
+
+.messageBubble {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background-color: $grey-lighter;
+  border-radius: 12px;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-width: 75%;
+
+  &.corrective {
+    background-color: $status-corrective-bg;
+    border-left: 3px solid $status-done;
+  }
+
+  &.ownMessage {
+    align-self: flex-end;
+    background-color: $happy-red;
+    color: $pure-white;
+
+    .messageAuthor {
+      color: $pure-white;
+      opacity: 0.9;
+    }
+
+    .messageText {
+      color: $pure-white;
+    }
+
+    .messageTime {
+      color: $pure-white;
+      opacity: 0.8;
+    }
+
+    a {
+      color: $pure-white;
+      text-decoration: underline;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.messageAuthor {
+  font-weight: 600;
+  color: $dawn-grey;
+  font-size: 12px;
+}
+
+.messageText {
+  color: $grey-darker;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.messageTime {
+  font-size: 11px;
+  color: $grey-text;
+  margin-top: 2px;
+}
+
+.commentHtmlContent {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+
+  // Twemoji images in messages
+  :global(img.emoji) {
+    height: 1.2em;
+    width: 1.2em;
+    vertical-align: -0.2em;
+    display: inline-block;
+  }
+
+  h4 {
+    margin: 0;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  a,
+  :global(.comment-link) {
+    color: $link-color;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    word-break: break-all;
+
+    &:hover {
+      text-decoration: underline;
+      color: $link-color-hover;
+    }
+
+    &:visited {
+      color: $link-color-visited;
+    }
+  }
+}
+
+.ownMessage .commentHtmlContent {
+  a,
+  :global(.comment-link) {
+    color: $pure-white !important;
+    text-decoration: underline;
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:visited {
+      color: $pure-white !important;
+    }
+  }
+}
+
+.commentLoading,
+.commentEmpty {
+  padding: 12px;
+  text-align: center;
+  color: $grey-text;
+  font-size: 12px;
+}

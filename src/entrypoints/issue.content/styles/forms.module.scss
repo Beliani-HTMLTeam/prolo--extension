@@ -1,0 +1,395 @@
+@use 'sass:color';
+@use '../../../assets/styles/variables' as *;
+
+.messageInputArea {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid $grey-border;
+  background-color: $grey-lightest;
+}
+
+.inputButtonsTop {
+  display: flex;
+  gap: 8px;
+}
+
+.pickerAnchor {
+  position: relative;
+}
+
+.toolButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: $grey-dark;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background-color: $grey-border;
+    color: $dawn-grey;
+  }
+
+  &:active {
+    background-color: $grey-border-dark;
+    transform: scale(0.92);
+  }
+}
+
+.toolButtonActive {
+  background-color: $soft-peach;
+  color: $happy-red;
+}
+
+.messageInput {
+  border: 1px solid $grey-border-dark;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: $dawn-grey;
+  background-color: $pure-white;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 0;
+  min-height: 72px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.5;
+  cursor: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  &:focus {
+    outline: none;
+    border-color: $happy-red;
+    box-shadow: 0 0 0 2px rgba(255, 45, 14, 0.1);
+  }
+
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: $grey-text;
+    pointer-events: none;
+  }
+
+  &[contenteditable='false'] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  :global(img.emoji) {
+    height: 1.2em;
+    width: 1.2em;
+    vertical-align: -0.2em;
+    display: inline-block;
+  }
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0;
+  background-color: $happy-red;
+  border: 1px solid $happy-red;
+  border-radius: 6px;
+  cursor: pointer;
+  color: $pure-white;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: color.adjust($happy-red, $lightness: 5%);
+    border-color: color.adjust($happy-red, $lightness: 5%);
+  }
+
+  &:active:not(:disabled) {
+    background-color: $cozy-brown;
+    border-color: $cozy-brown;
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: $pure-white !important;
+  border: 1px solid $grey-border-dark;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: $dawn-grey !important;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  text-decoration: none;
+
+  &:hover {
+    background: $grey-surface !important;
+    border-color: $grey-border;
+  }
+
+  &:active {
+    background: $grey-border !important;
+    transform: scale(0.98);
+  }
+}
+
+.btn--primary {
+  background: $happy-red !important;
+  color: $pure-white !important;
+  border-color: $happy-red;
+  font-weight: 600;
+
+  &:hover {
+    background: color.adjust($happy-red, $lightness: 5%) !important;
+    border-color: color.adjust($happy-red, $lightness: 5%);
+    box-shadow: 0 4px 8px rgba(255, 47, 0, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    background: $cozy-brown !important;
+    border-color: $cozy-brown;
+    box-shadow: none;
+    transform: translateY(0);
+  }
+}
+
+.btn--ghost {
+  background: $pure-white !important;
+  color: $happy-red !important;
+  border-color: $happy-red;
+  border-width: 2px;
+  padding: 7px 11px;
+
+  &:hover {
+    background: color.adjust($happy-red, $lightness: 95%) !important;
+    border-color: $happy-red;
+  }
+
+  &:active {
+    background: color.adjust($happy-red, $lightness: 90%) !important;
+    border-color: color.adjust($happy-red, $lightness: -10%);
+    transform: scale(0.98);
+  }
+}
+
+.span2 {
+  grid-column: span 2;
+  justify-self: stretch;
+}
+
+.showOverlayButton {
+  font-family: 'Poppins', sans-serif;
+  position: fixed;
+  z-index: 2137420;
+  bottom: 12px;
+  right: 12px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid $grey-border-dark;
+  background: $pure-white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: $dawn-grey;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    background: $grey-surface;
+    border-color: $grey-border-light;
+  }
+}
+
+// Modal ──────────────────────────────────────────────────────────────────────
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: $pure-white;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid $grey-border;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: $dawn-grey;
+  }
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: $grey-text;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: $grey-surface;
+    color: $dawn-grey;
+  }
+}
+
+.modalContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: $dawn-grey;
+  }
+}
+
+.input {
+  padding: 10px 12px;
+  border: 1px solid $grey-border-dark;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  color: $dawn-grey;
+  background: $pure-white;
+  transition: all 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: $happy-red;
+    box-shadow: 0 0 0 2px rgba(255, 45, 14, 0.1);
+  }
+
+  &:disabled {
+    background: $grey-surface;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.formError {
+  padding: 12px;
+  background: color.adjust($happy-red, $lightness: 95%);
+  border: 1px solid color.adjust($happy-red, $lightness: 60%);
+  border-radius: 6px;
+  color: color.adjust($happy-red, $lightness: -20%);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.error {
+  padding: 12px;
+  background-color: color.adjust($happy-red, $lightness: 95%);
+  border: 1px solid $happy-red;
+  border-radius: 6px;
+  color: color.adjust($happy-red, $lightness: -20%);
+  font-size: 13px;
+}
+
+.modalButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

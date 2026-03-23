@@ -3,6 +3,7 @@
 // logo and B symbol core colors
 $happy-red: #ff2f00;
 $cozy-brown: #750000;
+$cozy-brown-dark: #7a1e00;
 $warm-yellow: #fd9000;
 $soft-peach: #ffccb7;
 $calm-grey: #dbd9d7;
@@ -24,6 +25,32 @@ $pure-white: #ffffff;
 $light-grey: #f5f5f5;
 $dark-grey: #1a1a1a;
 $medium-grey: #6b6b6b;
+
+// Status and semantic colors
+$status-done: #4caf50;
+$status-missing: #f44336;
+$status-pending: #fd9100;
+
+// Link colors
+$link-color: #0052cc;
+$link-color-hover: #003a99;
+$link-color-visited: #5e40ba;
+
+// UI greys and borders
+$grey-light: #f5f5f5;
+$grey-lighter: #f0f0f0;
+$grey-lightest: #fafafa;
+$grey-surface: #fcf6f6;
+$grey-border: #e6e6e6;
+$grey-border-dark: #dbdbdb;
+$grey-border-light: #cccccc;
+$grey-hover: #c0c0c0;
+$grey-text: #999999;
+$grey-dark: #737373;
+$grey-darker: #333333;
+
+// Semantic status backgrounds
+$status-corrective-bg: #e8f5e9;
 
 // --- section: theme colors ---
 
@@ -65,8 +92,8 @@ $dark-border-color: rgba(255, 255, 255, 0.15);
   --theme-text-color-accent: #{$light-text-color-accent};
   --theme-accent-color: #{$light-accent-color};
   --theme-border-color: #{$light-border-color};
-  // --theme-hover-bg: rgba(0, 0, 0, 0.05);
+  --theme-hover-bg: rgba(0, 0, 0, 0.05);
   --theme-hover-bg: rgba(255, 255, 255, 0.664);
-  // --theme-active-bg: rgba(0, 0, 0, 0.1);
+  --theme-active-bg: rgba(0, 0, 0, 0.1);
   --theme-active-bg: rgba(255, 255, 255, 0.699);
 }

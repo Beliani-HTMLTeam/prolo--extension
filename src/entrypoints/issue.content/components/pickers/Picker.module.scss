@@ -1,0 +1,244 @@
+@use '../../../../assets/styles/variables' as *;
+
+.pickerPanel {
+  background-color: $pure-white;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 300px;
+  max-height: 480px;
+  overflow: hidden;
+}
+
+// Fixed-size variant for the mention picker so it doesn't shrink with few users
+.mentionPanel {
+  height: 380px;
+  min-height: 380px;
+}
+
+// Emoji Grid
+.emojiGrid {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid $grey-border-dark;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: $dawn-grey;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+
+  &:focus {
+    outline: none;
+    border-color: $happy-red;
+    box-shadow: 0 0 0 3px rgba(255, 45, 14, 0.1);
+  }
+
+  &::placeholder {
+    color: $grey-text;
+  }
+}
+
+.emojiGrid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 8px;
+  padding: 4px;
+}
+
+.emojiButton {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  background-color: $light-grey;
+  border-radius: 8px;
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $grey-border;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.gifGrid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.gifButton {
+  width: 100%;
+  height: 100px;
+  border: 2px solid transparent;
+  background-color: $light-grey;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  transition: border-color 0.15s ease;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &:hover {
+    border-color: $happy-red;
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.userList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.userButton {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  background-color: $light-grey;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  text-align: left;
+
+  &:hover {
+    background-color: $grey-border;
+    border-color: $grey-border-dark;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 500;
+  color: $dawn-grey;
+}
+
+.userId {
+  font-size: 12px;
+  color: $grey-text;
+  font-family: monospace;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $grey-text;
+  font-size: 14px;
+  text-align: center;
+  padding: 40px;
+}
+
+.pickerFooter {
+  padding-top: 12px;
+  border-top: 1px solid $grey-border;
+  margin-top: 12px;
+
+  small {
+    color: $grey-text;
+    font-size: 12px;
+  }
+}
+
+.sectionDivider {
+  height: 1px;
+  background: $grey-border;
+  margin: 6px 0;
+}
+
+.apiKeySetup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.apiKeyTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: $dawn-grey;
+}
+
+.apiKeyDesc {
+  margin: 0;
+  font-size: 13px;
+  color: $grey-text;
+  line-height: 1.5;
+
+  a {
+    color: $happy-red;
+    text-decoration: underline;
+  }
+}
+
+.apiKeySaveBtn {
+  align-self: flex-start;
+  padding: 8px 20px;
+  background: $happy-red;
+  color: $pure-white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    opacity: 0.85;
+  }
+}
+
+.inlineLink {
+  border: none;
+  width: 100%;
+  margin-bottom: 4px;
+  border: 1px solid rgb(206, 206, 206);
+  background: white;
+  border-radius: 8px;
+  padding: 2px;
+  color: $happy-red;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.pickerKeyHint {
+  text-align: center;
+}
