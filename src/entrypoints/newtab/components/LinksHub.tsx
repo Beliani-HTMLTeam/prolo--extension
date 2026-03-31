@@ -26,6 +26,13 @@ const links = {
     name: 'Development',
     icon: 'solar:code-circle-bold',
     links: [
+      {
+        name: 'Projects Board',
+        url: 'https://www.figma.com/design/PF7tZr72XquHOSrWwQXtSd/Projects?node-id=1-2&t=fUoMeTQTw1Wpz9Yz-1',
+        icon: 'ri:figma-fill'
+
+      },
+      {},
       { name: 'Constructor', url: 'https://github.com/BelianiRafal/Constructor-2.0-FINAL_Edition', icon: 'simple-icons:github' },
       { name: 'EXT', url: 'https://github.com/BelianiRafal/Extension/', icon: 'simple-icons:github' },
       { name: 'Translations API', url: 'https://github.com/kkazzann/translations-api', icon: 'simple-icons:github' },
