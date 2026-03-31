@@ -104,6 +104,7 @@ const updateChecklistTitle = async (issueId: number, checklistId: string, title:
   }
 };
 
+// @deprecated - prolo disabled batch checkpoint creation,  keeping this function in case it's re-enabled in the future
 const saveCheckpoints = async (
   issueId: number,
   checklistId: string,
@@ -127,6 +128,31 @@ const saveCheckpoints = async (
   } catch (error) {
     console.error('Failed to save checkpoints:', error);
     throw error;
+  }
+};
+
+const saveCheckpointsSeparately = async (
+  issueId: number,
+  checklistId: string,
+  items: Array<{ slug: string; url: string }>,
+): Promise<void> => {
+  const baseUrl = window.location.origin;
+  const apiUrl = `${baseUrl}/api/issueLog/saveCheckpoint/`;
+
+  for (const item of items) {
+    const formData = new FormData();
+    formData.append('issue_id', String(issueId));
+    formData.append('checklist_id', checklistId);
+    formData.append('checkpoint_id', '0');
+    formData.append('description', `${item.slug}\t${item.url}`);
+
+    try {
+      await axios.post(apiUrl, formData);
+      await delay(REQUEST_DELAY_MS);
+    } catch (error) {
+      console.error(`Failed to save checkpoint for ${item.slug}:`, error);
+      throw error;
+    }
   }
 };
 
