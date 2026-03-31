@@ -104,6 +104,53 @@ export const LP_CHECKPOINT_TEMPLATES: Array<{ slug: string; shopId: number }> = 
   shopId: SHOP_ID_MAP[slug],
 })).filter(item => typeof item.shopId === 'number');
 
+export const LP_ID_GROUP_BY_SLUG: Record<string, string> = {
+  CHDE: 'CH',
+  CHFR: 'CH',
+  BENL: 'BE',
+  BEFR: 'BE',
+  AT: 'AT',
+  CZ: 'CZ',
+  DE: 'DE',
+  DK: 'DK',
+  FI: 'FI',
+  FR: 'FR',
+  HU: 'HU',
+  IT: 'IT',
+  NL: 'NL',
+  NO: 'NO',
+  PL: 'PL',
+  PT: 'PT',
+  RO: 'RO',
+  SE: 'SE',
+  SK: 'SK',
+  SP: 'SP',
+  ES: 'SP',
+  UK: 'UK',
+};
+
+export const LP_ID_ALLOCATION_ORDER = [
+  'CH',
+  'UK',
+  'DE',
+  'FR',
+  'AT',
+  'SP',
+  'PL',
+  'NL',
+  'BE',
+  'PT',
+  'IT',
+  'SE',
+  'HU',
+  'DK',
+  'CZ',
+  'FI',
+  'NO',
+  'SK',
+  'RO',
+] as const;
+
 export const SHOP_ALIASES: Record<string, string> = {
   SP: 'ES',
 };
