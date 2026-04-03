@@ -38,11 +38,21 @@ export const createNewsletterColumns = (
   hasGroupedNslt: boolean,
   showTimer: boolean,
   showPush: boolean,
+  options?: {
+    includeTranslations?: boolean;
+    includeLp?: boolean;
+  },
 ): ChecklistColumn[] => {
+  const includeTranslations = options?.includeTranslations ?? true;
+  const includeLp = options?.includeLp ?? true;
+
   const columns: ChecklistColumn[] = [
     { id: COLUMN_IDS.SHOP, label: 'SHOP', kind: 'shop' },
-    { id: COLUMN_IDS.TRANSLATIONS, label: 'Translations', kind: 'request' },
   ];
+
+  if (includeTranslations) {
+    columns.push({ id: COLUMN_IDS.TRANSLATIONS, label: 'Translations', kind: 'request' });
+  }
 
   if (showTimer) {
     columns.push({ id: COLUMN_IDS.TIMER_DONE, label: 'Timer Done', kind: 'status' });
@@ -64,8 +74,10 @@ export const createNewsletterColumns = (
     columns.push({ id: COLUMN_IDS.NSLT_ACCEPTED, label: 'NSLT Accepted', kind: 'status' });
   }
 
-  columns.push({ id: COLUMN_IDS.LP_ID, label: 'LP ID', kind: 'link', openAllLinks: true });
-  columns.push({ id: COLUMN_IDS.LP_ACCEPTED, label: 'LP Accepted', kind: 'status' });
+  if (includeLp) {
+    columns.push({ id: COLUMN_IDS.LP_ID, label: 'LP ID', kind: 'link', openAllLinks: true });
+    columns.push({ id: COLUMN_IDS.LP_ACCEPTED, label: 'LP Accepted', kind: 'status' });
+  }
   return columns;
 };
 

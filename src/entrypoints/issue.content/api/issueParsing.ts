@@ -32,6 +32,10 @@ export const parseIssueInfo = (issueItem: IssueListItem): ParsedIssueInfo => {
 export const getChecklistMode = (issueTypes: IssueTypeInfo[]): ChecklistMode => {
   const names = issueTypes.map(type => type.name);
 
+  if (names.includes('Sunday newsletter')) {
+    return 'sunday';
+  }
+
   if (names.includes('Newsletter production')) {
     return 'newsletter';
   }

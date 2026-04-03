@@ -35,6 +35,10 @@ const setValue = (row: ChecklistTableRow, columnId: string, value: string | null
 export const mapNewsletterChecklistsToTableData = (
   apiResponse: ChecklistApiResponse,
   spreadsheet?: SpreadsheetTranslations | null,
+  options?: {
+    includeTranslations?: boolean;
+    includeLp?: boolean;
+  },
 ): ChecklistTableData => {
   const rowsByShop = new Map<string, ChecklistTableRow>();
   const orderIndex = new Map<string, number>();
@@ -234,6 +238,6 @@ export const mapNewsletterChecklistsToTableData = (
     }
   }
 
-  const columns = createNewsletterColumns(hasGroupedNslt, spreadsheet?.timer != null, spreadsheet?.push != null);
+  const columns = createNewsletterColumns(hasGroupedNslt, spreadsheet?.timer != null, spreadsheet?.push != null, options);
   return { headers: columns.map(column => column.label), columns, rows, hasGroupedNslt };
 };
