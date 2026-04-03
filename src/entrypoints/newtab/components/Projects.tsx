@@ -21,12 +21,12 @@ import { truncateMessage } from '../utils/truncateMessage';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
 
 const projectsConfig = [
-  { name: 'Constructor', user: 'BelianiRafal', repo: 'Constructor-2.0-FINAL_Edition', branch: 'playground' },
-  { name: 'Extension', user: 'BelianiRafal', repo: 'Extension', branch: 'future' },
-  { name: 'Extension for Graphics', user: 'BelianiRafal', repo: 'Extension-for-Graphics', branch: 'dev' },
-  { name: 'Top Image Generator', user: 'kkazzann', repo: 'figma--top-image-title-generator', branch: 'main' },
-  { name: 'Extension Rewritten', user: 'kkazzann', repo: 'prolo--extension', branch: 'main' },
-  { name: 'Translations API', user: 'kkazzann', repo: 'translations-api', branch: 'main' },
+  { name: 'Constructor', user: 'Beliani-HTMLTeam', repo: 'constructor', branch: 'playground' },
+  { name: 'Translations API', user: 'Beliani-HTMLTeam', repo: 'translations-api', branch: 'main' },
+  { name: 'Extension - Rewritten', user: 'Beliani-HTMLTeam', repo: 'prolo--extension', branch: 'dev' },
+  { name: 'Extension - Legacy', user: 'Beliani-HTMLTeam', repo: 'prolo--extension-legacy', branch: 'future' },
+  { name: 'Extension for Graphics', user: 'Beliani-HTMLTeam', repo: 'prolo--extension-for-graphics', branch: 'dev' },
+  { name: 'Top Image Generator', user: 'Beliani-HTMLTeam', repo: 'figma--top-image-title-generator', branch: 'main' },
 ];
 
 const DAYS_SINCE = 14;

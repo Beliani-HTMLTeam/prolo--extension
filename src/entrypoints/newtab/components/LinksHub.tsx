@@ -33,21 +33,7 @@ const links = {
 
       },
       {},
-      { name: 'Constructor', url: 'https://github.com/BelianiRafal/Constructor-2.0-FINAL_Edition', icon: 'simple-icons:github' },
-      { name: 'EXT', url: 'https://github.com/BelianiRafal/Extension/', icon: 'simple-icons:github' },
-      { name: 'Translations API', url: 'https://github.com/kkazzann/translations-api', icon: 'simple-icons:github' },
-      { name: 'EXT Rewritten', url: 'https://github.com/kkazzann/prolo--extension', icon: 'simple-icons:github' },
-      {},
-      {
-        name: 'EXT for Graphics',
-        url: 'https://github.com/BelianiRafal/Extension-for-Graphics',
-        icon: 'simple-icons:github',
-      },
-      {
-        name: 'TIT Generator',
-        url: 'https://github.com/kkazzann/figma--top-image-title-generator',
-        icon: 'simple-icons:github',
-      },
+      { name: 'HTML Repositories', url: 'https://github.com/orgs/Beliani-HTMLTeam/repositories', icon: 'simple-icons:github' },
       {},
       {
         name: 'WXT.dev',
