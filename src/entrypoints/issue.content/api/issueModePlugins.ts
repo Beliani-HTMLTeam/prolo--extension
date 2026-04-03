@@ -20,6 +20,23 @@ const newsletterPlugin: IssueModePlugin = {
   },
 };
 
+const sundayPlugin: IssueModePlugin = {
+  mode: 'sunday',
+  showDashboardActions: true,
+  mapTableData: (apiResponse, spreadsheet) =>
+    mapNewsletterChecklistsToTableData(apiResponse, spreadsheet, {
+      includeTranslations: false,
+      includeLp: false,
+    }),
+  createEmptyTableData: () => {
+    const columns = createNewsletterColumns(false, false, false, {
+      includeTranslations: false,
+      includeLp: false,
+    });
+    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false };
+  },
+};
+
 const cgbPlugin: IssueModePlugin = {
   mode: 'cgb',
   showDashboardActions: false,
@@ -32,6 +49,7 @@ const cgbPlugin: IssueModePlugin = {
 
 const PLUGINS: Record<Exclude<ChecklistMode, null>, IssueModePlugin> = {
   newsletter: newsletterPlugin,
+  sunday: sundayPlugin,
   cgb: cgbPlugin,
 };
 

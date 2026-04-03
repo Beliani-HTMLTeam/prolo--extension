@@ -1,6 +1,6 @@
 export type ChecklistStatus = 0 | 1 | 2;
 
-export type ChecklistMode = 'newsletter' | 'cgb' | null;
+export type ChecklistMode = 'newsletter' | 'sunday' | 'cgb' | null;
 
 export type ChecklistColumnKind = 'shop' | 'status' | 'request' | 'link';
 

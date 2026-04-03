@@ -89,6 +89,7 @@ const ActionsPanel = ({
   onGeneratedChecklist,
 }: ActionsPanelProps) => {
   const shouldShowActions = showDashboardActions ?? mode !== 'cgb';
+  const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
   const rows = tableData?.rows ?? [];
   const origin = window.location.origin;
@@ -193,21 +194,25 @@ const ActionsPanel = ({
             />
           )}
 
-          <ActionButton
-            variant="ghost"
-            label="Copy LP Prolo"
-            icon="mdi:link-variant"
-            copied={lp.copied}
-            onClick={lp.onClick}
-          />
+          {hasLpActions && (
+            <>
+              <ActionButton
+                variant="ghost"
+                label="Copy LP Prolo"
+                icon="mdi:link-variant"
+                copied={lp.copied}
+                onClick={lp.onClick}
+              />
 
-          <ActionButton
-            variant="ghost"
-            label="Copy LP Shops"
-            icon="mdi:web"
-            copied={lpShops.copied}
-            onClick={lpShops.onClick}
-          />
+              <ActionButton
+                variant="ghost"
+                label="Copy LP Shops"
+                icon="mdi:web"
+                copied={lpShops.copied}
+                onClick={lpShops.onClick}
+              />
+            </>
+          )}
         </div>
       )}
 
@@ -224,6 +229,7 @@ const ActionsPanel = ({
       {showGenerateModal && shouldShowActions && (
         <GenerateChecklistModal
           issueId={issueId}
+          mode={mode}
           onClose={() => setShowGenerateModal(false)}
           onSuccess={() => {
             void onGeneratedChecklist?.();
