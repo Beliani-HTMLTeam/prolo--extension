@@ -124,7 +124,12 @@ const links = {
         icon: 'simple-icons:googlesheets',
       },
       {
-        name: 'NSLT Translations',
+        name: 'NSLT Translations 2026',
+        url: 'https://docs.google.com/spreadsheets/d/1RcsQspit0B3b3xX1NwZ9RWnUzZrkoVDULu2cnPMZ04U/',
+        icon: 'simple-icons:googlesheets',
+      },
+      {
+        name: 'NSLT Translations 2025',
         url: 'https://docs.google.com/spreadsheets/d/1djnjfhsFX4-Fghv5cQU_UNYaEhVL9Ban4VUqIfHsWdc/',
         icon: 'simple-icons:googlesheets',
       },
