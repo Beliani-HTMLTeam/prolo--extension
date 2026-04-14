@@ -75,6 +75,12 @@
   align-items: center;
 }
 
+.actionsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .linkChipsRow {
   display: flex;
   flex-wrap: wrap;

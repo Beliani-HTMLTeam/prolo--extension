@@ -214,6 +214,29 @@
   }
 }
 
+.btn--planning {
+  background: $warm-yellow !important;
+  color: $pure-white !important;
+  border-color: $warm-yellow;
+  font-weight: 600;
+  width: 250px;
+
+
+  &:hover {
+    background: color.adjust($warm-yellow, $lightness: 5%) !important;
+    border-color: color.adjust($warm-yellow, $lightness: 5%);
+    box-shadow: 0 4px 8px rgba(255, 47, 0, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    background: $vibrant-orange !important;
+    border-color: $vibrant-orange;
+    box-shadow: none;
+    transform: translateY(0);
+  }
+}
+
 .span2 {
   grid-column: span 2;
   justify-self: stretch;

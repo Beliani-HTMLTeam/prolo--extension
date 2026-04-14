@@ -9,12 +9,13 @@ import GenerateChecklistModal from './GenerateChecklistModal';
 import type { ChecklistMode, ChecklistTableData, IssueLink } from '../lib/types';
 import { getShopId } from './familytable/../../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
+import PlanningModal from './PlanningModal';
 
 type ActionButtonProps = {
   label: string;
   icon: string;
   onClick: () => void;
-  variant?: 'primary' | 'ghost';
+  variant?: 'primary' | 'ghost' | 'planning';
   span?: boolean;
   copied?: boolean;
 };
@@ -36,6 +37,7 @@ const LINK_ICON_MAP: [string, string][] = [
   ['dropbox', 'simple-icons:dropbox'],
   ['newsletter', 'mdi:email-newsletter'],
   ['banner', 'mdi:image-multiple'],
+  ['planning', 'mdi:email-send'],
 ];
 
 const getLinkIcon = (name: string): string => {
@@ -94,6 +96,13 @@ const ActionsPanel = ({
   const rows = tableData?.rows ?? [];
   const origin = window.location.origin;
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [showPlanningModal, setShowPlanningModal] = useState(false);
+
+  console.log('tableData', tableData);
+  const isPlanningAllowed =
+    (mode === 'newsletter' &&
+      tableData?.rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAccepted === 1)) ||
+    (mode === 'sunday' && tableData?.rows.every(r => r.columnStatuses.nsltAccepted === 1));
 
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
@@ -159,59 +168,64 @@ const ActionsPanel = ({
       )}
 
       {shouldShowActions && (
-        <div className={styles.actionsGrid}>
-          <ActionButton
-            variant="primary"
-            label="Generate IDs"
-            icon="mdi:auto-fix"
-            onClick={() => setShowGenerateModal(true)}
-          />
-
-          {hasGroupedNslt ? (
-            <>
-              <ActionButton
-                variant="ghost"
-                label="Copy NSLT A Prolo"
-                icon="mdi:link-variant"
-                copied={nsltA.copied}
-                onClick={nsltA.onClick}
-              />
-              <ActionButton
-                variant="ghost"
-                label="Copy NSLT B Prolo"
-                icon="mdi:link-variant"
-                copied={nsltB.copied}
-                onClick={nsltB.onClick}
-              />
-            </>
-          ) : (
+        <div className={styles.actionsContainer}>
+          <div className={styles.actionsGrid}>
             <ActionButton
-              variant="ghost"
-              label="Copy NSLT Prolo"
-              icon="mdi:link-variant"
-              copied={nslt.copied}
-              onClick={nslt.onClick}
+              variant="primary"
+              label="Generate IDs"
+              icon="mdi:auto-fix"
+              onClick={() => setShowGenerateModal(true)}
             />
-          )}
 
-          {hasLpActions && (
-            <>
+            {hasGroupedNslt ? (
+              <>
+                <ActionButton
+                  variant="ghost"
+                  label="Copy NSLT A Prolo"
+                  icon="mdi:link-variant"
+                  copied={nsltA.copied}
+                  onClick={nsltA.onClick}
+                />
+                <ActionButton
+                  variant="ghost"
+                  label="Copy NSLT B Prolo"
+                  icon="mdi:link-variant"
+                  copied={nsltB.copied}
+                  onClick={nsltB.onClick}
+                />
+              </>
+            ) : (
               <ActionButton
                 variant="ghost"
-                label="Copy LP Prolo"
+                label="Copy NSLT Prolo"
                 icon="mdi:link-variant"
-                copied={lp.copied}
-                onClick={lp.onClick}
+                copied={nslt.copied}
+                onClick={nslt.onClick}
               />
+            )}
 
-              <ActionButton
-                variant="ghost"
-                label="Copy LP Shops"
-                icon="mdi:web"
-                copied={lpShops.copied}
-                onClick={lpShops.onClick}
-              />
-            </>
+            {hasLpActions && (
+              <>
+                <ActionButton
+                  variant="ghost"
+                  label="Copy LP Prolo"
+                  icon="mdi:link-variant"
+                  copied={lp.copied}
+                  onClick={lp.onClick}
+                />
+
+                <ActionButton
+                  variant="ghost"
+                  label="Copy LP Shops"
+                  icon="mdi:web"
+                  copied={lpShops.copied}
+                  onClick={lpShops.onClick}
+                />
+              </>
+            )}
+          </div>
+         {isPlanningAllowed && (
+            <ActionButton variant="planning" label="Start Planning" icon="mdi:web" onClick={() => setShowPlanningModal(true)} />
           )}
         </div>
       )}
@@ -233,6 +247,17 @@ const ActionsPanel = ({
           onClose={() => setShowGenerateModal(false)}
           onSuccess={() => {
             void onGeneratedChecklist?.();
+          }}
+        />
+      )}
+      {showPlanningModal && shouldShowActions && (
+        <PlanningModal
+          issueId={issueId}
+          chdeId={tableData?.rows.filter(r => r.shop==='CHDE')[0]?.nsltId ?? null}
+          mode={mode}
+          onClose={() => setShowPlanningModal(false)}
+          onSuccess={() => {
+          
           }}
         />
       )}
