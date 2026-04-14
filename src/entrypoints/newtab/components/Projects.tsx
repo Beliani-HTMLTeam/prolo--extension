@@ -21,7 +21,7 @@ import { truncateMessage } from '../utils/truncateMessage';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
 
 const projectsConfig = [
-  { name: 'Constructor', user: 'Beliani-HTMLTeam', repo: 'constructor', branch: 'playground' },
+  { name: 'Constructor', user: 'Beliani-HTMLTeam', repo: 'constructor', branch: 'dev' },
   { name: 'Translations API', user: 'Beliani-HTMLTeam', repo: 'translations-api', branch: 'main' },
   { name: 'Extension - Rewritten', user: 'Beliani-HTMLTeam', repo: 'prolo--extension', branch: 'dev' },
   { name: 'Extension - Legacy', user: 'Beliani-HTMLTeam', repo: 'prolo--extension-legacy', branch: 'future' },
