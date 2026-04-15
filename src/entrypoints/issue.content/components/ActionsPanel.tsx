@@ -71,6 +71,7 @@ type ActionsPanelProps = {
   issueLinks?: IssueLink[];
   issueDate?: string;
   onGeneratedChecklist?: () => Promise<void> | void;
+  onStartPlanning?: (chdeId: string | null) => Promise<void> | void;
 };
 
 const toLpDatePath = (issueDate?: string): string | null => {
@@ -89,6 +90,7 @@ const ActionsPanel = ({
   issueLinks = [],
   issueDate,
   onGeneratedChecklist,
+  onStartPlanning,
 }: ActionsPanelProps) => {
   const shouldShowActions = showDashboardActions ?? mode !== 'cgb';
   const hasLpActions = mode !== 'sunday';
@@ -97,6 +99,8 @@ const ActionsPanel = ({
   const origin = window.location.origin;
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
+
+  const chdeNsltId = rows.filter(r => r.shop==='CHDE')[0]?.nsltId ?? null;
 
   console.log('tableData', tableData);
   const isPlanningAllowed =
@@ -253,11 +257,11 @@ const ActionsPanel = ({
       {showPlanningModal && shouldShowActions && (
         <PlanningModal
           issueId={issueId}
-          chdeId={tableData?.rows.filter(r => r.shop==='CHDE')[0]?.nsltId ?? null}
+          chdeId={chdeNsltId}
           mode={mode}
           onClose={() => setShowPlanningModal(false)}
           onSuccess={() => {
-          
+          void onStartPlanning?.(chdeNsltId);
           }}
         />
       )}

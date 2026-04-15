@@ -133,6 +133,7 @@ const IssueAppContent = () => {
             issueLinks={issueLinks}
             issueDate={issueInfo.issueDate}
             onGeneratedChecklist={loadIssueData}
+            onStartPlanning={() => {}}
           />
         </div>
       </Overlay>
