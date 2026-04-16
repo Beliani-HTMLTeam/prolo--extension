@@ -1528,15 +1528,15 @@ export const NUMBER_OF_NEWSLETTERS = Object.keys(newsletterSlugs).length;
 export interface SendToSpamParams {
   usernameReg: string; // e.g., "Beliani FR" or "Beliani PT"
   shopId: number; // e.g., 7 for Beliani.fr
-  newsletterId: number; // e.g., 43085
+  newsletterIds: number[]; // e.g., 43085
   newsletterSlug: string;
+  isABTest?: boolean;
 }
 
 export async function sendToSpam(params: SendToSpamParams): Promise<Response> {
-  const { usernameReg, shopId, newsletterId, newsletterSlug } = params;
+  const { usernameReg, shopId, newsletterIds, newsletterSlug, isABTest } = params;
 
   console.log('planning: ', params);
-  
 
   // Build the form data
   const formData = new URLSearchParams();
@@ -1598,9 +1598,17 @@ export async function sendToSpam(params: SendToSpamParams): Promise<Response> {
   formData.append('par[not_visited_shop_days]', '');
   formData.append('par[resend_type]', 'html');
   formData.append('par[shop_id]', shopId.toString());
-  formData.append('par[resend]', newsletterId.toString());
-  formData.append('par[resend2]', '');
-  formData.append('par[resend_ab_test]', '0');
+
+  formData.append('par[resend]', newsletterIds[0].toString());
+
+  if (isABTest && newsletterIds[1]) {
+    formData.append('par[resend2]', newsletterIds[1].toString());
+    formData.append('par[resend_ab_test]', '1');
+  } else {
+    formData.append('par[resend2]', '');
+    formData.append('par[resend_ab_test]', '0');
+  }
+
   formData.append('show_table', 'false');
 
   // Make the POST request
@@ -1611,12 +1619,11 @@ export async function sendToSpam(params: SendToSpamParams): Promise<Response> {
     },
     body: formData,
   });
-  
+
   return response;
 }
 
-export async function fetchCustomerCountsForNewsletters(targetNewsletterIds: number[]):
-Promise<Map<number, number>> {
+export async function fetchCustomerCountsForNewsletters(targetNewsletterIds: number[]): Promise<Map<number, number>> {
   const response = await fetch('https://www.prologistics.info/spam_plan.php');
   const html = await response.text();
 
@@ -1630,7 +1637,7 @@ Promise<Map<number, number>> {
   const rows = doc.querySelectorAll('tr[id^="row"]');
 
   rows.forEach(row => {
-    const newsletterLink = row.querySelector('a[href*="news_email.php?id="]')
+    const newsletterLink = row.querySelector('a[href*="news_email.php?id="]');
     const newsletterIdMatch = newsletterLink?.getAttribute('href')?.match(/id=(\d+)/);
     const newsletterId = newsletterIdMatch ? parseInt(newsletterIdMatch[1], 10) : null;
 
@@ -1644,7 +1651,7 @@ Promise<Map<number, number>> {
 
     const currentTotal = customerCountMap.get(newsletterId) || 0;
     customerCountMap.set(newsletterId, currentTotal + customerCount);
-  })
+  });
 
   return customerCountMap;
 }

@@ -100,14 +100,17 @@ const ActionsPanel = ({
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
 
-  const chdeNsltId = rows.filter(r => r.shop==='CHDE')[0]?.nsltId ?? null;
+  const chdeNsltId = !tableData?.hasGroupedNslt ? rows.filter(r => r.shop==='CHDE')[0]?.nsltId ?? null : rows.filter(r => r.shop==='CHDE')[0]?.nsltAId ?? null;
+  const isABTesting = hasGroupedNslt
 
   console.log('tableData', tableData);
-  const isPlanningAllowed =
-    (mode === 'newsletter' &&
-      tableData?.rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAccepted === 1)) ||
-    (mode === 'sunday' && tableData?.rows.every(r => r.columnStatuses.nsltAccepted === 1));
-
+  // const isPlanningAllowed =
+  //   (mode === 'newsletter' &&
+  //     tableData?.rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAccepted === 1)) ||
+  //   (mode === 'sunday' && tableData?.rows.every(r => r.columnStatuses.nsltAccepted === 1)) || (
+  //     mode === 'newsletter' && isABTesting && tableData?.rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAAccepted === 1 && (r.nsltBId && r.columnStatuses.nsltBAccepted === 1))
+  //   )
+ const isPlanningAllowed = true
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
 
@@ -263,6 +266,8 @@ const ActionsPanel = ({
           onSuccess={() => {
           void onStartPlanning?.(chdeNsltId);
           }}
+          tableData={tableData}
+          isABTesting={isABTesting}
         />
       )}
     </div>

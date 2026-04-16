@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import { generateChecklist } from '../api/checklistGeneration';
-import type { ChecklistMode } from '../lib/types';
+import type { ChecklistMode, ChecklistTableData } from '../lib/types';
 import {
   fetchCustomerCountsForNewsletters,
   newsletterSlugs,
@@ -21,22 +21,53 @@ type PlanningModalProps = {
   mode?: ChecklistMode;
   onClose: () => void;
   onSuccess?: () => void;
+  tableData?: ChecklistTableData | null;
+  isABTesting?: boolean;
 };
 
-const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningModalProps) => {
+const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newsletterTitle, setNewsletterTitle] = useState<string | null>(null);
   const [planningProgress, setPlanningProgress] = useState<{
     current: number;
     total: number;
-    results: Array<{ slug: string; customers: number; status: 'pending' | 'success' | 'error'; error?: string }>;
+    results: Array<{ slug: string; customers: number; status: 'pending' | 'success' | 'error';  type: 'A' | 'B'; newsletterId: number;error?: string }>;
   }>({
     current: 0,
     total: 0,
     results: [],
   });
   const [showResults, setShowResults] = useState(false);
+  const [newsletterIdMap, setNewsletterIdMap] = useState<Map<string, Array<{ type: 'A' | 'B'; newsletterId: number }>>>(
+    new Map(),
+  );
+
+  useEffect(() => {
+    if (tableData && chdeId) {
+      const startId = parseInt(chdeId, 10);
+      const idMap = new Map<string, Array<{ type: 'A' | 'B'; newsletterId: number }>>();
+
+      let currentId = startId;
+
+      for (let i = 1; i <= NUMBER_OF_NEWSLETTERS; i++) {
+        const slug = newsletterSlugs[i];
+        const row = tableData.rows.find(r => r.shop === slug);
+
+        const ids: Array<{ type: 'A' | 'B'; newsletterId: number }> = [];
+
+        ids.push({ type: 'A', newsletterId: currentId });
+        currentId++;
+
+        if (row?.nsltBId) {
+          ids.push({ type: 'B', newsletterId: parseInt(row.nsltBId, 10) });
+        }
+        idMap.set(slug, ids);
+      }
+
+      setNewsletterIdMap(idMap);
+    }
+  }, [tableData, chdeId]);
 
   useEffect(() => {
     setLoading(true);
@@ -70,90 +101,108 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
     setError(null);
     setShowResults(false);
 
-    let currentId = +chdeId;
-    const totalNewsletters = NUMBER_OF_NEWSLETTERS;
-
-    const sentNewsletterIds: number[] = [];
-
     const results: Array<{
       slug: string;
+      type: 'A' | 'B';
       newsletterId: number;
       customers: number;
       status: 'pending' | 'success' | 'error';
       error?: string;
     }> = [];
 
-    for (let i = 1; i <= totalNewsletters; i++) {
-      const newsletterSlug = newsletterSlugs[i];
-      const newsletterId = currentId + i - 1;
-      results.push({ slug: newsletterSlug, newsletterId, customers: 0, status: 'pending' });
-      sentNewsletterIds.push(newsletterId);
+    const allEntries: Array<{ slug: string; type: 'A' | 'B'; newsletterId: number; shopId: number; username: string }> =
+      [];
+
+    for (const [slug, ids] of newsletterIdMap.entries()) {
+      const shopId = slugToIdMap[slug];
+      const username = Object.keys(usernameToIdMap).find(key => usernameToIdMap[key] === shopId);
+
+      if (!shopId || !username) {
+        console.warn(`Missing shopId or username for slug ${slug}: shopId=${shopId}, username=${username}`);
+        continue;
+      }
+      for (const { type, newsletterId } of ids) {
+        allEntries.push({ slug, type, newsletterId, shopId: +shopId, username: username });
+
+        results.push({ slug, type, newsletterId, customers: 0, status: 'pending' });
+      }
     }
 
-    setPlanningProgress({ current: 0, total: totalNewsletters, results });
+    setPlanningProgress({
+      current: 0,
+      total: allEntries.length,
+      results: results.map(r => ({ ...r, customers: 0, status: 'pending' as const })),
+    });
 
-    for (let i = 1; i <= totalNewsletters; i++) {
-      const newsletterSlug = newsletterSlugs[i];
-      const shopId = slugToIdMap[newsletterSlug];
-      const newsletterId = currentId + i - 1;
-
-      if (!shopId) {
-        console.warn(`Shop ID not found for newsletter slug: ${newsletterSlug}`);
-        results[i - 1].status = 'error';
-        results[i - 1].error = `Shop ID not found for ${newsletterSlug}`;
-        setPlanningProgress(prev => ({ ...prev, current: i, results: [...results] }));
-        continue;
+    const groupedBySlug = new Map<string, typeof allEntries>();
+    for (const entry of allEntries) {
+      if (!groupedBySlug.has(entry.slug)) {
+        groupedBySlug.set(entry.slug, []);
       }
+      groupedBySlug.get(entry.slug)!.push(entry);
+    }
 
-      const username = (Object.keys(usernameToIdMap) as Array<string>).find(key => usernameToIdMap[key] === shopId);
+    let processedCount = 0;
+    const allNewsletterIds: number[] = [];
 
-      if (!username) {
-        console.warn(`Username not found for shop ID: ${shopId}`);
-        results[i - 1].status = 'error';
-        results[i - 1].error = `Username not found for shop ${newsletterSlug}`;
-        setPlanningProgress(prev => ({ ...prev, current: i, results: [...results] }));
-        continue;
-      }
+    for (const [slug, entries] of groupedBySlug.entries()) {
+      const isABTest = entries.length === 2;
+      const newsletterIds = entries.map(e => e.newsletterId);
+      allNewsletterIds.push(...newsletterIds);
 
-      console.log('NSLT ID:', currentId, 'Newsletter:', newsletterSlug, 'Shop ID:', shopId, 'Username:', username);
-
-      const spamParams: SendToSpamParams = {
-        usernameReg: username || '',
-        shopId: Number(shopId),
-        newsletterId: newsletterId,
-        newsletterSlug,
-      };
+      const shopId = entries[0].shopId;
+      const username = entries[0].username;
 
       try {
-        const response = await sendToSpam(spamParams);
+        const response = await sendToSpam({
+          usernameReg: username,
+          shopId: shopId,
+          newsletterIds: newsletterIds,
+          newsletterSlug: slug,
+          isABTest,
+        });
         const responseData = await response.json();
-        const customerNumber = responseData?.debug?.final_customers_number || 0;
 
-        results[i - 1].status = 'success';
-        results[i - 1].customers = customerNumber;
+        for (let i = 0; i < entries.length; i++) {
+          const entry = entries[i];
+          const resultIndex = results.findIndex(r => r.newsletterId === entry.newsletterId);
 
-        console.log(`✅ ${newsletterSlug}: ${customerNumber} customers`);
+          if (resultIndex !== -1) {
+            results[resultIndex].status = 'success';
+          }
+        }
+        console.log(`✅ ${slug}: sent successfully`);
       } catch (err) {
-        console.error(`❌ Failed for ${newsletterSlug}:`, err);
-        results[i - 1].status = 'error';
-        results[i - 1].error = err instanceof Error ? err.message : 'Unknown error';
+        console.error(`❌ Failed for ${slug}:`, err);
+        for (const entry of entries) {
+          const resultIndex = results.findIndex(r => r.newsletterId === entry.newsletterId);
+          if (resultIndex !== -1) {
+            results[resultIndex].status = 'error';
+            results[resultIndex].error = err instanceof Error ? err.message : 'Unknown error';
+          }
+        }
       }
 
+      processedCount += entries.length;
       setPlanningProgress(prev => ({
         ...prev,
-        current: i,
+        current: processedCount,
         results: [...results],
       }));
     }
 
-    console.log('All newsletters sent. Fetching customer counts for IDs: ', sentNewsletterIds);
+    console.log('All newsletters sent. Fetching customer counts for IDs: ', allNewsletterIds);
 
     try {
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      const customerCountMap = await fetchCustomerCountsForNewsletters(sentNewsletterIds);
+      console.log('Fetching spam plan for newsletter IDs:', allNewsletterIds);
 
-      const updatedResults = results.map(result => {
+      const customerCountMap = await fetchCustomerCountsForNewsletters(allNewsletterIds);
+
+      console.log('Customer count map entries:', Array.from(customerCountMap.entries()));
+
+      let updatedResults = results.map(result => {
         const customerCount = customerCountMap.get(result.newsletterId);
         if (customerCount !== undefined) {
           console.log(`Found data for newsletter ${result.newsletterId} (${result.slug}): ${customerCount} customers`);
@@ -165,12 +214,46 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
         }
       });
 
+      for (const [slug, entries] of groupedBySlug.entries()) {
+        if (entries.length === 2) {
+          const aEntry = entries.find(e => e.type === 'A');
+          const bEntry = entries.find(e => e.type === 'B');
+
+          if (aEntry && bEntry) {
+            const aResult = updatedResults.find(r => r.newsletterId === aEntry.newsletterId);
+            const bResult = updatedResults.find(r => r.newsletterId === bEntry.newsletterId);
+
+            if (aResult && bResult) {
+              const totalCustomers = (aResult.customers || 0) + (bResult.customers || 0);
+
+              updatedResults = updatedResults.map(r => {
+                if (r.newsletterId === aEntry.newsletterId || r.newsletterId === bEntry.newsletterId) {
+                  return { ...r, customers: totalCustomers };
+                }
+                return r;
+              });
+              console.log(
+                `📊 ${slug} AB Test total: ${totalCustomers} customers (A: ${aResult.customers}, B: ${bResult.customers})`,
+              );
+            }
+          }
+        }
+      }
+
       setPlanningProgress(prev => ({
         ...prev,
         results: updatedResults,
       }));
 
-      const totalCustomers = Array.from(customerCountMap.values()).reduce((sum, count) => sum + count, 0);
+      const shopTotals = new Map<string, number>();
+      for (const result of updatedResults) {
+        const currentTotal = shopTotals.get(result.slug) || 0;
+        if (!shopTotals.has(result.slug)) {
+          shopTotals.set(result.slug, result.customers);
+        }
+      }
+
+      const totalCustomers = Array.from(shopTotals.values()).reduce((sum, count) => sum + count, 0);
       console.log(`Total customers across all newsletters: ${totalCustomers}`);
     } catch (err) {
       console.error('Failed to fetch spam plan data:', err);
@@ -215,6 +298,11 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
                 <div>
                   <strong>CHDE ID:</strong> {chdeId}
                 </div>
+                {isABTesting && (
+                  <div>
+                    <strong>AB Test:</strong> Yes
+                  </div>
+                )}
                 {planningProgress.current > 0 && (
                   <div>
                     <strong>Progress:</strong> {planningProgress.current} / {planningProgress.total} shops
@@ -232,8 +320,8 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
                   </div>
                 )}
                 {planningProgress.current > 0 &&
-                  planningProgress.results.slice(0, planningProgress.current).map(r => (
-                    <div key={r.slug} style={{ fontSize: '12px', marginTop: '4px' }}>
+                  planningProgress.results.slice(0, planningProgress.current).map((r, index) => (
+                    <div key={`${r.slug}-${r.type}-${index}`} style={{ fontSize: '12px', marginTop: '4px' }}>
                       {r.status === 'success' && `✅ ${r.slug}: ${r.customers} customers`}
                       {r.status === 'error' && `❌ ${r.slug}: ${r.error}`}
                       {r.status === 'pending' && `⏳ ${r.slug}: Pending...`}
