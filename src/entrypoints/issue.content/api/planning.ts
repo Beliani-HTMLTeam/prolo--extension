@@ -1614,3 +1614,37 @@ export async function sendToSpam(params: SendToSpamParams): Promise<Response> {
   
   return response;
 }
+
+export async function fetchCustomerCountsForNewsletters(targetNewsletterIds: number[]):
+Promise<Map<number, number>> {
+  const response = await fetch('https://www.prologistics.info/spam_plan.php');
+  const html = await response.text();
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const customerCountMap = new Map<number, number>();
+
+  const targetIdsSet = new Set(targetNewsletterIds);
+
+  const rows = doc.querySelectorAll('tr[id^="row"]');
+
+  rows.forEach(row => {
+    const newsletterLink = row.querySelector('a[href*="news_email.php?id="]')
+    const newsletterIdMatch = newsletterLink?.getAttribute('href')?.match(/id=(\d+)/);
+    const newsletterId = newsletterIdMatch ? parseInt(newsletterIdMatch[1], 10) : null;
+
+    if (!newsletterId || !targetIdsSet.has(newsletterId)) {
+      return;
+    }
+
+    const customerLink = row.querySelector('a[href*="news_email_log.php"]');
+    const customerCountText = customerLink?.textContent?.trim() || '0';
+    const customerCount = parseInt(customerCountText, 10);
+
+    const currentTotal = customerCountMap.get(newsletterId) || 0;
+    customerCountMap.set(newsletterId, currentTotal + customerCount);
+  })
+
+  return customerCountMap;
+}

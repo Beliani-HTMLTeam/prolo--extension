@@ -6,6 +6,7 @@ import layoutStyles from '../styles/layout.module.scss';
 import { generateChecklist } from '../api/checklistGeneration';
 import type { ChecklistMode } from '../lib/types';
 import {
+  fetchCustomerCountsForNewsletters,
   newsletterSlugs,
   NUMBER_OF_NEWSLETTERS,
   sendToSpam,
@@ -69,22 +70,32 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
     setError(null);
     setShowResults(false);
 
-     let currentId = +chdeId;
+    let currentId = +chdeId;
     const totalNewsletters = NUMBER_OF_NEWSLETTERS;
-    const results: Array<{ slug: string; customers: number; status: 'pending' | 'success' | 'error'; error?: string }> =
-      [];
 
-    for(let i = 1; i <= totalNewsletters; i++) {
+    const sentNewsletterIds: number[] = [];
+
+    const results: Array<{
+      slug: string;
+      newsletterId: number;
+      customers: number;
+      status: 'pending' | 'success' | 'error';
+      error?: string;
+    }> = [];
+
+    for (let i = 1; i <= totalNewsletters; i++) {
       const newsletterSlug = newsletterSlugs[i];
-      results.push({ slug: newsletterSlug, customers: 0, status: 'pending' });
+      const newsletterId = currentId + i - 1;
+      results.push({ slug: newsletterSlug, newsletterId, customers: 0, status: 'pending' });
+      sentNewsletterIds.push(newsletterId);
     }
 
     setPlanningProgress({ current: 0, total: totalNewsletters, results });
-   
+
     for (let i = 1; i <= totalNewsletters; i++) {
       const newsletterSlug = newsletterSlugs[i];
       const shopId = slugToIdMap[newsletterSlug];
-
+      const newsletterId = currentId + i - 1;
 
       if (!shopId) {
         console.warn(`Shop ID not found for newsletter slug: ${newsletterSlug}`);
@@ -96,7 +107,7 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
 
       const username = (Object.keys(usernameToIdMap) as Array<string>).find(key => usernameToIdMap[key] === shopId);
 
-        if (!username) {
+      if (!username) {
         console.warn(`Username not found for shop ID: ${shopId}`);
         results[i - 1].status = 'error';
         results[i - 1].error = `Username not found for shop ${newsletterSlug}`;
@@ -109,7 +120,7 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
       const spamParams: SendToSpamParams = {
         usernameReg: username || '',
         shopId: Number(shopId),
-        newsletterId: currentId,
+        newsletterId: newsletterId,
         newsletterSlug,
       };
 
@@ -117,11 +128,11 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
         const response = await sendToSpam(spamParams);
         const responseData = await response.json();
         const customerNumber = responseData?.debug?.final_customers_number || 0;
-        
+
         results[i - 1].status = 'success';
         results[i - 1].customers = customerNumber;
 
-                console.log(`✅ ${newsletterSlug}: ${customerNumber} customers`);
+        console.log(`✅ ${newsletterSlug}: ${customerNumber} customers`);
       } catch (err) {
         console.error(`❌ Failed for ${newsletterSlug}:`, err);
         results[i - 1].status = 'error';
@@ -132,9 +143,38 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
         ...prev,
         current: i,
         results: [...results],
-      }))
+      }));
+    }
 
-      currentId++;
+    console.log('All newsletters sent. Fetching customer counts for IDs: ', sentNewsletterIds);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      const customerCountMap = await fetchCustomerCountsForNewsletters(sentNewsletterIds);
+
+      const updatedResults = results.map(result => {
+        const customerCount = customerCountMap.get(result.newsletterId);
+        if (customerCount !== undefined) {
+          console.log(`Found data for newsletter ${result.newsletterId} (${result.slug}): ${customerCount} customers`);
+
+          return { ...result, customers: customerCount };
+        } else {
+          console.warn(`No spam plan data found for newsletter ${result.newsletterId} (${result.slug})`);
+          return result;
+        }
+      });
+
+      setPlanningProgress(prev => ({
+        ...prev,
+        results: updatedResults,
+      }));
+
+      const totalCustomers = Array.from(customerCountMap.values()).reduce((sum, count) => sum + count, 0);
+      console.log(`Total customers across all newsletters: ${totalCustomers}`);
+    } catch (err) {
+      console.error('Failed to fetch spam plan data:', err);
+      setError('Failed to fetch customer counts: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
 
     setLoading(false);
@@ -144,13 +184,13 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
   const copyResultsToClipboard = () => {
     const text = planningProgress.results.map(r => r.customers).join('\n');
     void navigator.clipboard.writeText(text);
-  }
+  };
 
   const getTotalCustomers = () => {
     return planningProgress.results.reduce((sum, r) => sum + r.customers, 0);
-  }
+  };
 
- return (
+  return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
       <div className={clsx(formStyles.modal)} onClick={e => e.stopPropagation()}>
         <div className={formStyles.modalHeader}>
@@ -167,10 +207,10 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
             <>
               <div className={formStyles.formGroup}>
                 <div>
-                  <strong>Newsletter:</strong> {loading ? 'Loading...' : newsletterTitle?.split("SL")[0]}
+                  <strong>Newsletter:</strong> {loading ? 'Loading...' : newsletterTitle?.split('SL')[0]}
                 </div>
                 <div>
-                  <strong>Subject Line:</strong> {loading ? 'Loading...' : newsletterTitle?.split("SL")[1]}
+                  <strong>Subject Line:</strong> {loading ? 'Loading...' : newsletterTitle?.split('SL')[1]}
                 </div>
                 <div>
                   <strong>CHDE ID:</strong> {chdeId}
@@ -179,23 +219,26 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
                   <div>
                     <strong>Progress:</strong> {planningProgress.current} / {planningProgress.total} shops
                     <div style={{ marginTop: '8px', height: '4px', background: '#e0e0e0', borderRadius: '2px' }}>
-                      <div style={{ 
-                        width: `${(planningProgress.current / planningProgress.total) * 100}%`, 
-                        height: '100%', 
-                        background: '#4caf50', 
-                        borderRadius: '2px',
-                        transition: 'width 0.3s'
-                      }} />
+                      <div
+                        style={{
+                          width: `${(planningProgress.current / planningProgress.total) * 100}%`,
+                          height: '100%',
+                          background: '#4caf50',
+                          borderRadius: '2px',
+                          transition: 'width 0.3s',
+                        }}
+                      />
                     </div>
                   </div>
                 )}
-                {planningProgress.current > 0 && planningProgress.results.slice(0, planningProgress.current).map(r => (
-                  <div key={r.slug} style={{ fontSize: '12px', marginTop: '4px' }}>
-                    {r.status === 'success' && `✅ ${r.slug}: ${r.customers} customers`}
-                    {r.status === 'error' && `❌ ${r.slug}: ${r.error}`}
-                    {r.status === 'pending' && `⏳ ${r.slug}: Pending...`}
-                  </div>
-                ))}
+                {planningProgress.current > 0 &&
+                  planningProgress.results.slice(0, planningProgress.current).map(r => (
+                    <div key={r.slug} style={{ fontSize: '12px', marginTop: '4px' }}>
+                      {r.status === 'success' && `✅ ${r.slug}: ${r.customers} customers`}
+                      {r.status === 'error' && `❌ ${r.slug}: ${r.error}`}
+                      {r.status === 'pending' && `⏳ ${r.slug}: Pending...`}
+                    </div>
+                  ))}
               </div>
 
               <div className={formStyles.modalButtons}>
@@ -204,20 +247,16 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
                   onClick={() => void handlePlanning()}
                   disabled={loading}
                 >
-                  <Icon 
-                    icon={loading ? "mdi:loading" : "mdi:playlist-plus"} 
-                    width="14" 
-                    height="14" 
-                    className={loading ? formStyles.spinning : ''} 
+                  <Icon
+                    icon={loading ? 'mdi:loading' : 'mdi:playlist-plus'}
+                    width="14"
+                    height="14"
+                    className={loading ? formStyles.spinning : ''}
                   />
                   {loading ? 'Planning...' : 'Start Planning'}
                 </button>
-                
-                <button 
-                  className={clsx(formStyles.btn, formStyles['btn--ghost'])} 
-                  onClick={onClose} 
-                  disabled={loading}
-                >
+
+                <button className={clsx(formStyles.btn, formStyles['btn--ghost'])} onClick={onClose} disabled={loading}>
                   Cancel
                 </button>
               </div>
@@ -229,7 +268,8 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
                   <strong>Total Customers:</strong> {getTotalCustomers().toLocaleString()}
                 </div>
                 <div>
-                  <strong>Successful Shops:</strong> {planningProgress.results.filter(r => r.status === 'success').length} / {planningProgress.total}
+                  <strong>Successful Shops:</strong>{' '}
+                  {planningProgress.results.filter(r => r.status === 'success').length} / {planningProgress.total}
                 </div>
                 <div style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '16px' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -259,16 +299,13 @@ const PlanningModal = ({ issueId, chdeId, mode, onClose, onSuccess }: PlanningMo
               </div>
 
               <div className={formStyles.modalButtons}>
-                <button
-                  className={clsx(formStyles.btn, formStyles['btn--primary'])}
-                  onClick={copyResultsToClipboard}
-                >
+                <button className={clsx(formStyles.btn, formStyles['btn--primary'])} onClick={copyResultsToClipboard}>
                   <Icon icon="mdi:content-copy" width="14" height="14" />
                   Copy Results
                 </button>
-                
-                <button 
-                  className={clsx(formStyles.btn, formStyles['btn--ghost'])} 
+
+                <button
+                  className={clsx(formStyles.btn, formStyles['btn--ghost'])}
                   onClick={() => {
                     setShowResults(false);
                     onSuccess?.();
