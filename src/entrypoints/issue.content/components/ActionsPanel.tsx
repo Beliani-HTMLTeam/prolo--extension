@@ -261,7 +261,6 @@ const ActionsPanel = ({
         <PlanningModal
           issueId={issueId}
           chdeId={chdeNsltId}
-          mode={mode}
           onClose={() => setShowPlanningModal(false)}
           onSuccess={() => {
           void onStartPlanning?.(chdeNsltId);
