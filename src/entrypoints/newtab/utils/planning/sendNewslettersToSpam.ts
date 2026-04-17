@@ -3,13 +3,17 @@ import { PlanningEntry, PlanningResult } from '../../types/Planning';
 
 export const sendNewslettersToSpam = async (
   groupedBySlug: Map<string, PlanningEntry[]>,
-  onProgress: (processedCount: number, results: PlanningResult[]) => void,
+  onProgress: (processedCount: number, results: PlanningResult[]) => void, signal?: AbortSignal
 ): Promise<{ allNewsletterIds: number[]; results: PlanningResult[] }> => {
   let processedCount = 0;
   const allNewsletterIds: number[] = [];
   const results: PlanningResult[] = [];
 
   for (const [slug, entries] of groupedBySlug.entries()) {
+      if (signal?.aborted) {
+      throw new DOMException('Cancelled', 'AbortError');
+    }
+
     const isABTest = entries.length === 2;
     const newsletterIds = entries.map(e => e.newsletterId);
     allNewsletterIds.push(...newsletterIds);
@@ -24,7 +28,7 @@ export const sendNewslettersToSpam = async (
         newsletterIds: newsletterIds,
         newsletterSlug: slug,
         isABTest,
-      });
+      }, {signal});
 
       for (const entry of entries) {
         const existingResult = results.find(r => r.newsletterId === entry.newsletterId);
@@ -41,6 +45,9 @@ export const sendNewslettersToSpam = async (
       }
       console.log(`✅ ${slug}: sent successfully`);
     } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+        throw err;
+      }
       console.error(`❌ Failed for ${slug}:`, err);
       for (const entry of entries) {
         const existingResult = results.find(r => r.newsletterId === entry.newsletterId);

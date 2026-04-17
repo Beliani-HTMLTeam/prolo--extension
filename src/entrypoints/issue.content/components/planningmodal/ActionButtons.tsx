@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import formStyles from '../styles/forms.module.scss';
+import formStyles from '../../styles/forms.module.scss';
 import { Icon } from '@iconify/react';
 
 type ActionButtonsProps = {
@@ -39,8 +39,8 @@ export const ActionButtons = ({
       />
       {primaryLabel}
     </button>
-    <button className={clsx(formStyles.btn, formStyles['btn--ghost'])} onClick={onSecondaryClick} disabled={loading}>
+   {secondaryLabel !== '' && <button className={clsx(formStyles.btn, formStyles['btn--ghost'])} onClick={onSecondaryClick}>
       {secondaryLabel}
-    </button>
+    </button>}
   </div>
 );

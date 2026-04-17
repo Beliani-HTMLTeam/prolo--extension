@@ -23,7 +23,7 @@ const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTes
     [tableData, chdeId],
   );
 
-  const { loading, error, progress, results, showResults, executePlanning, setShowResults, setError } =
+  const { loading, error, progress, results, showResults, executePlanning, cancelPlanning, setShowResults, setError } =
     usePlanning(newsletterIdMap);
 
   const handlePlanning = async () => {
@@ -36,6 +36,21 @@ const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTes
     onSuccess?.();
   };
 
+  const handleClose = () => {
+    if (loading) {
+      const confirmClose = window.confirm('Planning is still in progress. Are you sure you want to close?');
+      if (!confirmClose) {
+        return;
+      }
+    }
+    cancelPlanning();
+    onClose();
+  }
+
+  const handleCancel = () => {
+    cancelPlanning();
+  }
+
   const copyResultsToClipboard = () => {
     const text = formatResultsForClipboard(results);
     void navigator.clipboard.writeText(text);
@@ -47,9 +62,9 @@ const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTes
   const displayError = error || newsletterTitleError;
 
   return (
-    <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+    <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={handleClose}>
       <div className={clsx(formStyles.modal)} onClick={e => e.stopPropagation()}>
-        <ModalHeader title={showResults ? 'Planning Results' : 'Start Planning'} onClose={onClose} />
+        <ModalHeader title={showResults ? 'Planning Results' : 'Start Planning'} onClose={handleClose} />
 
         <div className={formStyles.modalContent}>
           {displayError ? <div className={clsx(formStyles.error, formStyles.formError)}>{displayError}</div> : null}
@@ -69,7 +84,7 @@ const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTes
                 mode="planning"
                 loading={loading || newsletterTitleLoading}
                 onPrimaryClick={() => void handlePlanning()}
-                onSecondaryClick={onClose}
+                onSecondaryClick={loading ? handleCancel : onClose}
                 primaryLabel={loading ? 'Planning...' : 'Start Planning'}
               />
             </>

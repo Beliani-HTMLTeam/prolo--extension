@@ -104,13 +104,34 @@ const ActionsPanel = ({
   const isABTesting = hasGroupedNslt
 
   console.log('tableData', tableData);
-  // const isPlanningAllowed =
-  //   (mode === 'newsletter' &&
-  //     tableData?.rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAccepted === 1)) ||
-  //   (mode === 'sunday' && tableData?.rows.every(r => r.columnStatuses.nsltAccepted === 1)) || (
-  //     mode === 'newsletter' && isABTesting && tableData?.rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAAccepted === 1 && (r.nsltBId && r.columnStatuses.nsltBAccepted === 1))
-  //   )
- const isPlanningAllowed = true
+
+  const isPlanningAllowed = useMemo(() => {
+    if (!tableData?.rows.length) return false;
+
+    const rows = tableData.rows;
+
+     // Sunday mode: only need NSLT accepted
+    if(mode === 'sunday') {
+      return rows.every(r => r.columnStatuses.nsltAccepted === 1)
+    }
+
+
+    if (mode === 'newsletter' ){
+       // With AB testing: need LP accepted + NSLT A accepted + NSLT B accepted (if B exists)
+      if (isABTesting) {
+        return rows.every(r =>{
+          const lpOk = r.columnStatuses.lpAccepted === 1;
+          const nsltAOk = r.columnStatuses.nsltAAccepted === 1;
+          const nsltBOk = r.nsltBId ? r.columnStatuses.nsltBAccepted === 1 : true;
+          return lpOk && nsltAOk && nsltBOk;
+        })
+      }
+
+      // Without AB testing: need LP accepted + NSLT accepted
+      return rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAccepted === 1);
+    } 
+  }, [rows, tableData, isABTesting])
+
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
 

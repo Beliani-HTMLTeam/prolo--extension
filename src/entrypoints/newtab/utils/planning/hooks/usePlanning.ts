@@ -11,7 +11,24 @@ export const usePlanning = (newsletterIdMap: Map<string, any>) => {
   const [results, setResults] = useState<PlanningResult[]>([]);
   const [showResults, setShowResults] = useState(false);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const cancelPlanning = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+      setLoading(false);
+    setError('Planning cancelled by user');
+  }
+
   const executePlanning = async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
+
     setLoading(true);
     setError(null);
     setShowResults(false);
@@ -35,17 +52,33 @@ export const usePlanning = (newsletterIdMap: Map<string, any>) => {
         setProgress(prev => ({ ...prev, current }));
         setResults(updatedResults);
       },
+      abortControllerRef.current.signal
     );
 
+      if (abortControllerRef.current?.signal.aborted) {
+      return;
+    }
+
     try {
-      const updatedResults = await aggregateCustomerCounts(allNewsletterIds, sendResults, groupedBySlug);
+      const updatedResults = await aggregateCustomerCounts(allNewsletterIds, sendResults, groupedBySlug, abortControllerRef.current.signal);
+
+       if (abortControllerRef.current?.signal.aborted) {
+        return;
+      }
+
       setResults(updatedResults);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('Planning cancelled');
+        return;
+      }
+
       setError('Failed to fetch customer counts: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
 
     setLoading(false);
     setShowResults(true);
+      abortControllerRef.current = null;
   };
 
   return {
@@ -54,6 +87,7 @@ export const usePlanning = (newsletterIdMap: Map<string, any>) => {
     progress,
     results,
     showResults,
+    cancelPlanning,
     executePlanning,
     setShowResults,
     setError,

@@ -5,12 +5,22 @@ export const aggregateCustomerCounts = async (
   allNewsletterIds: number[],
   results: PlanningResult[],
   groupedBySlug: Map<string, PlanningEntry[]>,
+  signal?: AbortSignal
 ): Promise<PlanningResult[]> => {
+    if (signal?.aborted) {
+    throw new DOMException('Cancelled', 'AbortError');
+  }
+
   await new Promise(resolve => setTimeout(resolve, 3000));
+
+   if (signal?.aborted) {
+    throw new DOMException('Cancelled', 'AbortError');
+  }
+
 
   console.log('Fetching spam plan for newsletter IDs:', allNewsletterIds);
 
-  const customerCountMap = await fetchCustomerCountsForNewsletters(allNewsletterIds);
+  const customerCountMap = await fetchCustomerCountsForNewsletters(allNewsletterIds, { signal });
 
   console.log('Customer count map entries:', Array.from(customerCountMap.entries()));
 
@@ -52,5 +62,15 @@ export const aggregateCustomerCounts = async (
     }
   }
 
-  return updatedResults;
+  const seenSlugs = new Set<string>();
+  const deduplicatedResults: PlanningResult[] = [];
+
+  for (const result of updatedResults) {
+    if (!seenSlugs.has(result.slug)) {
+      seenSlugs.add(result.slug);
+      deduplicatedResults.push(result);
+    }
+  }
+
+  return deduplicatedResults;
 };

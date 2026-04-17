@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import formStyles from '../styles/forms.module.scss';
+import formStyles from '../../styles/forms.module.scss';
 
 type ModalHeaderProps = {
   title: string;

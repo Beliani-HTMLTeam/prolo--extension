@@ -1,7 +1,4 @@
 import { PlanningResult } from '@/entrypoints/newtab/types/Planning';
-import clsx from 'clsx';
-import formStyles from '../styles/forms.module.scss';
-import layoutStyles from '../styles/layout.module.scss';
 
 type ResultsTableProps = {
   results: PlanningResult[];
