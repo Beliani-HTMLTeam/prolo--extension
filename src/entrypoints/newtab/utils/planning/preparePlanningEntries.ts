@@ -7,8 +7,15 @@ export const preparePlanningEntries = (
   const allEntries: PlanningEntry[] = [];
   const results: PlanningResult[] = [];
 
+   const normalizeSlug = (slug: string): string => {
+    const NORMALIZATION: Record<string, string> = {
+      'ES': 'SP',  // ES in table data should use SP mapping
+    };
+    return NORMALIZATION[slug] || slug;
+  };
+
   for (const [slug, ids] of newsletterIdMap.entries()) {
-    const shopId = SLUG_ID_MAP[slug];
+    const shopId = SLUG_ID_MAP[normalizeSlug(slug)];
     const username = Object.keys(USERNAME_ID_MAP).find(key => USERNAME_ID_MAP[key] === shopId);
 
     if (!shopId || !username) {

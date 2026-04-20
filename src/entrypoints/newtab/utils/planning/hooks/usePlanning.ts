@@ -4,7 +4,7 @@ import { groupEntriesBySlug } from '../groupEntriesBySlug';
 import { sendNewslettersToSpam } from '../sendNewslettersToSpam';
 import { aggregateCustomerCounts } from '../aggregateCustomerCounts';
 
-export const usePlanning = (newsletterIdMap: Map<string, any>) => {
+export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: number = 5) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -52,7 +52,8 @@ export const usePlanning = (newsletterIdMap: Map<string, any>) => {
         setProgress(prev => ({ ...prev, current }));
         setResults(updatedResults);
       },
-      abortControllerRef.current.signal
+      abortControllerRef.current.signal,
+      concurrency
     );
 
       if (abortControllerRef.current?.signal.aborted) {

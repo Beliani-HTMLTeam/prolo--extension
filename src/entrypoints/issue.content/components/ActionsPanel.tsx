@@ -100,37 +100,20 @@ const ActionsPanel = ({
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
 
-  const chdeNsltId = !tableData?.hasGroupedNslt ? rows.filter(r => r.shop==='CHDE')[0]?.nsltId ?? null : rows.filter(r => r.shop==='CHDE')[0]?.nsltAId ?? null;
-  const isABTesting = hasGroupedNslt
+  const chdeNsltId = !tableData?.hasGroupedNslt
+    ? (rows.filter(r => r.shop === 'CHDE')[0]?.nsltId ?? null)
+    : (rows.filter(r => r.shop === 'CHDE')[0]?.nsltAId ?? null);
+  const isABTesting = hasGroupedNslt;
 
   console.log('tableData', tableData);
 
   const isPlanningAllowed = useMemo(() => {
-    if (!tableData?.rows.length) return false;
-
-    const rows = tableData.rows;
-
-     // Sunday mode: only need NSLT accepted
-    if(mode === 'sunday') {
-      return rows.every(r => r.columnStatuses.nsltAccepted === 1)
+    // Sunday mode: only need NSLT accepted
+    if (mode === 'cgb') {
+      return false
     }
-
-
-    if (mode === 'newsletter' ){
-       // With AB testing: need LP accepted + NSLT A accepted + NSLT B accepted (if B exists)
-      if (isABTesting) {
-        return rows.every(r =>{
-          const lpOk = r.columnStatuses.lpAccepted === 1;
-          const nsltAOk = r.columnStatuses.nsltAAccepted === 1;
-          const nsltBOk = r.nsltBId ? r.columnStatuses.nsltBAccepted === 1 : true;
-          return lpOk && nsltAOk && nsltBOk;
-        })
-      }
-
-      // Without AB testing: need LP accepted + NSLT accepted
-      return rows.every(r => r.columnStatuses.lpAccepted === 1 && r.columnStatuses.nsltAccepted === 1);
-    } 
-  }, [rows, tableData, isABTesting])
+    return true
+  }, [mode]);
 
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
@@ -252,8 +235,13 @@ const ActionsPanel = ({
               </>
             )}
           </div>
-         {isPlanningAllowed && (
-            <ActionButton variant="planning" label="Start Planning" icon="mdi:web" onClick={() => setShowPlanningModal(true)} />
+          {isPlanningAllowed && (
+            <ActionButton
+              variant="planning"
+              label="Start Planning"
+              icon="mdi:web"
+              onClick={() => setShowPlanningModal(true)}
+            />
           )}
         </div>
       )}
@@ -284,10 +272,11 @@ const ActionsPanel = ({
           chdeId={chdeNsltId}
           onClose={() => setShowPlanningModal(false)}
           onSuccess={() => {
-          void onStartPlanning?.(chdeNsltId);
+            void onStartPlanning?.(chdeNsltId);
           }}
           tableData={tableData}
           isABTesting={isABTesting}
+          allowSelection={true}
         />
       )}
     </div>

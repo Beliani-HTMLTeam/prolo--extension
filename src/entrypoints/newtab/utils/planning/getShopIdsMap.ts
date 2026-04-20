@@ -10,13 +10,21 @@ export const getShopIdsMap = (tableData: ChecklistTableData, startId: number) =>
     const slug = NEWSLETTER_SLUGS[i];
     const row = tableData.rows.find(r => r.shop === slug);
 
+        const alternativeRow = !row ? tableData.rows.find(r => {
+      // Map ES to SP for lookup
+      if (slug === 'SP' && r.shop === 'ES') return true;
+      return false;
+    }) : null;
+    
+    const actualRow = row || alternativeRow;
+
     const ids: Array<{ type: 'A' | 'B'; newsletterId: number }> = [];
 
     ids.push({ type: 'A', newsletterId: currentId });
     currentId++;
 
-    if (row?.nsltBId) {
-      ids.push({ type: 'B', newsletterId: parseInt(row.nsltBId, 10) });
+    if (actualRow?.nsltBId) {
+      ids.push({ type: 'B', newsletterId: parseInt(actualRow.nsltBId, 10) });
     }
     idMap.set(slug, ids);
   }

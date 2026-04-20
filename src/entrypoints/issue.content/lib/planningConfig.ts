@@ -56,6 +56,7 @@ export const SLUG_ID_MAP: Record<string, string> = {
   FR: '7',
   AT: '8',
   SP: '10',
+  ES: '10',
   PL: '12',
   NL: '17',
   BENL: '19',
