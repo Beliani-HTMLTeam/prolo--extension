@@ -17,6 +17,14 @@ import { ModalHeader } from './planningmodal/ModalHeader';
 import { ActionButtons } from './planningmodal/ActionButtons';
 import { NewsletterSelector } from './planningmodal/NewsletterSelector';
 import { isSlugReadyForPlanning } from '@/entrypoints/newtab/utils/planning/isSlugReadyForPlanning';
+import { SLUG_ID_MAP } from '../lib/planningConfig';
+
+const normalizeSlugForSlug = (slug: string): string => {
+  const NORMALIZATION: Record<string, string> = {
+    'ES': 'SP'
+  };
+  return NORMALIZATION[slug] || slug;
+}
 
 const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
@@ -37,13 +45,29 @@ const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTes
 
     const filteredMap = new Map();
 
-    for (const [slug, ids] of fullMap.entries()) {
-      if (selectedSlugs.has(slug)) {
-        filteredMap.set(slug, ids);
-      }
+    for (const [mapKey, ids] of fullMap.entries()) {
+     const isSelected = Array.from(selectedSlugs).some(selected => {
+      const normalizedSelected = normalizeSlugForSlug(selected);
+      return normalizedSelected === mapKey;
+     })
+
+     if(isSelected) {
+      filteredMap.set(mapKey, ids);
+     }
     }
     return filteredMap;
   }, [tableData, chdeId, useAllSlugs, selectedSlugs]);
+
+  const displaySlugs = useMemo(() => {
+    if (!tableData?.rows) return [];
+    return tableData.rows.map(r => ({
+      display: r.shop,
+      normalize: normalizeSlugForSlug(r.shop)
+    }))
+  }, [tableData]);
+
+  console.log('newsletterIdMap keys:', Array.from(filteredNewsletterIdMap.keys()));
+console.log('SLUG_ID_MAP keys:', Object.keys(SLUG_ID_MAP));
 
   const { loading, error, progress, results, showResults, executePlanning, cancelPlanning, setShowResults, setError } =
     usePlanning(filteredNewsletterIdMap);
