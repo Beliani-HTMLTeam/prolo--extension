@@ -26,7 +26,7 @@ const normalizeSlugForSlug = (slug: string): string => {
   return NORMALIZATION[slug] || slug;
 }
 
-const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
+const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
   const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
   const [useAllSlugs, setUseAllSlugs] = useState(true);
@@ -58,14 +58,6 @@ const PlanningModal = ({ issueId, chdeId, onClose, onSuccess, tableData, isABTes
     return filteredMap;
   }, [tableData, chdeId, useAllSlugs, selectedSlugs]);
 
-  const displaySlugs = useMemo(() => {
-    if (!tableData?.rows) return [];
-    return tableData.rows.map(r => ({
-      display: r.shop,
-      normalize: normalizeSlugForSlug(r.shop)
-    }))
-  }, [tableData]);
-
   console.log('newsletterIdMap keys:', Array.from(filteredNewsletterIdMap.keys()));
 console.log('SLUG_ID_MAP keys:', Object.keys(SLUG_ID_MAP));
 
@@ -85,7 +77,7 @@ console.log('SLUG_ID_MAP keys:', Object.keys(SLUG_ID_MAP));
 
     if (useAllSlugs) {
       const allReady = availableSlugs.every(slug =>
-        isSlugReadyForPlanning(tableData || null, slug, isABTesting || false),
+        isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
       );
 
       if (!allReady) {
@@ -98,7 +90,7 @@ console.log('SLUG_ID_MAP keys:', Object.keys(SLUG_ID_MAP));
 
     if (!useAllSlugs) {
       const invalidSlugs = Array.from(selectedSlugs).filter(
-        slug => !isSlugReadyForPlanning(tableData || null, slug, isABTesting || false),
+        slug => !isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
       );
 
       if (invalidSlugs.length > 0) {
@@ -185,6 +177,7 @@ console.log('SLUG_ID_MAP keys:', Object.keys(SLUG_ID_MAP));
 
               <NewsletterSelector
                 availableSlugs={availableSlugs}
+                mode={mode}
                 selectedSlugs={selectedSlugs}
                 useAllSlugs={useAllSlugs}
                 onUseAllChange={setUseAllSlugs}

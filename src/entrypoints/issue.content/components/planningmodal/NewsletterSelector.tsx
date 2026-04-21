@@ -1,12 +1,13 @@
 import clsx from 'clsx';
 import formStyles from '../../styles/forms.module.scss';
-import { ChecklistTableData } from '../../lib/types';
+import { ChecklistMode, ChecklistTableData } from '../../lib/types';
 import { isSlugReadyForPlanning } from '@/entrypoints/newtab/utils/planning/isSlugReadyForPlanning';
 import { Icon } from '@iconify/react';
 
 
 type NewsletterSelectorProps = {
   availableSlugs: string[];
+  mode: ChecklistMode | undefined;
   selectedSlugs: Set<string>;
   useAllSlugs: boolean;
   isABTesting: boolean;
@@ -29,9 +30,10 @@ export const NewsletterSelector = ({
   onAddSlug,
   onRemoveSlug,
   onClearAll,
+  mode
 }: NewsletterSelectorProps) => {
-  const allSlugsReady = availableSlugs.every(slug => isSlugReadyForPlanning(tableData, slug, isABTesting));
-  const readySlugs = availableSlugs.filter(slug => isSlugReadyForPlanning(tableData, slug, isABTesting));
+  const allSlugsReady = availableSlugs.every(slug => isSlugReadyForPlanning(tableData, slug, isABTesting, mode));
+  const readySlugs = availableSlugs.filter(slug => isSlugReadyForPlanning(tableData, slug, isABTesting, mode));
 
   const handleSelectAllReady = () => {
    readySlugs.forEach(slug => {
@@ -42,7 +44,7 @@ export const NewsletterSelector = ({
   }
 
   const handleToggleSlug = (slug: string) => {
-    if (!isSlugReadyForPlanning(tableData, slug, isABTesting)) return
+    if (!isSlugReadyForPlanning(tableData, slug, isABTesting, mode)) return
     
     if (selectedSlugs.has(slug)) {
       onRemoveSlug(slug);
@@ -69,7 +71,7 @@ export const NewsletterSelector = ({
           />
           All Newsletters {!allSlugsReady && `(Only ${readySlugs.length} ready)`}
         </label>
-        <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '4px'
+        {mode ==='newsletter' && ( <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '4px'
         }}>
           <input
           type='radio'
@@ -77,13 +79,14 @@ export const NewsletterSelector = ({
           onChange={() => onUseAllChange(false)}
           />
           Select specific newsletters
-        </label>
+        </label>)}
+       
       </div>
 
       {!useAllSlugs && (
         <div style={{marginTop: '12px'}}>
           <div style={{marginBottom: '8px', display: 'flex', gap: '12px'}}>
-            <button type='button' onClick={handleSelectAllReady} className={clsx(formStyles.btn, formStyles['btn--ghost'])} style={{padding: '4px 8px', fontSize: '12px'}} disabled={readySlugs.length === 0}>
+            <button type='button' onClick={handleSelectAllReady} className={clsx(formStyles.btn, formStyles['btn--ghost'])} style={{padding: '4px 8px', fontSize: '12px'}} disabled={readySlugs.length === 0 }>
               Select All ({readySlugs.length})
             </button>
             <button type='button' onClick={onClearAll} className={clsx(formStyles.btn, formStyles['btn--ghost'])} style={{padding: '4px 8px', fontSize: '12px'}}>
@@ -102,7 +105,7 @@ export const NewsletterSelector = ({
             gap: '8px'
           }}>
             {availableSlugs.map(slug => {
-              const isReady = isSlugReadyForPlanning(tableData, slug, isABTesting)
+              const isReady = isSlugReadyForPlanning(tableData, slug, isABTesting, mode)
               const isSelected = selectedSlugs.has(slug)
               return (
               <label key={slug} 

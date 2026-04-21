@@ -108,12 +108,14 @@ const ActionsPanel = ({
   console.log('tableData', tableData);
 
   const isPlanningAllowed = useMemo(() => {
-    // Sunday mode: only need NSLT accepted
     if (mode === 'cgb') {
       return false
     }
+    if (mode === 'sunday') {
+      return rows.length > 0 && rows.every(r => r.columnStatuses.nsltAccepted === 1);
+    }
     return true
-  }, [mode]);
+  }, [mode, rows]);
 
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
@@ -269,6 +271,7 @@ const ActionsPanel = ({
       {showPlanningModal && shouldShowActions && (
         <PlanningModal
           issueId={issueId}
+          mode={mode}
           chdeId={chdeNsltId}
           onClose={() => setShowPlanningModal(false)}
           onSuccess={() => {

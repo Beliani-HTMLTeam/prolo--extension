@@ -1,10 +1,14 @@
-import { ChecklistTableData } from "@/entrypoints/issue.content/lib/types";
+import { ChecklistMode, ChecklistTableData } from "@/entrypoints/issue.content/lib/types";
 
-export const isSlugReadyForPlanning = (tableData: ChecklistTableData | null, slug: string, isABTesting: boolean): boolean => {
-  if(!tableData?.rows) return false;
+export const isSlugReadyForPlanning = (tableData: ChecklistTableData | null, slug: string, isABTesting: boolean, mode: ChecklistMode | undefined = 'newsletter'): boolean => {
+  if(!tableData?.rows || mode === 'cgb') return false;
 
   const row = tableData.rows.find(r => r.shop === slug)
   if(!row) return false;
+
+  if (mode === 'sunday') {
+    return row.columnStatuses.nsltAccepted === 1;
+  }
 
   if (isABTesting) {
     const lpOk = row.columnStatuses.lpAccepted === 1;

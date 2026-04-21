@@ -11,6 +11,7 @@ export interface PlanningResult {
 
 export interface PlanningModalProps {
   issueId: number;
+  mode: ChecklistMode | undefined;
   chdeId: string | null;
   onClose: () => void;
   onSuccess?: () => void;
