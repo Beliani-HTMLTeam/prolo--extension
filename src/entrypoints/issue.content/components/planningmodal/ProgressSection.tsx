@@ -41,7 +41,7 @@ export const ProgressSection = ({
       <strong>Newsletter:</strong> {newsletterTitleLoading ? 'Loading...' : newsletterTitle?.split('SL')[0]}
     </div>
     <div>
-      <strong>Subject Line:</strong> {newsletterTitleLoading ? 'Loading...' : newsletterTitle?.split('SL')[1] || 'N/A'}
+      <strong>Subject Line:</strong> {newsletterTitleLoading ? 'Loading...' : (newsletterTitle?.split('SL')[1] || 'N/A').replace(/^:\s*/, '')}
     </div>
     <div>
       <strong>CHDE ID:</strong> {chdeId}
