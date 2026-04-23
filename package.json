@@ -32,6 +32,7 @@
     "react-chartjs-2": "^5.3.1",
     "react-cookie": "^8.0.1",
     "react-dom": "^19.2.4",
+    "react-loading-skeleton": "^3.5.0",
     "sass": "^1.97.3",
     "twemoji": "^14.0.2"
   },

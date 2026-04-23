@@ -1,7 +1,9 @@
-export const parseSpamPlanHtml = (html: string, targetIds: Set<number>): Map<number, number> => {
+import { SpamPlanEntry } from "../../types/Planning";
+
+export const parseSpamPlanHtml = (html: string, targetIds: Set<number>): Map<number, SpamPlanEntry> => {
  const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  const customerCountMap = new Map<number, number>();
+  const resultMap = new Map<number, SpamPlanEntry>();
 
   const rows = doc.querySelectorAll('tr[id^="row"]');
 
@@ -17,10 +19,12 @@ export const parseSpamPlanHtml = (html: string, targetIds: Set<number>): Map<num
     const customerLink = row.querySelector('a[href*="news_email_log.php"]');
     const customerCount = parseInt(customerLink?.textContent?.trim() || '0', 10);
 
-    const currentTotal = customerCountMap.get(newsletterId) || 0;
-    customerCountMap.set(newsletterId, currentTotal + customerCount);
+    const subjectLink = row.querySelector('a[href*="news_email.php?id="]:nth-child(2)');
+    const subjectLine = subjectLink?.textContent?.trim() || '';
+
+    const currentTotal = resultMap.get(newsletterId)?.customerCount || 0;
+    resultMap.set(newsletterId, { customerCount: currentTotal + customerCount, subjectLine: subjectLine || resultMap.get(newsletterId)?.subjectLine || '', newsletterId });
   });
 
-  return customerCountMap;
-
+  return resultMap;
 }

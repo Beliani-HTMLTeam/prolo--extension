@@ -7,6 +7,7 @@ export interface PlanningResult {
   type: 'A' | 'B';
   newsletterId: number;
   error?: string;
+  subjectLine?: string;
 }
 
 export interface PlanningModalProps {
@@ -34,4 +35,10 @@ export interface SendToSpamParams {
   newsletterIds: number[]; // e.g., 43085
   newsletterSlug: string;
   isABTest?: boolean;
+}
+
+export type SpamPlanEntry = {
+  customerCount: number;
+  subjectLine: string;
+  newsletterId: number
 }

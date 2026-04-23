@@ -20,19 +20,22 @@ export const aggregateCustomerCounts = async (
 
   console.log('Fetching spam plan for newsletter IDs:', allNewsletterIds);
 
-  const customerCountMap = await fetchCustomerCountsForNewsletters(allNewsletterIds, { signal });
+  const spamPlanMap = await fetchCustomerCountsForNewsletters(allNewsletterIds, { signal });
 
-  console.log('Customer count map entries:', Array.from(customerCountMap.entries()));
+  console.log('Customer count map entries:', Array.from(spamPlanMap.entries()));
 
   let updatedResults = results.map(result => {
-    const customerCount = customerCountMap.get(result.newsletterId);
-    if (customerCount !== undefined) {
-      console.log(`Found data for newsletter ${result.newsletterId} (${result.slug}): ${customerCount} customers`);
-
-      return { ...result, customers: customerCount };
+    const entry = spamPlanMap.get(result.newsletterId);
+    if (entry) {
+      console.log(`Found data for newsletter ${result.newsletterId} (${result.slug}): ${entry.customerCount} customers - "${entry.subjectLine}"`);
+      return { 
+        ...result, 
+        customers: entry.customerCount,
+        subjectLine: entry.subjectLine 
+      };
     } else {
       console.warn(`No spam plan data found for newsletter ${result.newsletterId} (${result.slug})`);
-      return result;
+      return { ...result, subjectLine: '' };
     }
   });
 
@@ -47,15 +50,16 @@ export const aggregateCustomerCounts = async (
 
         if (aResult && bResult) {
           const totalCustomers = (aResult.customers || 0) + (bResult.customers || 0);
+          const subjectLine = aResult.subjectLine || bResult.subjectLine || '';
 
           updatedResults = updatedResults.map(r => {
             if (r.newsletterId === aEntry.newsletterId || r.newsletterId === bEntry.newsletterId) {
-              return { ...r, customers: totalCustomers };
+              return { ...r, customers: totalCustomers, subjectLine };
             }
             return r;
           });
           console.log(
-            `📊 ${slug} AB Test total: ${totalCustomers} customers (A: ${aResult.customers}, B: ${bResult.customers})`,
+            `📊 ${slug} AB Test total: ${totalCustomers} customers (A: ${aResult.customers}, B: ${bResult.customers}) - Subject: ${subjectLine}`,
           );
         }
       }

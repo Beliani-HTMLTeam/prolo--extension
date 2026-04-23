@@ -1,4 +1,4 @@
-import { SendToSpamParams } from '@/entrypoints/newtab/types/Planning';
+import { SendToSpamParams, SpamPlanEntry } from '@/entrypoints/newtab/types/Planning';
 import { NEWSLETTER_SLUGS } from '../lib/planningConfig';
 import { SpamFormBuilder } from '@/entrypoints/newtab/utils/planning/classes/SpamFormBuilder';
 import { parseSpamPlanHtml } from '@/entrypoints/newtab/utils/planning/parseSpamPlan';
@@ -25,7 +25,7 @@ export async function sendToSpam(params: SendToSpamParams, options?: {signal?: A
   return response;
 }
 
-export async function fetchCustomerCountsForNewsletters(targetNewsletterIds: number[], options?: {signal?: AbortSignal}): Promise<Map<number, number>> {
+export async function fetchCustomerCountsForNewsletters(targetNewsletterIds: number[], options?: {signal?: AbortSignal}): Promise<Map<number, SpamPlanEntry>> {
   const { signal } = options || {};
 
   const response = await fetch('https://www.prologistics.info/spam_plan.php', { signal });

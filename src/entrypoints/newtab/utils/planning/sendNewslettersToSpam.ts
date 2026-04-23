@@ -35,16 +35,16 @@ export const sendNewslettersToSpam = async (
       const slugResults: PlanningResult[] = []
 
       try {
-        await sendToSpam(
-          {
-            usernameReg: username,
-            shopId: shopId,
-            newsletterIds: newsletterIds,
-            newsletterSlug: slug,
-            isABTest,
-          },
-          { signal },
-        );
+        // await sendToSpam(
+        //   {
+        //     usernameReg: username,
+        //     shopId: shopId,
+        //     newsletterIds: newsletterIds,
+        //     newsletterSlug: slug,
+        //     isABTest,
+        //   },
+        //   { signal },
+        // );
 
         for (const entry of entries) {
          slugResults.push({
