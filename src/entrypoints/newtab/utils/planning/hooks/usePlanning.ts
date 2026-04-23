@@ -6,6 +6,7 @@ import { aggregateCustomerCounts } from '../aggregateCustomerCounts';
 
 export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: number = 5) => {
   const [loading, setLoading] = useState(false);
+  const [aggregating, setAggregating] = useState(false)
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<PlanningResult[]>([]);
@@ -19,6 +20,7 @@ export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: numb
       abortControllerRef.current = null;
     }
       setLoading(false);
+      setAggregating(false);
     setError('Planning cancelled by user');
   }
 
@@ -30,6 +32,7 @@ export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: numb
     abortControllerRef.current = new AbortController();
 
     setLoading(true);
+        setAggregating(false);
     setError(null);
     setShowResults(false);
 
@@ -60,6 +63,7 @@ export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: numb
       return;
     }
 
+    setAggregating(true);
     try {
       const updatedResults = await aggregateCustomerCounts(allNewsletterIds, sendResults, groupedBySlug, abortControllerRef.current.signal);
 
@@ -75,6 +79,10 @@ export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: numb
       }
 
       setError('Failed to fetch customer counts: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    } 
+    finally {
+            setAggregating(false);
+
     }
 
     setLoading(false);
@@ -84,6 +92,7 @@ export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: numb
 
   return {
     loading,
+    aggregating,
     error,
     progress,
     results,

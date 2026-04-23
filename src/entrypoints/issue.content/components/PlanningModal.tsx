@@ -7,18 +7,9 @@ import { getShopIdsMap } from '@/entrypoints/newtab/utils/planning/getShopIdsMap
 import { useNewsletterTitle } from '@/entrypoints/newtab/utils/planning/hooks/useNewsletterTitle';
 import { PlanningModalProps, PlanningResult } from '@/entrypoints/newtab/types/Planning';
 import { usePlanning } from '@/entrypoints/newtab/utils/planning/hooks/usePlanning';
-import {
-  formatResultsForClipboard,
-  getSuccessfulCount,
-  getTotalCustomers,
-} from '@/entrypoints/newtab/utils/planning/resultHelpers';
-import { ProgressSection } from './planningmodal/ProgressSection';
-import { ResultsTable } from './planningmodal/ResultsTable';
+import { formatResultsForClipboard, getTotalCustomers } from '@/entrypoints/newtab/utils/planning/resultHelpers';
 import { ModalHeader } from './planningmodal/ModalHeader';
-import { ActionButtons } from './planningmodal/ActionButtons';
-import { NewsletterSelector } from './planningmodal/NewsletterSelector';
 import { isSlugReadyForPlanning } from '@/entrypoints/newtab/utils/planning/isSlugReadyForPlanning';
-import { SLUG_ID_MAP } from '../lib/planningConfig';
 import { Icon } from '@iconify/react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -33,7 +24,6 @@ const normalizeSlugForSlug = (slug: string): string => {
 const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
   const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
-  const [useAllSlugs, setUseAllSlugs] = useState(true);
   const [planningStarted, setPlanningStarted] = useState(false);
 
   const availableSlugs = useMemo(() => {
@@ -44,7 +34,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
   const filteredNewsletterIdMap = useMemo(() => {
     const fullMap = tableData && chdeId ? getShopIdsMap(tableData, parseInt(chdeId, 10)) : new Map();
 
-    if (useAllSlugs || selectedSlugs.size === 0) {
+    if (selectedSlugs.size === 0) {
       return fullMap;
     }
 
@@ -61,10 +51,20 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
       }
     }
     return filteredMap;
-  }, [tableData, chdeId, useAllSlugs, selectedSlugs]);
+  }, [tableData, chdeId, selectedSlugs]);
 
-  const { loading, error, progress, results, showResults, executePlanning, cancelPlanning, setShowResults, setError } =
-    usePlanning(filteredNewsletterIdMap);
+  const {
+    loading,
+    aggregating,
+    error,
+    progress,
+    results,
+    showResults,
+    executePlanning,
+    cancelPlanning,
+    setShowResults,
+    setError,
+  } = usePlanning(filteredNewsletterIdMap);
 
   const handleSendSelected = async () => {
     if (!chdeId) {
@@ -171,27 +171,77 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     return isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode);
   };
 
+  const allSlugsSelected = useMemo(() => {
+    const selectableSlugs = availableSlugs.filter(slug =>
+      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
+    );
+    return selectableSlugs.length > 0 && selectableSlugs.every(slug => selectedSlugs.has(slug));
+  }, [availableSlugs, selectedSlugs, tableData, isABTesting, mode]);
+
+  const hasSelectedSlugs = selectedSlugs.size > 0;
+
   const displayError = error || newsletterTitleError;
 
-  const getStatusIcon = (result?: PlanningResult) => {
-    if (!planningStarted || !result) return '⏳';
-    if (result.status === 'success') return '✅';
-    if (result.status === 'error') return '❌';
-    return '⏳';
-  };
-
-  const getCustomerCount = (result?: PlanningResult) => {
+  const getCustomerCount = (result?: PlanningResult, slug?: string) => {
     if (!planningStarted) return '-';
+    if (!selectedSlugs.has(slug || '')) return '-';
+    if (aggregating) return null;
     if (!result) return null;
-    if (result.status === 'success') return result.customers.toLocaleString();
+    if (!result.aggregated) return null;
     if (result.status === 'error') return '0';
-    return null;
+    return result.customers !== undefined ? result.customers.toLocaleString() : '-';
   };
 
-  const getSubjectLine = (result?: PlanningResult) => {
-    if (!planningStarted ) return '-';
+  const getSubjectLine = (result?: PlanningResult, slug?: string) => {
+    if (!planningStarted) return '-';
+    if (!selectedSlugs.has(slug || '')) return '-';
+    if (aggregating) return null;
     if (!result) return null;
+    if (!result.aggregated) return null;
     return result.subjectLine || '-';
+  };
+
+  const getStatusDisplay = (result?: PlanningResult, slug?: string, ready?: boolean) => {
+    if (!selectedSlugs.has(slug || '') && planningStarted) return null;
+
+    if (!ready)
+      return (
+        <span>
+          <Icon icon="material-symbols:error" width="14" height="14" /> Requires approval
+        </span>
+      );
+    if (planningStarted && aggregating)
+      return (
+        <span>
+          <Icon icon="material-symbols:info" width="14" height="14" /> Fetching customer data...
+        </span>
+      );
+    if (planningStarted && !result)
+      return (
+        <span>
+          <Icon icon="fa:hourglass-start" width="14" height="14" /> Pending...
+        </span>
+      );
+    if (result?.status === 'success')
+      return (
+        <span>
+          <Icon icon="fluent-mdl2:completed-solid" width="14" height="14" /> Ready
+        </span>
+      );
+    if (result?.status === 'error')
+      return (
+        <span style={{ color: '#f44336' }}>
+          <Icon icon="material-symbols:close-rounded" width="14" height="14" /> {result.error}
+        </span>
+      );
+    if (ready && !planningStarted)
+      return (
+        <span>
+          <Icon icon="material-symbols:local-fire-department" width="14" height="14" /> Ready to plan
+        </span>
+      );
+
+    return null;
   };
 
   return (
@@ -206,45 +256,98 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
           <div
             style={{ marginBottom: '20px', minWidth: '200px', display: 'flex', gap: '8px', flexDirection: 'column' }}
           >
-            <button
-              className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
-              onClick={handleSendAll}
-              disabled={loading || availableSlugs.length === 0}
-            >
-              <Icon icon="mdi:send" width="16" height="16" />
-              Send All
-            </button>
-            <button
-              className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
-              onClick={handleSendSelected}
-              disabled={loading || selectedSlugs.size === 0}
-            >
-              <Icon icon="mdi:send-check" width="16" height="16" />
-              Send Selected ({selectedSlugs.size})
-            </button>
-            <button
-              className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-              onClick={selectAll}
-              disabled={loading}
-            >
-              Select All Ready
-            </button>
-            <button
-              className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-              onClick={clearAll}
-              disabled={loading}
-            >
-              Clear All
-            </button>
-            <button
-              className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-              style={{ marginTop: '25px' }}
-              onClick={planningStarted ? handleCancel : handleClose}
-            >
-              Cancel
-            </button>
-          </div>
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
+              <button
+                className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
+                onClick={handleSendAll}
+                disabled={loading || availableSlugs.length === 0 || hasSelectedSlugs}
+              >
+                <Icon icon="mdi:send" width="16" height="16" />
+                Send All
+              </button>
+              <button
+                className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
+                onClick={handleSendSelected}
+                disabled={loading || selectedSlugs.size === 0 || allSlugsSelected}
+              >
+                <Icon icon="mdi:send-check" width="16" height="16" />
+                Send Selected ({selectedSlugs.size})
+              </button>
+              <button
+                className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
+                onClick={selectAll}
+                disabled={loading}
+              >
+                Select All Ready
+              </button>
+              <button
+                className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
+                onClick={clearAll}
+                disabled={loading}
+              >
+                Clear All
+              </button>
+              <button
+                className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
+                style={{ marginTop: '25px' }}
+                onClick={planningStarted ? handleCancel : handleClose}
+              >
+                Cancel
+              </button>
+            </div>
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
+              {loading && (
+                <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                  <div
+                    style={{
+                      width: `${(progress.current / progress.total) * 100}%`,
+                      height: '4px',
+                      background: '#4caf50',
+                      borderRadius: '2px',
+                      transition: 'width 0.3s',
+                    }}
+                  />
+                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                    {aggregating
+                      ? `Fetching customer data... (${progress.current} / ${progress.total})`
+                      : `Sending newsletters... (${progress.current} / ${progress.total})`}
+                  </div>
+                </div>
+              )}
 
+              {!loading && planningStarted && showResults && (
+                <div className={formStyles.modalButtons} style={{ marginTop: '16px' }}>
+                  <button className={clsx(formStyles.btn, formStyles['btn--primary'])} onClick={copyResultsToClipboard}>
+                    <Icon icon="mdi:content-copy" width="14" height="14" />
+                    Copy Results
+                  </button>
+                  <button
+                    className={clsx(formStyles.btn, formStyles['btn--ghost'])}
+                    onClick={() => {
+                      setPlanningStarted(false);
+                      setShowResults(false);
+                      onClose();
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+              {planningStarted && results.length > 0 && (
+                <div style={{ position: 'sticky', bottom: 0, background: '#f5f5f5', borderTop: '2px solid #ddd' }}>
+                  <tr>
+                    <td colSpan={2} style={{ padding: '12px', fontWeight: 'bold', textAlign: 'right' }}>
+                      Total:
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>
+                      {aggregating ? <Skeleton width={80} /> : totalCustomers.toLocaleString()}
+                    </td>
+                    <td colSpan={2}></td>
+                  </tr>
+                </div>
+              )}
+            </div>
+          </div>
           <div
             style={{
               flex: 1,
@@ -256,12 +359,12 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <tbody>
                 {availableSlugs.map(slug => {
-                  const result = results.find(r => r.slug === slug);
+                  const normalizedSlug = normalizeSlugForSlug(slug);
+                  const result = results.find(r => r.slug === slug) || results.find(r => r.slug === normalizedSlug);
                   const ready = isReady(slug);
                   const isSelected = selectedSlugs.has(slug);
-                  const customerCount = getCustomerCount(result);
-                  const subjectLine = getSubjectLine(result);
-                  const statusIcon = getStatusIcon(result);
+                  const customerCount = getCustomerCount(result, slug);
+                  const subjectLine = getSubjectLine(result, slug);
 
                   return (
                     <tr key={slug}>
@@ -300,75 +403,18 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
                       <td style={{ textAlign: 'center', padding: '4px', width: '100px' }}>
                         {customerCount === null ? <Skeleton width={60} /> : customerCount}
                       </td>
-                      <td style={{ textAlign: 'center', padding: '4px', fontSize: '18px', width: '50px' }}>
-                        {statusIcon}
-                      </td>
+
                       <td
                         style={{ padding: '4px', fontSize: '12px', color: '#666', width: '150px', textAlign: 'center' }}
                       >
-                        {!ready && <span>⚠️ Requires approval</span>}
-                        {ready && planningStarted && !result && <span>⏳ Pending...</span>}
-                        {ready && result?.status === 'success' && <span>✅ Ready</span>}
-                        {ready && result?.status === 'error' && (
-                          <span style={{ color: '#f44336' }}>❌ {result.error}</span>
-                        )}
-                        {ready && !planningStarted && <span>Ready to plan</span>}
+                        {getStatusDisplay(result, slug, ready)}
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
-              {planningStarted && results.length > 0 && (
-                <tfoot style={{ position: 'sticky', bottom: 0, background: '#f5f5f5', borderTop: '2px solid #ddd' }}>
-                  <tr>
-                    <td colSpan={2} style={{ padding: '12px', fontWeight: 'bold', textAlign: 'right' }}>
-                      Total:
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>
-                      {totalCustomers.toLocaleString()}
-                    </td>
-                    <td colSpan={2}></td>
-                  </tr>
-                </tfoot>
-              )}
             </table>
           </div>
-
-          {loading && (
-            <div style={{ marginTop: '16px', textAlign: 'center' }}>
-              <div
-                style={{
-                  width: `${(progress.current / progress.total) * 100}%`,
-                  height: '4px',
-                  background: '#4caf50',
-                  borderRadius: '2px',
-                  transition: 'width 0.3s',
-                }}
-              />
-              <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
-                Progress: {progress.current} / {progress.total} newsletters
-              </div>
-            </div>
-          )}
-
-          {!loading && planningStarted && showResults && (
-            <div className={formStyles.modalButtons} style={{ marginTop: '16px' }}>
-              <button className={clsx(formStyles.btn, formStyles['btn--primary'])} onClick={copyResultsToClipboard}>
-                <Icon icon="mdi:content-copy" width="14" height="14" />
-                Copy Results
-              </button>
-              <button
-                className={clsx(formStyles.btn, formStyles['btn--ghost'])}
-                onClick={() => {
-                  setPlanningStarted(false);
-                  setShowResults(false);
-                  onClose();
-                }}
-              >
-                Close
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

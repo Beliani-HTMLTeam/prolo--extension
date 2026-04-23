@@ -8,6 +8,7 @@ export interface PlanningResult {
   newsletterId: number;
   error?: string;
   subjectLine?: string;
+  aggregated?: boolean
 }
 
 export interface PlanningModalProps {

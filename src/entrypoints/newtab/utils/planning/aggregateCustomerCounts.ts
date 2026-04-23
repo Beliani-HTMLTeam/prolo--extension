@@ -76,5 +76,10 @@ export const aggregateCustomerCounts = async (
     }
   }
 
-  return deduplicatedResults;
+    const finalResults = deduplicatedResults.map(result => ({
+    ...result,
+    aggregated: true
+  }));
+
+  return finalResults;
 };

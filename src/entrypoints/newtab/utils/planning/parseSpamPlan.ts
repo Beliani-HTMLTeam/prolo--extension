@@ -19,7 +19,8 @@ export const parseSpamPlanHtml = (html: string, targetIds: Set<number>): Map<num
     const customerLink = row.querySelector('a[href*="news_email_log.php"]');
     const customerCount = parseInt(customerLink?.textContent?.trim() || '0', 10);
 
-    const subjectLink = row.querySelector('a[href*="news_email.php?id="]:nth-child(2)');
+     const newsLinks = row.querySelectorAll('a[href*="news_email.php?id="]');
+    const subjectLink = newsLinks.length > 1 ? newsLinks[1] : newsLinks[0];
     const subjectLine = subjectLink?.textContent?.trim() || '';
 
     const currentTotal = resultMap.get(newsletterId)?.customerCount || 0;
