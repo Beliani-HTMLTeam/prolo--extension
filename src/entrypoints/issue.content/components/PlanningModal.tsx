@@ -5,21 +5,18 @@ import planningStyles from '../styles/planning.module.scss';
 
 import { getShopIdsMap } from '@/entrypoints/newtab/utils/planning/getShopIdsMap';
 import { useNewsletterTitle } from '@/entrypoints/newtab/utils/planning/hooks/useNewsletterTitle';
-import { PlanningModalProps, PlanningResult } from '@/entrypoints/newtab/types/Planning';
+import { PlanningModalProps } from '@/entrypoints/newtab/types/Planning';
 import { usePlanning } from '@/entrypoints/newtab/utils/planning/hooks/usePlanning';
-import { formatResultsForClipboard, getTotalCustomers } from '@/entrypoints/newtab/utils/planning/resultHelpers';
+import { formatResultsForClipboard, getCustomerCount, getStatusDisplay, getSubjectLine, getTotalCustomers } from '@/entrypoints/newtab/utils/planning/resultHelpers';
 import { ModalHeader } from './planningmodal/ModalHeader';
 import { isSlugReadyForPlanning } from '@/entrypoints/newtab/utils/planning/isSlugReadyForPlanning';
 import { Icon } from '@iconify/react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { normalizeSlugForSlug } from '@/entrypoints/newtab/utils/planning/slugNormalization';
+import { PlanningTable } from './planningmodal/PlanningTable';
+import { PlanningButtons } from './planningmodal/PlanningButtons';
 
-const normalizeSlugForSlug = (slug: string): string => {
-  const NORMALIZATION: Record<string, string> = {
-    ES: 'SP',
-  };
-  return NORMALIZATION[slug] || slug;
-};
 
 const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
@@ -150,15 +147,11 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
   const modalTitle = useMemo(() => {
     if (showResults) return 'Planning Results';
     if (newsletterTitleLoading) return 'Loading...';
-    return newsletterTitle ? newsletterTitle.split('SL')[0].trim() : 'Start Planning';
-  }, [showResults, newsletterTitleLoading, newsletterTitle]);
+    return newsletterTitle ? newsletterTitle.split('SL')[0].trim() + " - CHDE ID: " + chdeId : 'Start Planning';
+  }, [showResults, newsletterTitleLoading, newsletterTitle, chdeId]);
 
   const clearAll = () => {
     setSelectedSlugs(new Set());
-  };
-
-  const handleCancel = () => {
-    cancelPlanning();
   };
 
   const copyResultsToClipboard = () => {
@@ -171,78 +164,10 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     return isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode);
   };
 
-  const allSlugsSelected = useMemo(() => {
-    const selectableSlugs = availableSlugs.filter(slug =>
-      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
-    );
-    return selectableSlugs.length > 0 && selectableSlugs.every(slug => selectedSlugs.has(slug));
-  }, [availableSlugs, selectedSlugs, tableData, isABTesting, mode]);
-
-  const hasSelectedSlugs = selectedSlugs.size > 0;
-
   const displayError = error || newsletterTitleError;
 
-  const getCustomerCount = (result?: PlanningResult, slug?: string) => {
-    if (!planningStarted) return '-';
-    if (!selectedSlugs.has(slug || '')) return '-';
-    if (aggregating) return null;
-    if (!result) return null;
-    if (!result.aggregated) return null;
-    if (result.status === 'error') return '0';
-    return result.customers !== undefined ? result.customers.toLocaleString() : '-';
-  };
 
-  const getSubjectLine = (result?: PlanningResult, slug?: string) => {
-    if (!planningStarted) return '-';
-    if (!selectedSlugs.has(slug || '')) return '-';
-    if (aggregating) return null;
-    if (!result) return null;
-    if (!result.aggregated) return null;
-    return result.subjectLine || '-';
-  };
-
-  const getStatusDisplay = (result?: PlanningResult, slug?: string, ready?: boolean) => {
-    if (!selectedSlugs.has(slug || '') && planningStarted) return null;
-
-    if (!ready)
-      return (
-        <span>
-          <Icon icon="material-symbols:error" width="14" height="14" /> Requires approval
-        </span>
-      );
-    if (planningStarted && aggregating)
-      return (
-        <span>
-          <Icon icon="material-symbols:info" width="14" height="14" /> Fetching customer data...
-        </span>
-      );
-    if (planningStarted && !result)
-      return (
-        <span>
-          <Icon icon="fa:hourglass-start" width="14" height="14" /> Pending...
-        </span>
-      );
-    if (result?.status === 'success')
-      return (
-        <span>
-          <Icon icon="fluent-mdl2:completed-solid" width="14" height="14" /> Ready
-        </span>
-      );
-    if (result?.status === 'error')
-      return (
-        <span style={{ color: '#f44336' }}>
-          <Icon icon="material-symbols:close-rounded" width="14" height="14" /> {result.error}
-        </span>
-      );
-    if (ready && !planningStarted)
-      return (
-        <span>
-          <Icon icon="material-symbols:local-fire-department" width="14" height="14" /> Ready to plan
-        </span>
-      );
-
-    return null;
-  };
+ 
 
   return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={handleClose}>
@@ -256,45 +181,17 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
           <div
             style={{ marginBottom: '20px', minWidth: '200px', display: 'flex', gap: '8px', flexDirection: 'column' }}
           >
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
-              <button
-                className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
-                onClick={handleSendAll}
-                disabled={loading || availableSlugs.length === 0 || hasSelectedSlugs}
-              >
-                <Icon icon="mdi:send" width="16" height="16" />
-                Send All
-              </button>
-              <button
-                className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
-                onClick={handleSendSelected}
-                disabled={loading || selectedSlugs.size === 0 || allSlugsSelected}
-              >
-                <Icon icon="mdi:send-check" width="16" height="16" />
-                Send Selected ({selectedSlugs.size})
-              </button>
-              <button
-                className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-                onClick={selectAll}
-                disabled={loading}
-              >
-                Select All Ready
-              </button>
-              <button
-                className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-                onClick={clearAll}
-                disabled={loading}
-              >
-                Clear All
-              </button>
-              <button
-                className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-                style={{ marginTop: '25px' }}
-                onClick={planningStarted ? handleCancel : handleClose}
-              >
-                Cancel
-              </button>
-            </div>
+           <PlanningButtons
+             loading={loading}
+             planningStarted={planningStarted}
+             availableSlugsCount={availableSlugs.length}
+             selectedCount={selectedSlugs.size}
+             onSendAll={handleSendAll}
+             onSendSelected={handleSendSelected}
+             onSelectAll={selectAll}
+             onClearAll={clearAll}
+             onCancel={planningStarted ? () => cancelPlanning() : handleClose}
+           />
             <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
               {loading && (
                 <div style={{ marginTop: '16px', textAlign: 'center' }}>
@@ -348,73 +245,16 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
               )}
             </div>
           </div>
-          <div
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              border: '1px solid #e0e0e0',
-              borderRadius: '4px',
-            }}
-          >
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <tbody>
-                {availableSlugs.map(slug => {
-                  const normalizedSlug = normalizeSlugForSlug(slug);
-                  const result = results.find(r => r.slug === slug) || results.find(r => r.slug === normalizedSlug);
-                  const ready = isReady(slug);
-                  const isSelected = selectedSlugs.has(slug);
-                  const customerCount = getCustomerCount(result, slug);
-                  const subjectLine = getSubjectLine(result, slug);
-
-                  return (
-                    <tr key={slug}>
-                      <td style={{ textAlign: 'center', padding: '4px', width: '50px' }}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleSlug(slug)}
-                          disabled={loading || !ready}
-                        />
-                      </td>
-                      <td style={{ padding: '4px', fontWeight: 500, width: '100px' }}>
-                        {slug}
-                        {!ready && (
-                          <Icon
-                            icon="mdi:alert-circle"
-                            width="14"
-                            height="14"
-                            style={{ color: '#ff9800', marginLeft: '8px' }}
-                          />
-                        )}
-                      </td>
-                      <td
-                        style={{
-                          padding: '8px',
-                          fontSize: '12px',
-                          maxWidth: '100%',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {subjectLine === null ? <Skeleton width={200} /> : subjectLine}
-                      </td>
-                      <td style={{ textAlign: 'center', padding: '4px', width: '100px' }}>
-                        {customerCount === null ? <Skeleton width={60} /> : customerCount}
-                      </td>
-
-                      <td
-                        style={{ padding: '4px', fontSize: '12px', color: '#666', width: '150px', textAlign: 'center' }}
-                      >
-                        {getStatusDisplay(result, slug, ready)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+         <PlanningTable
+           availableSlugs={availableSlugs}
+           selectedSlugs={selectedSlugs}
+           results={results}
+           loading={loading}
+           planningStarted={planningStarted}
+           aggregating={aggregating}
+           isReady={isReady}
+           onToggleSlug={toggleSlug}
+         />
         </div>
       </div>
     </div>

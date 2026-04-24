@@ -43,3 +43,26 @@ export type SpamPlanEntry = {
   subjectLine: string;
   newsletterId: number
 }
+
+export type PlanningTableProps = {
+  availableSlugs: string[];
+  selectedSlugs: Set<string>;
+  results: PlanningResult[];
+  loading: boolean;
+  planningStarted: boolean;
+  aggregating: boolean;
+  isReady: (slug: string) => boolean;
+  onToggleSlug: (slug: string) => void;
+};
+
+export type PlanningButtonsProps = {
+  loading: boolean;
+  planningStarted: boolean;
+  availableSlugsCount: number;
+  selectedCount: number;
+  onSendAll: () => void;
+  onSendSelected: () => void;
+  onSelectAll: () => void;
+  onClearAll: () => void;
+  onCancel: () => void;
+};
