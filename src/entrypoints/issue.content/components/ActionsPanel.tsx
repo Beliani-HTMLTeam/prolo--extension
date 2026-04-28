@@ -162,7 +162,7 @@ const ActionsPanel = ({
         <div className={styles.actionsGrid}>
           <ActionButton
             variant="primary"
-            label="Generate IDs"
+            label="Generate Checklists"
             icon="mdi:auto-fix"
             onClick={() => setShowGenerateModal(true)}
           />
