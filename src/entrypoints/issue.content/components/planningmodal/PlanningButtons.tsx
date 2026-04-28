@@ -9,17 +9,18 @@ export const PlanningButtons = ({
   planningStarted,
   availableSlugsCount,
   selectedCount,
+  hasManualSelection,
   onSendAll,
   onSendSelected,
   onSelectAll,
   onClearAll,
   onCancel,
 }: PlanningButtonsProps) => (
-  <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
+  <div className={planningStyles.actionButtonsWrapper}>
     <button
       className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
       onClick={onSendAll}
-      disabled={loading || availableSlugsCount === 0 || planningStarted}
+      disabled={loading || availableSlugsCount === 0 || planningStarted || hasManualSelection}
     >
       <Icon icon="mdi:send" width="16" height="16" />
       Send All

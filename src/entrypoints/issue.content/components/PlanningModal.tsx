@@ -2,27 +2,24 @@ import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import planningStyles from '../styles/planning.module.scss';
-
 import { getShopIdsMap } from '@/entrypoints/newtab/utils/planning/getShopIdsMap';
 import { useNewsletterTitle } from '@/entrypoints/newtab/utils/planning/hooks/useNewsletterTitle';
 import { PlanningModalProps } from '@/entrypoints/newtab/types/Planning';
 import { usePlanning } from '@/entrypoints/newtab/utils/planning/hooks/usePlanning';
-import { formatResultsForClipboard, getCustomerCount, getStatusDisplay, getSubjectLine, getTotalCustomers } from '@/entrypoints/newtab/utils/planning/resultHelpers';
+import { formatResultsForClipboard, getTotalCustomers } from '@/entrypoints/newtab/utils/planning/resultHelpers';
 import { ModalHeader } from './planningmodal/ModalHeader';
 import { isSlugReadyForPlanning } from '@/entrypoints/newtab/utils/planning/isSlugReadyForPlanning';
-import { Icon } from '@iconify/react';
-import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { normalizeSlugForSlug } from '@/entrypoints/newtab/utils/planning/slugNormalization';
 import { PlanningTable } from './planningmodal/PlanningTable';
 import { PlanningButtons } from './planningmodal/PlanningButtons';
-
+import { PlanningProgress } from './planningmodal/PlanningProgress';
+import { PlanningResultsActions } from './planningmodal/PlanningResultsActions';
 
 const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
   const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
   const [planningStarted, setPlanningStarted] = useState(false);
-
   const availableSlugs = useMemo(() => {
     if (!tableData?.rows) return [];
     return tableData.rows.map(r => r.shop).filter(Boolean);
@@ -58,6 +55,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     results,
     showResults,
     executePlanning,
+    resendNewsletter,
     cancelPlanning,
     setShowResults,
     setError,
@@ -125,6 +123,13 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     onClose();
   };
 
+  const handleResend = async (slug: string, type: 'A' | 'B') => {
+    const failedEntry = results.find(r => r.slug === slug && r.type === type);
+    if (!failedEntry) return;
+
+    await resendNewsletter(slug, type);
+  };
+
   const selectAll = () => {
     const selectableSlugs = availableSlugs.filter(slug =>
       isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
@@ -147,7 +152,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
   const modalTitle = useMemo(() => {
     if (showResults) return 'Planning Results';
     if (newsletterTitleLoading) return 'Loading...';
-    return newsletterTitle ? newsletterTitle.split('SL')[0].trim() + " - CHDE ID: " + chdeId : 'Start Planning';
+    return newsletterTitle ? newsletterTitle.split('SL')[0].trim() + ' - CHDE ID: ' + chdeId : 'Start Planning';
   }, [showResults, newsletterTitleLoading, newsletterTitle, chdeId]);
 
   const clearAll = () => {
@@ -164,97 +169,73 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     return isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode);
   };
 
+  const hasManualSelection = useMemo(() => {
+    if (selectedSlugs.size === 0) return false;
+
+    const selectableSlugs = availableSlugs.filter(slug =>
+      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
+    );
+
+    const allSelectableSelected = selectableSlugs.length > 0 && selectableSlugs.every(slug => selectedSlugs.has(slug));
+
+    if (allSelectableSelected) return false;
+
+    return selectedSlugs.size > 0;
+  }, [selectedSlugs, availableSlugs, tableData, isABTesting, mode]);
+
   const displayError = error || newsletterTitleError;
-
-
- 
 
   return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={handleClose}>
       <div className={clsx(planningStyles.modal)} onClick={e => e.stopPropagation()}>
         <ModalHeader title={modalTitle} onClose={handleClose} />
 
-        <div className={planningStyles.modalContent}>
-          {displayError && <div className={clsx(formStyles.error, formStyles.formError)}>{displayError}</div>}
-
-          {/* Action Buttons Row */}
-          <div
-            style={{ marginBottom: '20px', minWidth: '200px', display: 'flex', gap: '8px', flexDirection: 'column' }}
-          >
-           <PlanningButtons
-             loading={loading}
-             planningStarted={planningStarted}
-             availableSlugsCount={availableSlugs.length}
-             selectedCount={selectedSlugs.size}
-             onSendAll={handleSendAll}
-             onSendSelected={handleSendSelected}
-             onSelectAll={selectAll}
-             onClearAll={clearAll}
-             onCancel={planningStarted ? () => cancelPlanning() : handleClose}
-           />
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
-              {loading && (
-                <div style={{ marginTop: '16px', textAlign: 'center' }}>
-                  <div
-                    style={{
-                      width: `${(progress.current / progress.total) * 100}%`,
-                      height: '4px',
-                      background: '#4caf50',
-                      borderRadius: '2px',
-                      transition: 'width 0.3s',
-                    }}
-                  />
-                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
-                    {aggregating
-                      ? `Fetching customer data... (${progress.current} / ${progress.total})`
-                      : `Sending newsletters... (${progress.current} / ${progress.total})`}
-                  </div>
-                </div>
-              )}
-
-              {!loading && planningStarted && showResults && (
-                <div className={formStyles.modalButtons} style={{ marginTop: '16px' }}>
-                  <button className={clsx(formStyles.btn, formStyles['btn--primary'])} onClick={copyResultsToClipboard}>
-                    <Icon icon="mdi:content-copy" width="14" height="14" />
-                    Copy Results
-                  </button>
-                  <button
-                    className={clsx(formStyles.btn, formStyles['btn--ghost'])}
-                    onClick={() => {
-                      setPlanningStarted(false);
-                      setShowResults(false);
-                      onClose();
-                    }}
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
-              {planningStarted && results.length > 0 && (
-                <div style={{ position: 'sticky', bottom: 0, background: '#f5f5f5', borderTop: '2px solid #ddd' }}>
-                  <tr>
-                    <td colSpan={2} style={{ padding: '12px', fontWeight: 'bold', textAlign: 'right' }}>
-                      Total:
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>
-                      {aggregating ? <Skeleton width={80} /> : totalCustomers.toLocaleString()}
-                    </td>
-                    <td colSpan={2}></td>
-                  </tr>
-                </div>
-              )}
-            </div>
+        {displayError && (
+          <div style={{ margin: '20px' }} className={clsx(formStyles.error, formStyles.formError)}>
+            {displayError}
           </div>
-         <PlanningTable
-           availableSlugs={availableSlugs}
-           selectedSlugs={selectedSlugs}
-           results={results}
-           loading={loading}
-           planningStarted={planningStarted}
-           aggregating={aggregating}
-           isReady={isReady}
-           onToggleSlug={toggleSlug}
-         />
+        )}
+
+        <div className={planningStyles.modalContent}>
+          <div className={planningStyles.actionButtonsWrapper}>
+            <PlanningButtons
+              loading={loading}
+              planningStarted={planningStarted}
+              availableSlugsCount={availableSlugs.length}
+              selectedCount={selectedSlugs.size}
+              hasManualSelection={hasManualSelection}
+              onSendAll={handleSendAll}
+              onSendSelected={handleSendSelected}
+              onSelectAll={selectAll}
+              onClearAll={clearAll}
+              onCancel={planningStarted ? () => cancelPlanning() : handleClose}
+            />
+            <PlanningProgress loading={loading} aggregating={aggregating} progress={progress} />
+            <PlanningResultsActions
+              loading={loading}
+              planningStarted={planningStarted}
+              showResults={showResults}
+              totalCustomers={totalCustomers}
+              aggregating={aggregating}
+              onCopyResults={copyResultsToClipboard}
+              onClose={() => {
+                setPlanningStarted(false);
+                setShowResults(false);
+                onClose();
+              }}
+            />
+          </div>
+          <PlanningTable
+            availableSlugs={availableSlugs}
+            selectedSlugs={selectedSlugs}
+            results={results}
+            loading={loading}
+            planningStarted={planningStarted}
+            aggregating={aggregating}
+            isReady={isReady}
+            onToggleSlug={toggleSlug}
+            onResend={handleResend}
+          />
         </div>
       </div>
     </div>

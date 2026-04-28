@@ -8,7 +8,8 @@ export interface PlanningResult {
   newsletterId: number;
   error?: string;
   subjectLine?: string;
-  aggregated?: boolean
+  aggregated?: boolean;
+  failed?: boolean;
 }
 
 export interface PlanningModalProps {
@@ -41,8 +42,8 @@ export interface SendToSpamParams {
 export type SpamPlanEntry = {
   customerCount: number;
   subjectLine: string;
-  newsletterId: number
-}
+  newsletterId: number;
+};
 
 export type PlanningTableProps = {
   availableSlugs: string[];
@@ -53,6 +54,7 @@ export type PlanningTableProps = {
   aggregating: boolean;
   isReady: (slug: string) => boolean;
   onToggleSlug: (slug: string) => void;
+  onResend: (slug: string, type: 'A' | 'B') => void;
 };
 
 export type PlanningButtonsProps = {
@@ -60,9 +62,37 @@ export type PlanningButtonsProps = {
   planningStarted: boolean;
   availableSlugsCount: number;
   selectedCount: number;
+   hasManualSelection: boolean; 
   onSendAll: () => void;
   onSendSelected: () => void;
   onSelectAll: () => void;
   onClearAll: () => void;
   onCancel: () => void;
+};
+
+export type PlanningResultsActionsProps = {
+  loading: boolean;
+  planningStarted: boolean;
+  showResults: boolean;
+  totalCustomers: number;
+  aggregating: boolean;
+  onCopyResults: () => void;
+  onClose: () => void;
+};
+
+export type PlanningProgressProps = {
+  loading: boolean;
+  aggregating: boolean;
+  progress: { current: number; total: number; shopsCompleted: number; totalShops: number };
+};
+
+export type StatusDisplayProps = {
+  result: PlanningResult | undefined;
+  planningStarted: boolean;
+  slug: string;
+  ready: boolean;
+  loading: boolean;
+  aggregating: boolean;
+  selectedSlugs: Set<string>;
+  onResend: (slug: string, type: 'A' | 'B') => void;
 };

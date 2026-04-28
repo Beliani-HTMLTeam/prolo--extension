@@ -5,16 +5,21 @@ import { NEWSLETTER_SHOP_ORDER } from '@/entrypoints/issue.content/lib/shopConfi
 
 export const sendNewslettersToSpam = async (
   groupedBySlug: Map<string, PlanningEntry[]>,
-  onProgress: (processedCount: number, results: PlanningResult[]) => void,
+  onProgress: (processedCount: number, results: PlanningResult[], shopsCompleted: number) => void,
   signal?: AbortSignal,
   concurrency: number = 5,
 ): Promise<{ allNewsletterIds: number[]; results: PlanningResult[] }> => {
   const allNewsletterIds: number[] = [];
-  const results: PlanningResult[] = [];
-
-  let completedCount = 0;
-
   const resultsBySlug = new Map<string, PlanningResult[]>();
+
+   let newslettersCompleted = 0;
+  let shopsCompleted = 0;
+
+   const shopStatus = new Map<string, { total: number; completed: number }>();
+  
+  for (const [slug, entries] of groupedBySlug.entries()) {
+    shopStatus.set(slug, { total: entries.length, completed: 0 });
+  }
 
   const limit = pLimit(concurrency);
 
@@ -51,6 +56,7 @@ export const sendNewslettersToSpam = async (
             ...entry,
             customers: 0,
             status: 'success',
+            failed: false,
          })
         }
         console.log(`✅ ${slug}: sent successfully`);
@@ -64,6 +70,7 @@ export const sendNewslettersToSpam = async (
             ...entry,
             customers: 0,
             status: 'error',
+            failed: true,
             error: err instanceof Error ? err.message : 'Unknown error',
           })
         }
@@ -71,9 +78,19 @@ export const sendNewslettersToSpam = async (
 
       resultsBySlug.set(slug, slugResults);
 
+      newslettersCompleted += entries.length;
+
+      const status = shopStatus.get(slug)
+      if (status) {
+        status.completed++;
+
+        if (status.completed === status.total) {
+          shopsCompleted++;
+        }
+      }
+
       const allCurrentResults = Array.from(resultsBySlug.values()).flat();
-      completedCount++;
-      onProgress(completedCount, allCurrentResults);
+      onProgress(newslettersCompleted, allCurrentResults, shopsCompleted);
     });
   });
 
