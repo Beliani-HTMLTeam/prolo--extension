@@ -15,7 +15,7 @@ export const PlanningTable = ({
   aggregating,
   isReady,
   onToggleSlug,
-  onResend
+  onResend,
 }: PlanningTableProps) => (
   <div
     className={planningStyles.planningTableWrapper}

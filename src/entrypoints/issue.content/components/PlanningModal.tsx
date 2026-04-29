@@ -210,7 +210,9 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
               onClearAll={clearAll}
               onCancel={planningStarted ? () => cancelPlanning() : handleClose}
             />
+
             <PlanningProgress loading={loading} aggregating={aggregating} progress={progress} />
+
             <PlanningResultsActions
               loading={loading}
               planningStarted={planningStarted}
@@ -225,6 +227,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
               }}
             />
           </div>
+          
           <PlanningTable
             availableSlugs={availableSlugs}
             selectedSlugs={selectedSlugs}

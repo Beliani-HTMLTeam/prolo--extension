@@ -5,18 +5,17 @@ export const aggregateCustomerCounts = async (
   allNewsletterIds: number[],
   results: PlanningResult[],
   groupedBySlug: Map<string, PlanningEntry[]>,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<PlanningResult[]> => {
-    if (signal?.aborted) {
+  if (signal?.aborted) {
     throw new DOMException('Cancelled', 'AbortError');
   }
 
   await new Promise(resolve => setTimeout(resolve, 3000));
 
-   if (signal?.aborted) {
+  if (signal?.aborted) {
     throw new DOMException('Cancelled', 'AbortError');
   }
-
 
   console.log('Fetching spam plan for newsletter IDs:', allNewsletterIds);
 
@@ -27,11 +26,13 @@ export const aggregateCustomerCounts = async (
   let updatedResults = results.map(result => {
     const entry = spamPlanMap.get(result.newsletterId);
     if (entry) {
-      console.log(`Found data for newsletter ${result.newsletterId} (${result.slug}): ${entry.customerCount} customers - "${entry.subjectLine}"`);
-      return { 
-        ...result, 
+      console.log(
+        `Found data for newsletter ${result.newsletterId} (${result.slug}): ${entry.customerCount} customers - "${entry.subjectLine}"`,
+      );
+      return {
+        ...result,
         customers: entry.customerCount,
-        subjectLine: entry.subjectLine 
+        subjectLine: entry.subjectLine,
       };
     } else {
       console.warn(`No spam plan data found for newsletter ${result.newsletterId} (${result.slug})`);
@@ -76,9 +77,9 @@ export const aggregateCustomerCounts = async (
     }
   }
 
-    const finalResults = deduplicatedResults.map(result => ({
+  const finalResults = deduplicatedResults.map(result => ({
     ...result,
-    aggregated: true
+    aggregated: true,
   }));
 
   return finalResults;

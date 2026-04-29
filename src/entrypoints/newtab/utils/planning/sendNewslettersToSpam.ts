@@ -12,11 +12,11 @@ export const sendNewslettersToSpam = async (
   const allNewsletterIds: number[] = [];
   const resultsBySlug = new Map<string, PlanningResult[]>();
 
-   let newslettersCompleted = 0;
+  let newslettersCompleted = 0;
   let shopsCompleted = 0;
 
-   const shopStatus = new Map<string, { total: number; completed: number }>();
-  
+  const shopStatus = new Map<string, { total: number; completed: number }>();
+
   for (const [slug, entries] of groupedBySlug.entries()) {
     shopStatus.set(slug, { total: entries.length, completed: 0 });
   }
@@ -37,7 +37,7 @@ export const sendNewslettersToSpam = async (
       const shopId = entries[0].shopId;
       const username = entries[0].username;
 
-      const slugResults: PlanningResult[] = []
+      const slugResults: PlanningResult[] = [];
 
       try {
         await sendToSpam(
@@ -52,12 +52,12 @@ export const sendNewslettersToSpam = async (
         );
 
         for (const entry of entries) {
-         slugResults.push({
+          slugResults.push({
             ...entry,
             customers: 0,
             status: 'success',
             failed: false,
-         })
+          });
         }
         console.log(`✅ ${slug}: sent successfully`);
       } catch (err) {
@@ -72,7 +72,7 @@ export const sendNewslettersToSpam = async (
             status: 'error',
             failed: true,
             error: err instanceof Error ? err.message : 'Unknown error',
-          })
+          });
         }
       }
 
@@ -80,7 +80,7 @@ export const sendNewslettersToSpam = async (
 
       newslettersCompleted += entries.length;
 
-      const status = shopStatus.get(slug)
+      const status = shopStatus.get(slug);
       if (status) {
         status.completed++;
 
@@ -109,7 +109,7 @@ export const sendNewslettersToSpam = async (
     if (!NEWSLETTER_SHOP_ORDER.includes(slug as any)) {
       orderedResults.push(...slugResults);
     }
-    }
+  }
 
   return { allNewsletterIds, results: orderedResults };
 };

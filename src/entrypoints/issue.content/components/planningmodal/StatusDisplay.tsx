@@ -14,7 +14,7 @@ export const StatusDisplay = ({
   selectedSlugs,
   onResend,
 }: StatusDisplayProps) => {
-   if (!selectedSlugs.has(slug) && planningStarted) return null;
+  if (!selectedSlugs.has(slug) && planningStarted) return null;
 
   if (!ready) {
     return (
@@ -58,6 +58,7 @@ export const StatusDisplay = ({
         <span style={{ color: '#f44336' }}>
           <Icon icon="material-symbols:close-rounded" width="14" height="14" /> {result.error}
         </span>
+
         <button
           className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
           onClick={() => onResend(slug, result.type)}
@@ -68,7 +69,7 @@ export const StatusDisplay = ({
       </div>
     );
   }
-  
+
   if (ready && !planningStarted) {
     return (
       <span>
@@ -78,4 +79,4 @@ export const StatusDisplay = ({
   }
 
   return null;
-}
+};

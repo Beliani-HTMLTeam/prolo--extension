@@ -5,10 +5,9 @@ import { parseSpamPlanHtml } from '@/entrypoints/newtab/utils/planning/parseSpam
 
 export const NUMBER_OF_NEWSLETTERS = Object.keys(NEWSLETTER_SLUGS).length;
 
-export async function sendToSpam(params: SendToSpamParams, options?: {signal?: AbortSignal}): Promise<Response> {
+export async function sendToSpam(params: SendToSpamParams, options?: { signal?: AbortSignal }): Promise<Response> {
   console.log('planning: ', params);
-    const { signal } = options || {};
-
+  const { signal } = options || {};
 
   const formData = new SpamFormBuilder(params).build();
 
@@ -25,7 +24,10 @@ export async function sendToSpam(params: SendToSpamParams, options?: {signal?: A
   return response;
 }
 
-export async function fetchCustomerCountsForNewsletters(targetNewsletterIds: number[], options?: {signal?: AbortSignal}): Promise<Map<number, SpamPlanEntry>> {
+export async function fetchCustomerCountsForNewsletters(
+  targetNewsletterIds: number[],
+  options?: { signal?: AbortSignal },
+): Promise<Map<number, SpamPlanEntry>> {
   const { signal } = options || {};
 
   const response = await fetch('https://www.prologistics.info/spam_plan.php', { signal });

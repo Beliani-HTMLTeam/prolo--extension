@@ -1,6 +1,5 @@
 const ISSUE_URL = 'https://www.prologistics.info/api/issueLog/list/?page_id=';
 
-
 export const useNewsletterTitle = (issueId: number) => {
   const [newsletterTitle, setNewsletterTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -16,19 +15,18 @@ export const useNewsletterTitle = (issueId: number) => {
         setNewsletterTitle(title || null);
         setError(null);
       } catch (err) {
-         console.error('Failed to fetch newsletter title:', err);
+        console.error('Failed to fetch newsletter title:', err);
         setError('Failed to fetch newsletter title.');
         setNewsletterTitle(null);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     if (issueId) {
       fetchTitle();
     }
-  }, [issueId]
-  )
+  }, [issueId]);
 
-  return { newsletterTitle, loading, error }; 
-}
+  return { newsletterTitle, loading, error };
+};

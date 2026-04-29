@@ -62,7 +62,7 @@ export type PlanningButtonsProps = {
   planningStarted: boolean;
   availableSlugsCount: number;
   selectedCount: number;
-   hasManualSelection: boolean; 
+  hasManualSelection: boolean;
   onSendAll: () => void;
   onSendSelected: () => void;
   onSelectAll: () => void;

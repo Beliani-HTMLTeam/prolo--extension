@@ -1,8 +1,4 @@
-import { Icon } from '@iconify/react';
 import { PlanningResult } from '../../types/Planning';
-import clsx from 'clsx';
-import planningStyles from '../../components/styles/planning.module.scss';
-import formStyles from '../../components/styles/forms.module.scss';
 
 export const getTotalCustomers = (results: PlanningResult[]): number => {
   const shopTotals = new Map<string, number>();
@@ -62,5 +58,3 @@ export const getSubjectLine = (
   if (!result.aggregated) return null;
   return result.subjectLine || '-';
 };
-
-
