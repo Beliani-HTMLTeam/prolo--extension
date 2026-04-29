@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
+import { toast } from 'sonner';
 import formStyles from '../styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import { generateChecklist } from '../api/checklistGeneration';
@@ -17,26 +18,25 @@ const GenerateChecklistModal = ({ issueId, mode, onClose, onSuccess }: GenerateC
   const [startIdNewsletter, setStartIdNewsletter] = useState('');
   const [startIdLp, setStartIdLp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const hasLpGeneration = mode !== 'sunday';
 
   const handleGenerate = async (mode: 'newsletter' | 'lp') => {
     const startId = mode === 'newsletter' ? startIdNewsletter : startIdLp;
 
     if (!startId.trim()) {
-      setError(`Please enter Start ID for ${mode}`);
+      toast.error(`Please enter Start ID for ${mode}`);
       return;
     }
 
     setLoading(true);
-    setError(null);
 
     try {
       await generateChecklist(issueId, { startId, mode });
+      toast.success(`Successfully generated ${mode} checklist`);
       onSuccess?.();
       onClose();
     } catch (err) {
-      setError(`Failed to generate ${mode} checklist: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      toast.error(`Failed to generate ${mode} checklist: ${err instanceof Error ? err.message : 'Unknown error'}`);
       console.error('Generate checklist error:', err);
     } finally {
       setLoading(false);
@@ -54,8 +54,6 @@ const GenerateChecklistModal = ({ issueId, mode, onClose, onSuccess }: GenerateC
         </div>
 
         <div className={formStyles.modalContent}>
-          {error && <div className={clsx(formStyles.error, formStyles.formError)}>{error}</div>}
-
           <div className={formStyles.formGroup}>
             <label htmlFor="startNewsletterInput">Start ID Newsletter</label>
             <input

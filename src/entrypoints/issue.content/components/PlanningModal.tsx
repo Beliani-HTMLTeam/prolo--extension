@@ -1,3 +1,5 @@
+import { useMemo, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
@@ -63,12 +65,12 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
 
   const handleSendSelected = async () => {
     if (!chdeId) {
-      setError('CHDE ID not found in table data.');
+      toast.error('CHDE ID not found in table data.');
       return;
     }
 
     if (selectedSlugs.size === 0) {
-      setError('Please select at least one newsletter to plan.');
+      toast.error('Please select at least one newsletter to plan.');
       return;
     }
 
@@ -77,7 +79,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     );
 
     if (invalidSlugs.length > 0) {
-      setError(
+      toast.error(
         `Cannot plan ${invalidSlugs.join(', ')} ${invalidSlugs.length === 1 ? 'requires' : 'require'} approval (LP or NSLT).`,
       );
       return;
@@ -90,7 +92,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
 
   const handleSendAll = async () => {
     if (!chdeId) {
-      setError('CHDE ID not found in table data.');
+      toast.error('CHDE ID not found in table data.');
       return;
     }
 
@@ -100,7 +102,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     );
 
     if (!allReady) {
-      setError(
+      toast.error(
         'Cannot plan all newsletters. Some require approval (LP or NSLT). Please select specific newsletters instead.',
       );
       return;
@@ -185,16 +187,16 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
 
   const displayError = error || newsletterTitleError;
 
+  useEffect(() => {
+    if (displayError) {
+      toast.error(displayError);
+    }
+  }, [displayError]);
+
   return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={handleClose}>
       <div className={clsx(planningStyles.modal)} onClick={e => e.stopPropagation()}>
         <ModalHeader title={modalTitle} onClose={handleClose} />
-
-        {displayError && (
-          <div style={{ margin: '20px' }} className={clsx(formStyles.error, formStyles.formError)}>
-            {displayError}
-          </div>
-        )}
 
         <div className={planningStyles.modalContent}>
           <div className={planningStyles.actionButtonsWrapper}>

@@ -1,5 +1,6 @@
 import { CookiesProvider, useCookies } from 'react-cookie';
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import { Toaster } from 'sonner';
 import Header from './components/Header';
 import Overlay from './components/ui/Overlay';
 import TopBar from './components/ui/TopBar';
@@ -143,6 +144,7 @@ const IssueAppContent = () => {
 
 const IssueApp = () => (
   <CookiesProvider>
+    <Toaster position="top-right" richColors />
     <IssueAppContent />
   </CookiesProvider>
 );

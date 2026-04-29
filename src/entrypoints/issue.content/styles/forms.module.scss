@@ -221,7 +221,6 @@
   font-weight: 600;
   width: 250px;
 
-
   &:hover {
     background: color.adjust($warm-yellow, $lightness: 5%) !important;
     border-color: color.adjust($warm-yellow, $lightness: 5%);
@@ -385,25 +384,6 @@
     cursor: not-allowed;
     opacity: 0.6;
   }
-}
-
-.formError {
-  padding: 12px;
-  background: color.adjust($happy-red, $lightness: 95%);
-  border: 1px solid color.adjust($happy-red, $lightness: 60%);
-  border-radius: 6px;
-  color: color.adjust($happy-red, $lightness: -20%);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.error {
-  padding: 12px;
-  background-color: color.adjust($happy-red, $lightness: 95%);
-  border: 1px solid $happy-red;
-  border-radius: 6px;
-  color: color.adjust($happy-red, $lightness: -20%);
-  font-size: 13px;
 }
 
 .modalButtons {
