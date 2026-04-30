@@ -12,17 +12,16 @@ export async function sendToSpam(params: SendToSpamParams, options?: { signal?: 
   const formData = new SpamFormBuilder(params).build();
 
   // Make the POST request
-  // const response = await fetch('https://www.prologistics.info/api/customerSpam/sendToSpam/', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/x-www-form-urlencoded',
-  //   },
-  //   body: formData,
-  //   signal,
-  // });
+  const response = await fetch('https://www.prologistics.info/api/customerSpam/sendToSpam/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData,
+    signal,
+  });
 
-  // return response;
-  return new Response();
+  return response;
 }
 
 export async function fetchCustomerCountsForNewsletters(
