@@ -103,18 +103,17 @@ const ActionsPanel = ({
   const chdeNsltId = !tableData?.hasGroupedNslt
     ? (rows.filter(r => r.shop === 'CHDE')[0]?.nsltId ?? null)
     : (rows.filter(r => r.shop === 'CHDE')[0]?.nsltAId ?? null);
-  const isABTesting = hasGroupedNslt;
 
   console.log('tableData', tableData);
 
   const isPlanningAllowed = useMemo(() => {
     if (mode === 'cgb') {
-      return false
+      return false;
     }
     if (mode === 'sunday') {
       return rows.length > 0 && rows.every(r => r.columnStatuses.nsltAccepted === 1);
     }
-    return true
+    return true;
   }, [mode, rows]);
 
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
@@ -237,9 +236,10 @@ const ActionsPanel = ({
               </>
             )}
           </div>
+
           {isPlanningAllowed && (
             <ActionButton
-              variant="planning"
+              variant="primary"
               label="Start Planning"
               icon="mdi:web"
               onClick={() => setShowPlanningModal(true)}
@@ -278,7 +278,7 @@ const ActionsPanel = ({
             void onStartPlanning?.(chdeNsltId);
           }}
           tableData={tableData}
-          isABTesting={isABTesting}
+          isABTesting={hasGroupedNslt}
           allowSelection={true}
         />
       )}

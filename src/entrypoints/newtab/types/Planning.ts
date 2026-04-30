@@ -57,6 +57,14 @@ export type PlanningTableProps = {
   onResend: (slug: string, type: 'A' | 'B') => void;
 };
 
+export type PlanningButtonProps = {
+  isPrimary: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  icon?: string;
+  label: string;
+};
+
 export type PlanningButtonsProps = {
   loading: boolean;
   planningStarted: boolean;

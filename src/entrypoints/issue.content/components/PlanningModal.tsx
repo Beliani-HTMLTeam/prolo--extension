@@ -17,6 +17,7 @@ import { PlanningTable } from './planningmodal/PlanningTable';
 import { PlanningButtons } from './planningmodal/PlanningButtons';
 import { PlanningProgress } from './planningmodal/PlanningProgress';
 import { PlanningResultsActions } from './planningmodal/PlanningResultsActions';
+import Skeleton from 'react-loading-skeleton';
 
 const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
@@ -153,7 +154,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
 
   const modalTitle = useMemo(() => {
     if (showResults) return 'Planning Results';
-    if (newsletterTitleLoading) return 'Loading...';
+    if (newsletterTitleLoading) return <Skeleton width={600} />;
     return newsletterTitle ? newsletterTitle.split('SL')[0].trim() + ' - CHDE ID: ' + chdeId : 'Start Planning';
   }, [showResults, newsletterTitleLoading, newsletterTitle, chdeId]);
 
@@ -199,7 +200,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
         <ModalHeader title={modalTitle} onClose={handleClose} />
 
         <div className={planningStyles.modalContent}>
-          <div className={planningStyles.actionButtonsWrapper}>
+          <div className={planningStyles.menu}>
             <PlanningButtons
               loading={loading}
               planningStarted={planningStarted}

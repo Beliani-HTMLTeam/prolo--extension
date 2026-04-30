@@ -1,8 +1,6 @@
-import clsx from 'clsx';
-import formStyles from '../../styles/forms.module.scss';
-import planningStyles from '../../styles/planning.module.scss';
+import styles from '../../styles/planning.module.scss';
 import { PlanningButtonsProps } from '@/entrypoints/newtab/types/Planning';
-import { Icon } from '@iconify/react';
+import PlanningButton from './PlanningButton';
 
 export const PlanningButtons = ({
   loading,
@@ -16,43 +14,39 @@ export const PlanningButtons = ({
   onClearAll,
   onCancel,
 }: PlanningButtonsProps) => (
-  <div className={planningStyles.actionButtonsWrapper}>
-    <button
-      className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
-      onClick={onSendAll}
-      disabled={loading || availableSlugsCount === 0 || planningStarted || hasManualSelection}
-    >
-      <Icon icon="mdi:send" width="16" height="16" />
-      Send All
-    </button>
-    <button
-      className={clsx(formStyles.btn, formStyles['btn--primary'], planningStyles.btn)}
-      onClick={onSendSelected}
-      disabled={loading || selectedCount === 0 || planningStarted}
-    >
-      <Icon icon="mdi:send-check" width="16" height="16" />
-      Send Selected ({selectedCount})
-    </button>
-    <button
-      className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-      onClick={onSelectAll}
-      disabled={loading || planningStarted}
-    >
-      Select All Ready
-    </button>
-    <button
-      className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-      onClick={onClearAll}
-      disabled={loading || planningStarted || selectedCount === 0}
-    >
-      Clear All
-    </button>
-    <button
-      className={clsx(formStyles.btn, formStyles['btn--ghost'], planningStyles.btn)}
-      style={{ marginTop: '25px' }}
-      onClick={onCancel}
-    >
-      Cancel
-    </button>
-  </div>
+  <>
+    <div className={styles.actionButtons}>
+      <PlanningButton
+        isPrimary={true}
+        onClick={onSendAll}
+        disabled={loading || availableSlugsCount === 0 || planningStarted || hasManualSelection}
+        icon="mdi:send"
+        label="Send All"
+      />
+
+      <PlanningButton
+        isPrimary={true}
+        onClick={onSendSelected}
+        disabled={loading || selectedCount === 0 || planningStarted}
+        icon="mdi:send-check"
+        label={`Send Selected (${selectedCount})`}
+      />
+
+      <PlanningButton
+        isPrimary={false}
+        onClick={onSelectAll}
+        disabled={loading || planningStarted}
+        label="Select All Ready"
+      />
+
+      <PlanningButton
+        isPrimary={false}
+        onClick={onClearAll}
+        disabled={loading || planningStarted || selectedCount === 0}
+        label="Clear All"
+      />
+    </div>
+
+    {(loading && planningStarted) && <PlanningButton isPrimary={false} onClick={onCancel} label="Cancel" />}
+  </>
 );

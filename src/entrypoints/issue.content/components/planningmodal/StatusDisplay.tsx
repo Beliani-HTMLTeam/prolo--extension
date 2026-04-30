@@ -1,8 +1,15 @@
-import { StatusDisplayProps } from "@/entrypoints/newtab/types/Planning";
-import { Icon } from "@iconify/react";
-import clsx from "clsx";
-import formStyles from "../../styles/forms.module.scss";
-import planningStyles from "../../styles/planning.module.scss";
+import { StatusDisplayProps } from '@/entrypoints/newtab/types/Planning';
+import { Icon } from '@iconify/react';
+import clsx from 'clsx';
+import formStyles from '../../styles/forms.module.scss';
+import planningStyles from '../../styles/planning.module.scss';
+
+const StatusLabel = ({ icon, text }: { icon: string; text: string }) => (
+  <>
+    <Icon icon={icon} />
+    <span>{text}</span>
+  </>
+);
 
 export const StatusDisplay = ({
   result,
@@ -17,41 +24,25 @@ export const StatusDisplay = ({
   if (!selectedSlugs.has(slug) && planningStarted) return null;
 
   if (!ready) {
-    return (
-      <span>
-        <Icon icon="material-symbols:error" width="14" height="14" /> Requires approval
-      </span>
-    );
+    return <StatusLabel icon="material-symbols:error" text="Approval required" />;
   }
-  
-   if (loading && !aggregating) {
+
+  if (loading && !aggregating) {
     // Check if this specific result has been processed
     if (!result || result.status === 'pending') {
-      return (
-        <span>
-          <Icon icon="fa:hourglass-start" width="14" height="14" /> Sending...
-        </span>
-      );
+      return <StatusLabel icon="fa:hourglass-start" text="Pending..." />;
     }
   }
 
   // If aggregating (fetching customer data)
   if (aggregating) {
-    return (
-      <span>
-        <Icon icon="material-symbols:info" width="14" height="14" /> Fetching customer data...
-      </span>
-    );
+    return <StatusLabel icon="svg-spinners:180-ring" text="" />;
   }
-  
+
   if (result?.status === 'success') {
-    return (
-      <span>
-        <Icon icon="fluent-mdl2:completed-solid" width="14" height="14" /> Ready
-      </span>
-    );
+    return <StatusLabel icon="fluent-mdl2:completed-solid" text="Success" />;
   }
-  
+
   if (result?.status === 'error' && result?.failed) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -71,11 +62,7 @@ export const StatusDisplay = ({
   }
 
   if (ready && !planningStarted) {
-    return (
-      <span>
-        <Icon icon="material-symbols:local-fire-department" width="14" height="14" /> Ready to plan
-      </span>
-    );
+    return <StatusLabel icon="material-symbols:local-fire-department" text="Ready" />;
   }
 
   return null;

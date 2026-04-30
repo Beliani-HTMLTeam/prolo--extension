@@ -1,8 +1,9 @@
 import { Icon } from '@iconify/react';
 import formStyles from '../../styles/forms.module.scss';
+import { JSX } from 'react';
 
 type ModalHeaderProps = {
-  title: string;
+  title: string | JSX.Element;
   onClose: () => void;
 };
 

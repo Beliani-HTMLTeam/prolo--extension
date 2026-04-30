@@ -17,65 +17,53 @@ export const PlanningTable = ({
   onToggleSlug,
   onResend,
 }: PlanningTableProps) => (
-  <div
-    className={planningStyles.planningTableWrapper}
-  >
-    <table className='table'>
-      <tbody>
-        {availableSlugs.map(slug => {
-          const normalizedSlug = normalizeSlugForSlug(slug);
-          const result = results.find(r => r.slug === slug) || results.find(r => r.slug === normalizedSlug);
-          const ready = isReady(slug);
-          const isSelected = selectedSlugs.has(slug);
-          const customerCount = getCustomerCount(result, planningStarted, slug, aggregating, selectedSlugs);
-          const subjectLine = getSubjectLine(result, planningStarted, slug, aggregating, selectedSlugs);
+  <div className={planningStyles.planningTable}>
+    {availableSlugs.map(slug => {
+      const normalizedSlug = normalizeSlugForSlug(slug);
+      const result = results.find(r => r.slug === slug) || results.find(r => r.slug === normalizedSlug);
+      const ready = isReady(slug);
+      const isSelected = selectedSlugs.has(slug);
+      const customerCount = getCustomerCount(result, planningStarted, slug, aggregating, selectedSlugs);
+      const subjectLine = getSubjectLine(result, planningStarted, slug, aggregating, selectedSlugs);
 
-          return (
-            <tr key={slug}>
-              <td className={planningStyles.checkboxCell}>
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => onToggleSlug(slug)}
-                  disabled={loading || !ready}
-                />
-              </td>
-              <td className={planningStyles.slugCell}>
-                {slug}
-                {!ready && (
-                  <Icon
-                    icon="mdi:alert-circle"
-                    width="14"
-                    height="14"
-                    className={planningStyles.slugIcon}
-                  />
-                )}
-              </td>
-              <td
-               className={planningStyles.subjectLineCell}
-              >
-                {subjectLine === null ? <Skeleton width={200} /> : subjectLine}
-              </td>
-              <td className={planningStyles.customerNumberCell}>
-                {customerCount === null ? <Skeleton width={60} /> : customerCount}
-              </td>
+      return (
+        <div key={slug} className={planningStyles.shopRow}>
+          <div className={planningStyles.shopSelector}>
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSlug(slug)}
+              disabled={loading || !ready}
+            />
+          </div>
 
-              <td className={planningStyles.statusCell}>
-                <StatusDisplay 
-                  result={result}
-                  planningStarted={planningStarted}
-                  slug={slug}
-                  loading={loading}
-                  ready={ready}
-                  aggregating={aggregating}
-                  selectedSlugs={selectedSlugs}
-                  onResend={onResend}
-                />
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+          <div className={planningStyles.shopLabel}>
+            {slug}
+            {!ready && <Icon icon="mdi:alert-circle" width="14" height="14" />}
+          </div>
+          
+          <div className={planningStyles.subjectLine}>
+            {subjectLine === null ? <Skeleton width={200} /> : subjectLine}
+          </div>
+          
+          <div className={planningStyles.customers}>
+            {customerCount === null ? <Skeleton width={60} /> : customerCount}
+          </div>
+          
+          <div className={planningStyles.status}>
+            <StatusDisplay
+              result={result}
+              planningStarted={planningStarted}
+              slug={slug}
+              loading={loading}
+              ready={ready}
+              aggregating={aggregating}
+              selectedSlugs={selectedSlugs}
+              onResend={onResend}
+            />
+          </div>
+        </div>
+      );
+    })}
   </div>
 );

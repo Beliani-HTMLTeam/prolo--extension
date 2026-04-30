@@ -1,9 +1,9 @@
 import { PlanningResultsActionsProps } from '@/entrypoints/newtab/types/Planning';
 import Skeleton from 'react-loading-skeleton';
-import formStyles from '../../styles/forms.module.scss';
-import { Icon } from '@iconify/react';
-import clsx from 'clsx';
-import planningStyles from '../../styles/planning.module.scss';
+
+import styles from '../../styles/planning.module.scss';
+
+import PlanningButton from './PlanningButton';
 
 export const PlanningResultsActions = ({
   loading,
@@ -12,24 +12,33 @@ export const PlanningResultsActions = ({
   totalCustomers,
   aggregating,
   onCopyResults,
-  onClose,
-}: PlanningResultsActionsProps) => (
-  <>
-    {!loading && planningStarted && showResults && (
-      <div className={formStyles.modalButtons} style={{ marginTop: '16px' }}>
-        <button className={clsx(formStyles.btn, formStyles['btn--primary'])} onClick={onCopyResults}>
-          <Icon icon="mdi:content-copy" width="14" height="14" />
-          Copy Results
-        </button>
-        <button className={clsx(formStyles.btn, formStyles['btn--ghost'])} onClick={onClose}>
-          Close
-        </button>
-      </div>
-    )}
-    {planningStarted && showResults && (
-        <div className={planningStyles.totalCustomers}>
+}: PlanningResultsActionsProps) => {
+  const planningFinished = !loading && planningStarted && showResults;
+
+  return (
+    <div className={styles.results}>
+      {planningFinished && (
+        <>
+          <PlanningButton isPrimary={true} onClick={onCopyResults} icon="mdi:content-copy" label="Copy Results" />
+
+          <PlanningButton
+            isPrimary={false}
+            onClick={() => {
+              window.open(
+                'https://docs.google.com/spreadsheets/d/1prLX1zu8-5NPN49gcdcRSSNluiYELaAYC7YjLTfXYC0',
+                '_blank',
+              );
+            }}
+            label="Open QA Sheet"
+          />
+        </>
+      )}
+
+      {planningStarted && showResults && (
+        <div className={styles.totalCustomers}>
           Total: {aggregating ? <Skeleton width={80} /> : totalCustomers.toLocaleString()}
         </div>
-    )}
-  </>
-);
+      )}
+    </div>
+  );
+};

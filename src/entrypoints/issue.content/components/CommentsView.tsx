@@ -522,12 +522,7 @@ export const CommentsView = ({ issueId }: CommentsViewProps) => {
               onClick={() => void handleSend()}
               disabled={isSending || !messageText.trim()}
             >
-              <Icon
-                icon={isSending ? 'mdi:loading' : 'mdi:send'}
-                width="18"
-                height="18"
-                className={isSending ? formStyles.spinning : undefined}
-              />
+              <Icon icon={isSending ? 'svg-spinners:180-ring' : 'mdi:send'} width="18" height="18" />
             </button>
           </div>
         </div>
