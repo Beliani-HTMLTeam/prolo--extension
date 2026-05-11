@@ -11,6 +11,7 @@ import { EmojiPicker } from './pickers/EmojiPicker';
 import { GifPicker } from './pickers/GifPicker';
 import { MentionPicker } from './pickers/MentionPicker';
 import { RichTextarea, type RichTextareaHandle, applyTwemoji } from './RichTextarea';
+import type { ChecklistMode } from '../lib/types';
 
 const TwemojiContent = memo(({ html, className }: { html: string; className: string }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -59,9 +60,10 @@ const parseCommentHtml = (html: string): string => {
 
 type CommentsViewProps = {
   issueId: number;
+  mode?: ChecklistMode;
 };
 
-export const CommentsView = ({ issueId }: CommentsViewProps) => {
+export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const [cookies] = useCookies(['ebas_username']);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,6 +248,23 @@ export const CommentsView = ({ issueId }: CommentsViewProps) => {
     setShowGifPicker(false);
   };
 
+  const handleAddCgbHeader = () => {
+    if (mode !== 'cgb') return;
+
+    const CGB_HEADER = '<link rel=stylesheet href=https:&#x2F;&#x2F;pictureserver.net/static/checklist_tickoff_reminder.css>';
+
+    const currentText = richInputRef.current?.getText() ?? messageText;
+    const nextText = currentText.startsWith(CGB_HEADER)
+      ? currentText
+      : currentText.length > 0
+        ? `${CGB_HEADER}\n${currentText}`
+        : CGB_HEADER;
+
+    richInputRef.current?.clear();
+    richInputRef.current?.insertText(nextText);
+    richInputRef.current?.focus();
+  };
+
   const handleSend = async () => {
     const trimmed = (richInputRef.current?.getText() ?? messageText).trim();
     if (!trimmed || isSending) return;
@@ -364,10 +383,6 @@ export const CommentsView = ({ issueId }: CommentsViewProps) => {
     return <div className={styles.commentLoading}>Loading chat...</div>;
   }
 
-  if (comments.length === 0) {
-    return <div className={styles.commentEmpty}>No messages yet</div>;
-  }
-
   const renderHeaderButtons = () => (
     <>
       <button
@@ -396,26 +411,30 @@ export const CommentsView = ({ issueId }: CommentsViewProps) => {
           </div>
         )}
         <div className={styles.messagesArea} ref={messagesAreaRef} onScroll={handleScroll}>
-          {sortedComments.map(comment => {
-            const isOwnMessage = comment.username === currentUsername;
-            return (
-              <div
-                key={comment.id}
-                className={clsx(styles.messageBubble, {
-                  [styles.corrective]: comment.comment_type === 'issuelog_corrective',
-                  [styles.ownMessage]: isOwnMessage,
-                })}
-              >
-                <div className={styles.messageContent}>
-                  <div className={styles.messageAuthor}>{comment.full_username}</div>
-                  <div className={styles.messageText}>
-                    <TwemojiContent html={parseCommentHtml(comment.comment)} className={styles.commentHtmlContent} />
+          {sortedComments.length === 0 ? (
+            <div className={styles.commentEmpty}>No messages yet</div>
+          ) : (
+            sortedComments.map(comment => {
+              const isOwnMessage = comment.username === currentUsername;
+              return (
+                <div
+                  key={comment.id}
+                  className={clsx(styles.messageBubble, {
+                    [styles.corrective]: comment.comment_type === 'issuelog_corrective',
+                    [styles.ownMessage]: isOwnMessage,
+                  })}
+                >
+                  <div className={styles.messageContent}>
+                    <div className={styles.messageAuthor}>{comment.full_username}</div>
+                    <div className={styles.messageText}>
+                      <TwemojiContent html={parseCommentHtml(comment.comment)} className={styles.commentHtmlContent} />
+                    </div>
                   </div>
+                  <div className={styles.messageTime}>{formatDate(comment.create_date)}</div>
                 </div>
-                <div className={styles.messageTime}>{formatDate(comment.create_date)}</div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         <div className={formStyles.messageInputArea} ref={inputAreaRef}>
@@ -466,6 +485,16 @@ export const CommentsView = ({ issueId }: CommentsViewProps) => {
             >
               <Icon icon="mdi:image-multiple-outline" width="18" height="18" />
             </button>
+            {mode === 'cgb' && (
+              <button
+                className={clsx(formStyles.btn, formStyles['btn--ghost'])}
+                title="Add CGB header"
+                onClick={handleAddCgbHeader}
+                type="button"
+              >
+                Add CGB Header
+              </button>
+            )}
           </div>
           {/* Picker portals - rendered at document.body to escape overflow:hidden */}
           {showEmojiPicker &&

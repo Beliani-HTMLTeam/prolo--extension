@@ -254,7 +254,7 @@ const ActionsPanel = ({
           <div className={chatStyles.chatHeaderButtons} id={`chat-buttons-${issueId}`}></div>
         </div>
         <div className={chatStyles.chatContent}>
-          <CommentsView issueId={issueId} />
+          <CommentsView issueId={issueId} mode={mode} />
         </div>
       </div>
 
