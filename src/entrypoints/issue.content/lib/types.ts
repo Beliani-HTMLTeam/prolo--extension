@@ -144,3 +144,8 @@ export type SpreadsheetTranslations = {
   timer: Record<string, boolean> | null;
   push: Record<string, boolean> | null;
 };
+
+export type BannersCounts = {
+  approved: number;
+  total: number;
+}

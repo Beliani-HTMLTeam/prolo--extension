@@ -17,7 +17,7 @@ import {
   extractIssueLinks,
 } from './api/issueData';
 import type { ChecklistTableData, IssueInfoViewModel, IssueLink } from './lib/types';
-import { fetchChecklists, mapChecklistsToTableData } from './api/checklists';
+import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
 import { getIssueModePlugin } from './api/issueModePlugins';
 
 const cookieOptions = { maxAge: 7 * 24 * 60 * 60 };
@@ -51,6 +51,8 @@ const IssueAppContent = () => {
       return;
     }
 
+    const bannersCounts = await fetchBannersChecklistCounts(issueItem);
+
     const parsed = parseIssueInfo(issueItem);
     const mode = getChecklistMode(parsed.issueTypes);
     if (!mode) {
@@ -71,8 +73,8 @@ const IssueAppContent = () => {
       priorityName: parsed.priorityName,
       priorityColor: parsed.priorityColor,
       boardColumnName: parsed.boardColumnName,
-      checkpointsDone: parsed.checkpointsDone,
-      checkpointsTotal: parsed.checkpointsTotal,
+      checkpointsDone: bannersCounts.approved || 0,
+      checkpointsTotal: bannersCounts.total || 0,
     });
     const apiData = await fetchChecklists(issueId);
     setTableData(mapChecklistsToTableData(apiData, mode));
