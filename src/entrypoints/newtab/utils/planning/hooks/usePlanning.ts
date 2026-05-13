@@ -1,11 +1,11 @@
-import { PlanningResult } from '@/entrypoints/newtab/types/Planning';
+import { NewsletterIdMap, PlanningResult } from '@/entrypoints/newtab/types/Planning';
 import { preparePlanningEntries } from '../preparePlanningEntries';
 import { groupEntriesBySlug } from '../groupEntriesBySlug';
 import { sendNewslettersToSpam } from '../sendNewslettersToSpam';
 import { aggregateCustomerCounts } from '../aggregateCustomerCounts';
 import { sendToSpam } from '@/entrypoints/issue.content/api/planning';
 
-export const usePlanning = (newsletterIdMap: Map<string, any>, concurrency: number = 5) => {
+export const usePlanning = (newsletterIdMap: NewsletterIdMap, concurrency: number = 5) => {
   const [loading, setLoading] = useState(false);
   const [aggregating, setAggregating] = useState(false);
   const [error, setError] = useState<string | null>(null);
