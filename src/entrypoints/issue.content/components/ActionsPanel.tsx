@@ -10,6 +10,7 @@ import type { ChecklistMode, ChecklistTableData, IssueLink } from '../lib/types'
 import { getShopId } from './familytable/../../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
 import PlanningModal from './PlanningModal';
+import UpdaterModal from './UpdaterModal';
 
 type ActionButtonProps = {
   label: string;
@@ -93,12 +94,14 @@ const ActionsPanel = ({
   onStartPlanning,
 }: ActionsPanelProps) => {
   const shouldShowActions = showDashboardActions ?? mode !== 'cgb';
+  const shouldShowSLPTUpdater = mode === 'newsletter';
   const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
   const rows = tableData?.rows ?? [];
   const origin = window.location.origin;
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
+  const [showSLPTUpdaterModal, setShowSLPTUpdaterModal] = useState(false);
 
   const chdeNsltId = !tableData?.hasGroupedNslt
     ? (rows.filter(r => r.shop === 'CHDE')[0]?.nsltId ?? null)
@@ -182,6 +185,14 @@ const ActionsPanel = ({
       {shouldShowActions && (
         <div className={styles.actionsContainer}>
           <div className={styles.actionsGrid}>
+          {shouldShowSLPTUpdater && (
+            <ActionButton
+              variant="primary"
+              label="Update Subject Lines | Page Titles"
+              icon="mdi:format-title"
+              onClick={() => setShowSLPTUpdaterModal(true)}
+            />
+          )}
             <ActionButton
               variant="primary"
               label="Generate Checklists"
@@ -280,6 +291,12 @@ const ActionsPanel = ({
           tableData={tableData}
           isABTesting={hasGroupedNslt}
           allowSelection={true}
+        />
+      )}
+       {showSLPTUpdaterModal && shouldShowActions && (
+        <UpdaterModal
+        issueId={issueId}
+        onClose={() => setShowSLPTUpdaterModal(false)}
         />
       )}
     </div>
