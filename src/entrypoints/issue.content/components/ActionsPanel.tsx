@@ -295,6 +295,7 @@ const ActionsPanel = ({
       )}
        {showSLPTUpdaterModal && shouldShowActions && (
         <UpdaterModal
+        rows={rows}
         issueId={issueId}
         onClose={() => setShowSLPTUpdaterModal(false)}
         />

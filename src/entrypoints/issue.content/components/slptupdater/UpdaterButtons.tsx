@@ -5,8 +5,8 @@ import UpdaterButton from './UpdaterButton';
 const UpdaterButtons = ({
   loading,
   updateStarted,
-  readyCount,
-  selectedCount,
+  selectedSLCount,
+  selectedPTCount,
   hasManualSelection,
   onUpdateAllSL,
   onUpdateSelectedSL,
@@ -48,7 +48,7 @@ const UpdaterButtons = ({
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateSelectedSL}
-          disabled={loading || selectedCount === 0 || updateStarted}
+          disabled={loading || selectedSLCount === 0 || updateStarted}
           icon="mdi:send-check"
           label={`Update Selected SL`}
         />
@@ -56,7 +56,7 @@ const UpdaterButtons = ({
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateSelectedPT}
-          disabled={loading || selectedCount === 0 || updateStarted}
+          disabled={loading || selectedPTCount === 0 || updateStarted}
           icon="mdi:send-check"
           label={`Update Selected PT`}
         />
@@ -71,7 +71,7 @@ const UpdaterButtons = ({
         <UpdaterButton
           isPrimary={false}
           onClick={onClearAll}
-          disabled={loading || updateStarted || selectedCount === 0}
+          disabled={loading || updateStarted || (selectedSLCount === 0 && selectedPTCount === 0)}
           label="Clear All"
         />
       </div>

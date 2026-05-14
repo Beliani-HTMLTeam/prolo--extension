@@ -145,8 +145,7 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
     
     const subjectLine: Record<string, string> = {};
     const pageTitle: Record<string, string> = {};
-    let hasSubjectLineEntries = false;
-    let hasPageTitleEntries = false;
+    
     
     for (const [rawCountry, countryData] of Object.entries(data)) {
       const country = SLUG_CANONICAL_ALIAS[rawCountry.toUpperCase()] ?? rawCountry;
@@ -155,22 +154,29 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
         const subjectLineValue = countryData[subjectLineIndex];
         if (subjectLineValue && typeof subjectLineValue === 'string' && subjectLineValue.trim()) {
           subjectLine[country] = subjectLineValue.trim();
-          hasSubjectLineEntries = true;
+        } else {
+          subjectLine[country] = 'TRANSLATION NOT FOUND';
         }
+      } else {
+        subjectLine[country] = 'TRANSLATION NOT FOUND';
       }
 
       if (pageTitleIndex !== -1 && countryData[pageTitleIndex]) {
         const pageTitleValue = countryData[pageTitleIndex];
         if (pageTitleValue && typeof pageTitleValue === 'string' && pageTitleValue.trim()) {
           pageTitle[country] = pageTitleValue.trim();
-          hasPageTitleEntries = true;
+        } else {
+          pageTitle[country] = 'TRANSLATION NOT FOUND';
         }
+      }
+      else {
+        pageTitle[country] = 'TRANSLATION NOT FOUND';
       }
     }
 
     return {
-      subjectLine: hasSubjectLineEntries ? subjectLine : null,
-      pageTitle: hasPageTitleEntries ? pageTitle : null,
+      subjectLine: Object.keys(subjectLine).length > 0 ? subjectLine : null,
+      pageTitle: Object.keys(pageTitle).length > 0 ? pageTitle : null,
     };
   } catch (e) {
     console.warn('[spreadsheet] Failed to fetch translations:', e);

@@ -1,9 +1,12 @@
+import { ChecklistTableData, ChecklistTableRow } from "@/entrypoints/issue.content/lib/types";
+
 export interface UpdaterProps {
+  rows: ChecklistTableRow[];
   issueId: number;
   onClose: () => void;
 }
 
-export type UpdaterButtonProps = {
+export interface UpdaterButtonProps {
   isPrimary: boolean;
   onClick: () => void;
   disabled?: boolean;
@@ -11,11 +14,11 @@ export type UpdaterButtonProps = {
   label: string;
 };
 
-export type UpdaterButtonsProps = {
+export interface UpdaterButtonsProps {
   loading: boolean;
   updateStarted: boolean;
-  readyCount: number;
-  selectedCount: number;
+  selectedSLCount: number;
+  selectedPTCount: number;
   hasManualSelection: boolean;
   onUpdateAllSL: () => void;
   onUpdateSelectedSL: () => void;
@@ -28,8 +31,17 @@ export type UpdaterButtonsProps = {
   onCancel: () => void;
 };
 
-export type UpdaterSelectedItem = {
+export interface UpdaterSelectedItem {
   slug: string;
   type: 'subjectLine' | 'pageTitle';
   content: string;
+}
+
+export interface UpdaterDateConfig {
+  activateDate: Date;
+  deactivateDate: Date;
+}
+
+export interface UpdaterSlugDateConfig {
+  [slug: string]: UpdaterDateConfig;
 }
