@@ -183,3 +183,34 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
     return empty;
   }
 };
+
+export const fetchSpreadsheetTranslationsTab = async (issueItem: IssueListItem): Promise<string | null> => {
+  try {
+    const nsltFields = issueItem.additional_fields?.['Newsletter production'];
+    const spreadsheetField = nsltFields?.find(f => f.name === 'Translation spreadsheet newsletter');
+    if (!spreadsheetField?.value) return null;
+
+    const url = spreadsheetField.value;
+    const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    const queryGidMatch = url.match(/[?&]gid=([^&#]+)/);
+    const hashGidMatch = url.match(/#gid=([^&]+)/);
+    const spreadsheetId = idMatch?.[1];
+    const gid = queryGidMatch?.[1] ?? hashGidMatch?.[1];
+    if (!spreadsheetId || !gid) return null;
+
+    const tabRes = await withZrokTimeout(
+      fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+        headers: ZROK_HEADERS,
+        mode: 'cors',
+        credentials: 'omit',
+      }),
+    );
+    const tabJson = await tabRes.json();
+    if (tabJson?.code !== 200) return null;
+
+    return tabJson.tab || null;
+  } catch (e) {
+    console.warn('[spreadsheet] Failed to fetch translations:', e);
+    return null;
+  }
+  }

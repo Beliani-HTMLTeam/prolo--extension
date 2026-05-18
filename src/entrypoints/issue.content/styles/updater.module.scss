@@ -125,3 +125,100 @@
     }
   }
 }
+
+.dateHeader {
+  margin-bottom: 12px;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    
+    input {
+      cursor: pointer;
+    }
+  }
+}
+
+.dateFields {
+  display: flex;
+  gap: 20px;
+}
+
+.activateDate, .deactivateDate {
+  flex: 1.5;
+  
+  input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+}
+
+.datePickerDisabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.fdMd {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  
+  input {
+    cursor: pointer;
+    margin: 0;
+  }
+  
+  span {
+    user-select: none;
+  }
+  
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    input {
+      cursor: not-allowed;
+    }
+  }
+}
+
+.warningText {
+  font-size: 12px;
+  color: #856404;
+  background-color: #fff3cd;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 12px;
+}
+
+.lpHeader {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    
+    input {
+      cursor: pointer;
+    }
+  }
+}

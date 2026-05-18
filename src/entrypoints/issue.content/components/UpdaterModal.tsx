@@ -1,7 +1,13 @@
-import { UpdaterDateConfig, UpdaterProps, UpdaterSelectedItem, UpdaterSlugDateConfig } from '@/entrypoints/newtab/types/Updater';
-import { fetchIssueData, fetchSubjectPageTranslations } from '../api/issueData';
+import {
+  UpdaterDateConfig,
+  UpdaterProps,
+  UpdaterSelectedItem,
+  UpdaterSlugDateConfig,
+  UpdaterSlugLPConfig,
+} from '@/entrypoints/newtab/types/Updater';
+import { fetchIssueData, fetchSpreadsheetTranslationsTab, fetchSubjectPageTranslations } from '../api/issueData';
 import { useEffect, useState } from 'react';
-import { LineTitleTranslations } from '../lib/types';
+import { IssueListItem, LineTitleTranslations } from '../lib/types';
 import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
@@ -9,7 +15,40 @@ import planningStyles from '../styles/updater.module.scss';
 import { ModalHeader } from './planningmodal/ModalHeader';
 import UpdaterTable from './slptupdater/UpdaterTable';
 import UpdaterButtons from './slptupdater/UpdaterButtons';
-import { formatDateForAPI, getDefaultDeactivateDate, getTodayAtMidnight, setDateToSunday23_59 } from '@/entrypoints/newtab/utils/updater/dates';
+import {
+  formatDateForAPI,
+  formatDateForInput,
+  getDefaultDeactivateDate,
+  getTodayAtMidnight,
+  setDateToSunday23_59,
+} from '@/entrypoints/newtab/utils/updater/dates';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+const fetchLPPaths = async (issueItem: IssueListItem): Promise<string> => {
+  const tabName = await fetchSpreadsheetTranslationsTab(issueItem); // "22.05.26 - Beds" format
+
+  if (!tabName) return '';
+
+  let year: string, month: string, day: string;
+
+  let dateMatch = tabName.match(/(\d{2})\.(\d{2})\.(\d{2})/); // DD.MM.YY format
+  if (dateMatch) {
+    // format: DD.MM.YY
+    [, day, month, year] = dateMatch;
+  } else {
+    // DD.MM.YYYY format
+    dateMatch = tabName.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (dateMatch) {
+      [, day, month, year] = dateMatch;
+      year = year.slice(-2);
+    } else {
+      return '';
+    }
+  }
+
+  return `lp${year}-${month}-${day}`;
+};
 
 const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
   const [translations, setTranslations] = useState<LineTitleTranslations | null>(null);
@@ -27,8 +66,14 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
   // e.g. for FD or MD
   const [slugDateConfig, setSlugDateConfig] = useState<UpdaterSlugDateConfig>({});
 
+  const [slugLPConfig, setSlugLPConfig] = useState<UpdaterSlugLPConfig>({});
+
   // toggle between global and per-slug configuration
   const [useGlobalDate, setUseGlobalDate] = useState(true);
+  const [useGlobalLP, setUseGlobalLP] = useState(true);
+  const [globalLP, setGlobalLP] = useState('');
+
+  const [slugFMDModes, setSlugFMDModes] = useState<Record<string, { fd: boolean; md: boolean }>>({});
 
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -45,48 +90,69 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
         }
         const rawTranslations = await fetchSubjectPageTranslations(issueItem);
 
-        console.log("Raw translations: ", rawTranslations);
+        console.log('Raw translations: ', rawTranslations);
         const availableSlugs = new Set(rows.map(row => row.shop));
 
         const filteredTranslations: LineTitleTranslations = {
           subjectLine: rawTranslations.subjectLine
-          ? Object.entries(rawTranslations.subjectLine).filter(([slug]) => availableSlugs.has(slug))
-          .reduce((acc, [slug, content]) => ({
-            ...acc,
-            [slug]: content
-          }), {})
-          : null,
+            ? Object.entries(rawTranslations.subjectLine)
+                .filter(([slug]) => availableSlugs.has(slug))
+                .reduce(
+                  (acc, [slug, content]) => ({
+                    ...acc,
+                    [slug]: content,
+                  }),
+                  {},
+                )
+            : null,
           pageTitle: rawTranslations.pageTitle
-          ? Object.entries(rawTranslations.pageTitle).filter(([slug]) => availableSlugs.has(slug))
-          .reduce((acc, [slug, content]) => ({
-            ...acc,
-            [slug]: content
-          }), {})
-          : null,
-        }
+            ? Object.entries(rawTranslations.pageTitle)
+                .filter(([slug]) => availableSlugs.has(slug))
+                .reduce(
+                  (acc, [slug, content]) => ({
+                    ...acc,
+                    [slug]: content,
+                  }),
+                  {},
+                )
+            : null,
+        };
 
-        if(filteredTranslations.subjectLine && Object.keys(filteredTranslations.subjectLine).length === 0) {
+        if (filteredTranslations.subjectLine && Object.keys(filteredTranslations.subjectLine).length === 0) {
           filteredTranslations.subjectLine = null;
         }
 
-        if(filteredTranslations.pageTitle && Object.keys(filteredTranslations.pageTitle).length === 0) {
+        if (filteredTranslations.pageTitle && Object.keys(filteredTranslations.pageTitle).length === 0) {
           filteredTranslations.pageTitle = null;
         }
 
         setTranslations(filteredTranslations);
 
         const initialSlugDates: UpdaterSlugDateConfig = {};
+        const initialSlugLPs: UpdaterSlugLPConfig = {};
+        const initialFMDModes: Record<string, { fd: boolean; md: boolean }> = {};
+
         const allSlugs = new Set([
           ...(filteredTranslations.subjectLine ? Object.keys(filteredTranslations.subjectLine) : []),
           ...(filteredTranslations.pageTitle ? Object.keys(filteredTranslations.pageTitle) : []),
         ]);
+
+        const globalLP = await fetchLPPaths(issueItem);
+        setGlobalLP(globalLP);
+
         allSlugs.forEach(slug => {
           initialSlugDates[slug] = {
             activateDate: getTodayAtMidnight(),
             deactivateDate: getDefaultDeactivateDate(),
-          }
+          };
+
+          initialSlugLPs[slug] = globalLP;
+          initialFMDModes[slug] = { fd: false, md: false };
         });
+
         setSlugDateConfig(initialSlugDates);
+        setSlugLPConfig(initialSlugLPs);
+        setSlugFMDModes(initialFMDModes);
       } catch (e) {
         console.error('Failed to load SL/PT translations: ', e);
         setError('Failed to load translations');
@@ -98,23 +164,37 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     void loadIssueData();
   }, [issueId, rows]);
 
+  const handleSlugFMDModeChange = (slug: string, type: 'fd' | 'md', checked: boolean) => {
+    setSlugFMDModes(prev => ({
+      ...prev,
+      [slug]: {
+        ...prev[slug],
+        [type]: checked,
+      },
+    }));
+
+    if (checked) {
+      setUseGlobalLP(false);
+    }
+  };
+
+
+
   const handleToggleSL = (slug: string, checked: boolean, content: string) => {
-    if(checked) {
+    if (checked) {
       setSelectedItems(prev => [...prev, { slug, type: 'subjectLine', content }]);
-    } 
-    else {
+    } else {
       setSelectedItems(prev => prev.filter(item => !(item.slug === slug && item.type === 'subjectLine')));
     }
-  }
+  };
 
   const handleTogglePT = (slug: string, checked: boolean, content: string) => {
-    if(checked) {
+    if (checked) {
       setSelectedItems(prev => [...prev, { slug, type: 'pageTitle', content }]);
-    } 
-    else {
+    } else {
       setSelectedItems(prev => prev.filter(item => !(item.slug === slug && item.type === 'pageTitle')));
     }
-  }
+  };
 
   const handleSelectedAllSL = () => {
     if (!translations?.subjectLine) return;
@@ -122,20 +202,17 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     const allSLItems = allSlugs.map(slug => ({
       slug,
       type: 'subjectLine' as const,
-      content: translations.subjectLine![slug]
-    }))
+      content: translations.subjectLine![slug],
+    }));
 
     const currentSLSlugs = new Set(selectedItems.filter(item => item.type === 'subjectLine').map(item => item.slug));
 
     if (currentSLSlugs.size === allSlugs.length) {
       setSelectedItems(prev => prev.filter(item => item.type !== 'subjectLine'));
     } else {
-      setSelectedItems(prev => [
-        ...prev.filter(item => item.type !== 'subjectLine'),
-        ...allSLItems
-      ])
+      setSelectedItems(prev => [...prev.filter(item => item.type !== 'subjectLine'), ...allSLItems]);
     }
-  }
+  };
 
   const handleSelectedAllPT = () => {
     if (!translations?.pageTitle) return;
@@ -143,86 +220,142 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     const allPTItems = allSlugs.map(slug => ({
       slug,
       type: 'pageTitle' as const,
-      content: translations.pageTitle![slug]
-    }))
+      content: translations.pageTitle![slug],
+    }));
 
     const currentPTSlugs = new Set(selectedItems.filter(item => item.type === 'pageTitle').map(item => item.slug));
 
     if (currentPTSlugs.size === allSlugs.length) {
       setSelectedItems(prev => prev.filter(item => item.type !== 'pageTitle'));
     } else {
-      setSelectedItems(prev => [
-        ...prev.filter(item => item.type !== 'pageTitle'),
-        ...allPTItems
-      ])
+      setSelectedItems(prev => [...prev.filter(item => item.type !== 'pageTitle'), ...allPTItems]);
     }
-  }
+  };
 
   const handleClearAll = () => {
     setSelectedItems([]);
-  }
+  };
 
   const handleGlobalActivateDateChange = (date: Date | null) => {
-    if(date) {
-      date.setHours(0,0,0,0);
-      setGlobalDateConfig(prev => ({...prev, activateDate: date})) 
-       }   }
+    if (date) {
+      date.setHours(0, 0, 0, 0);
+      setGlobalDateConfig(prev => ({ ...prev, activateDate: date }));
+    }
+  };
 
   const handleGlobalDeactivateDateChange = (date: Date | null) => {
-    if(date) {
+    if (date) {
       const sundayDate = setDateToSunday23_59(date);
-      setGlobalDateConfig(prev => ({...prev, deactivateDate: sundayDate}))
+      setGlobalDateConfig(prev => ({ ...prev, deactivateDate: sundayDate }));
+    }
+  };
+
+  const handleGlobalLPChange = (lp: string) => {
+    setGlobalLP(lp);
+
+    if (useGlobalLP) {
+      const updatedSlugLPs: UpdaterSlugLPConfig = {};
+      Object.keys(slugLPConfig).forEach(slug => {
+        updatedSlugLPs[slug] = lp;
+      });
+      setSlugLPConfig(updatedSlugLPs);
+    }
+  };
+
+  const handleUseGlobalLPToggle = (checked: boolean) => {
+    setUseGlobalLP(checked);
+
+    if (checked) {
+      const updatedSlugLPs: UpdaterSlugLPConfig = {};
+      Object.keys(slugLPConfig).forEach(slug => {
+        updatedSlugLPs[slug] = globalLP;
+      });
+      setSlugLPConfig(updatedSlugLPs);
+
+      const resetFMDModes: Record<string, { fd: boolean; md: boolean }> = {};
+      Object.keys(slugFMDModes).forEach(slug => {
+        resetFMDModes[slug] = { fd: false, md: false };
+      }
+      );
+      setSlugFMDModes(resetFMDModes);
     }
   }
 
   const handleSlugActivateDateChange = (slug: string, date: Date | null) => {
-    if(date) {
-      date.setHours(0,0,0,0);
+    if (date) {
+      date.setHours(0, 0, 0, 0);
       setSlugDateConfig(prev => ({
         ...prev,
-        [slug]: { ...prev[slug], activateDate: date }
-      }))
+        [slug]: { ...prev[slug], activateDate: date },
+      }));
     }
-  }
+  };
 
   const handleSlugDeactivateDateChange = (slug: string, date: Date | null) => {
-    if(date) {
+    if (date) {
       const sundayDate = setDateToSunday23_59(date);
       setSlugDateConfig(prev => ({
         ...prev,
-        [slug]: { ...prev[slug], deactivateDate: sundayDate }
-      }))
+        [slug]: { ...prev[slug], deactivateDate: sundayDate },
+      }));
     }
-  }
+  };
+
+  const handleSlugLPChange = (slug: string, lp: string) => {
+    setSlugLPConfig(prev => ({
+      ...prev,
+      [slug]: lp,
+    }));
+  };
 
   const getDateForSlug = (slug: string, type: 'activate' | 'deactivate'): Date => {
     if (!useGlobalDate && slugDateConfig[slug]) {
       return slugDateConfig[slug][type === 'activate' ? 'activateDate' : 'deactivateDate'];
     }
     return globalDateConfig[type === 'activate' ? 'activateDate' : 'deactivateDate'];
-  }
-  
+  };
+
+  const getLPForSlug = (slug: string): string => {
+   if (useGlobalLP) {
+    return globalLP;
+   }
+
+    let baseLP = slugLPConfig[slug] || globalLP;
+    baseLP = baseLP.replace(/fd|md$/, ''); 
+
+    // FD/MD is enabled
+    const modes = slugFMDModes[slug];
+    if (modes?.fd) {
+      return `${baseLP}fd`;
+    }
+    if (modes?.md) {
+      return `${baseLP}md`;
+    }
+
+    return baseLP;
+  };
 
   const handleUpdateSelected = async () => {
     if (selectedItems.length === 0) {
-      console.warn("No items selected to update");
+      console.warn('No items selected to update');
       return;
     }
 
     setIsUpdating(true);
 
     try {
-      const updatesBySlug: Record<string, any> = {}
+      const updatesBySlug: Record<string, any> = {};
 
       selectedItems.forEach(item => {
-        if(!updatesBySlug[item.slug]) {
+        if (!updatesBySlug[item.slug]) {
           updatesBySlug[item.slug] = {
             slug: item.slug,
             subjectLine: null,
             pageTitle: null,
+            landingPage: getLPForSlug(item.slug),
             activateDate: getDateForSlug(item.slug, 'activate'),
             deactivateDate: getDateForSlug(item.slug, 'deactivate'),
-          }
+          };
         }
 
         if (item.type === 'subjectLine') {
@@ -230,7 +363,7 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
         } else if (item.type === 'pageTitle') {
           updatesBySlug[item.slug].pageTitle = item.content;
         }
-      })
+      });
 
       const formattedUpdates = Object.values(updatesBySlug).map(update => ({
         slug: update.slug,
@@ -238,21 +371,22 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
         pageTitle: update.pageTitle,
         activateDate: formatDateForAPI(update.activateDate),
         deactivateDate: formatDateForAPI(update.deactivateDate),
+        landingPage: update.landingPage,
       }));
 
-      console.log("Updating with dates: ", formattedUpdates);
-      
+      console.log('Updating with dates: ', formattedUpdates);
+
       // call to the API
 
-      console.log("Successfully updated translations: ", error);
+      console.log('Successfully updated translations: ', error);
       onClose();
     } catch (e) {
-      console.error("Failed to update translations: ", e);
+      console.error('Failed to update translations: ', e);
       setError('Failed to update translations');
+    } finally {
+      setIsUpdating(false);
     }
-    finally {      setIsUpdating(false);
-    }
-  }
+  };
 
   const handleUpdateAll = async () => {
     if (!translations) return;
@@ -264,7 +398,7 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
         allItems.push({
           slug,
           type: 'subjectLine',
-          content
+          content,
         });
       });
     }
@@ -274,29 +408,31 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
         allItems.push({
           slug,
           type: 'pageTitle',
-          content
+          content,
         });
       });
     }
 
     if (allItems.length === 0) {
-      console.warn("No items to update");
+      console.warn('No items to update');
       return;
     }
 
+    setSelectedItems(allItems);
+
     await handleUpdateSelected();
-  }
+  };
 
   const handleSelectAllReady = () => {
     const readyItems: UpdaterSelectedItem[] = [];
 
     if (translations?.subjectLine) {
       Object.entries(translations.subjectLine).forEach(([slug, content]) => {
-        if(content !== 'TRANSLATION NOT FOUND') {
+        if (content !== 'TRANSLATION NOT FOUND') {
           readyItems.push({
             slug,
             type: 'subjectLine',
-            content
+            content,
           });
         }
       });
@@ -304,11 +440,11 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
 
     if (translations?.pageTitle) {
       Object.entries(translations.pageTitle).forEach(([slug, content]) => {
-        if(content !== 'TRANSLATION NOT FOUND') {
+        if (content !== 'TRANSLATION NOT FOUND') {
           readyItems.push({
             slug,
             type: 'pageTitle',
-            content
+            content,
           });
         }
       });
@@ -316,7 +452,7 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
 
     setSelectedItems(readyItems);
     console.log('Selecting all ready items:', readyItems);
-  }
+  };
 
   const getTotalAvailable = () => {
     let slValid = 0;
@@ -327,43 +463,39 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     let ptMissing = 0;
     let ptTotal = 0;
 
-    if(translations?.subjectLine) {
-    Object.values(translations.subjectLine).forEach(
-      content => {
+    if (translations?.subjectLine) {
+      Object.values(translations.subjectLine).forEach(content => {
         stTotal++;
-        if(content === 'TRANSLATION NOT FOUND') {
+        if (content === 'TRANSLATION NOT FOUND') {
           slMissing++;
         } else {
           slValid++;
         }
-      }
-    );
+      });
     }
-    if(translations?.pageTitle) {
-      Object.values(translations.pageTitle).forEach(
-        content => {
-          ptTotal++;
-          if(content === 'TRANSLATION NOT FOUND') {
-            ptMissing++;
-          } else {
-            ptValid++;
-          }
+    if (translations?.pageTitle) {
+      Object.values(translations.pageTitle).forEach(content => {
+        ptTotal++;
+        if (content === 'TRANSLATION NOT FOUND') {
+          ptMissing++;
+        } else {
+          ptValid++;
         }
-      );
+      });
     }
     return {
-      sl: {valid: slValid, missing: slMissing, total: stTotal},
-      pt: {valid: ptValid, missing: ptMissing, total: ptTotal},
+      sl: { valid: slValid, missing: slMissing, total: stTotal },
+      pt: { valid: ptValid, missing: ptMissing, total: ptTotal },
     };
-  }
+  };
 
   const totalAvailable = getTotalAvailable();
 
- return (
+  return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
       <div className={clsx(planningStyles.modal)} onClick={e => e.stopPropagation()}>
         <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
- <div className={planningStyles.modalContent}>
+        <div className={planningStyles.modalContent}>
           <div className={planningStyles.menu}>
             <UpdaterButtons
               loading={loading}
@@ -382,11 +514,87 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
               onCancel={onClose}
             />
           </div>
-        <UpdaterTable translations={translations} loading={loading}
-      onToggleSL={handleToggleSL}
-        onTogglePT={handleTogglePT} 
-        selectedItems={selectedItems}/>
+
+          <div className={planningStyles.lpSection}>
+            <div className={planningStyles.lpHeader}>
+              <label>
+                <input type="checkbox" checked={useGlobalLP} onChange={e => setUseGlobalLP(e.target.checked)} />
+                Use same Landing Page for all shops
+              </label>
+              {!useGlobalLP && (
+                <span className={planningStyles.warningText}>
+                   (FD/MD mode enabled - per-shop LP IDs)
+                </span>)}
+            </div>
+            <div className={planningStyles.lpField}>
+              <label>Landing Page:</label>
+              <input
+                type="text"
+                value={globalLP}
+                onChange={e => handleGlobalLPChange(e.target.value)}
+                disabled={!useGlobalLP}
+                className={!useGlobalLP ? planningStyles.lpInputDisabled : ''}
+                placeholder="lp26-04-05"
+              />
+            </div>
           </div>
+
+          <div>
+            <div className={planningStyles.dateSection}>
+              <div className={planningStyles.dateHeader}>
+                <label>
+                  <input type="checkbox" checked={useGlobalDate} onChange={e => setUseGlobalDate(e.target.checked)} />
+                  Use same dates for all shops
+                </label>
+              </div>
+              <div className={planningStyles.dateFields}>
+                <div className={planningStyles.dateField}>
+                  <label>Activate Date (00:00):</label>
+                  <input
+                    type="date"
+                    value={formatDateForInput(globalDateConfig.activateDate)}
+                    onChange={e => {
+                      const newDate = new Date(e.target.value);
+                      newDate.setHours(0, 0, 0, 0);
+                      handleGlobalActivateDateChange(newDate);
+                    }}
+                    disabled={!useGlobalDate}
+                    className={!useGlobalDate ? planningStyles.dateInputDisabled : ''}
+                  />
+                </div>
+                <div className={planningStyles.dateField}>
+                  <label>Deactivate Date (23:59, Sunday):</label>
+                  <DatePicker
+                    selected={globalDateConfig.deactivateDate}
+                    onChange={handleGlobalDeactivateDateChange}
+                    dateFormat="yyyy-MM-dd"
+                    minDate={new Date()}
+                    disabled={!useGlobalDate}
+                    className={!useGlobalDate ? planningStyles.datePickerDisabled : planningStyles.datePicker}
+                  />
+                </div>
+              </div>
+            </div>
+            <UpdaterTable
+              translations={translations}
+              loading={loading}
+              onToggleSL={handleToggleSL}
+              onTogglePT={handleTogglePT}
+              selectedItems={selectedItems}
+              slugDateConfig={slugDateConfig}
+              slugLPConfig={slugLPConfig}
+              getDateForSlug={getDateForSlug}
+              getLPForSlug={getLPForSlug}
+              onSlugActivateDateChange={handleSlugActivateDateChange}
+              onSlugDeactivateDateChange={handleSlugDeactivateDateChange}
+              onSlugLPChange={handleSlugLPChange}
+              useGlobalDates={useGlobalDate}
+              useGlobalLP={useGlobalLP}
+              slugFMDModes={slugFMDModes}
+              onSlugFMDModeChange={handleSlugFMDModeChange}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

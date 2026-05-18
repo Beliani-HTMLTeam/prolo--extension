@@ -45,3 +45,7 @@ export interface UpdaterDateConfig {
 export interface UpdaterSlugDateConfig {
   [slug: string]: UpdaterDateConfig;
 }
+
+export interface UpdaterSlugLPConfig {
+  [slug: string]: string;
+}
