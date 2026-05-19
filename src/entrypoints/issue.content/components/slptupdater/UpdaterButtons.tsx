@@ -18,61 +18,70 @@ const UpdaterButtons = ({
   onClearAll,
   onCancel,
 }: UpdaterButtonsProps) => {
+  const isUpdating = loading || updateStarted;
+
   return (
     <>
       <div className={styles.actionButtons}>
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateAll}
-          disabled={loading || updateStarted || hasManualSelection}
+          disabled={isUpdating || hasManualSelection}
           icon="mdi:send"
-          label="Update All"
+          label='Update All'
         />
 
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateAllSL}
-          disabled={loading || updateStarted || hasManualSelection}
+          disabled={isUpdating}
           icon="mdi:send-check"
-          label={`Update All SL`}
+          label='Update All SL'
         />
 
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateAllPT}
-          disabled={loading || updateStarted || hasManualSelection}
+          disabled={isUpdating}
           icon="mdi:send-check"
-          label={`Update All PT`}
+          label='Update All PT'
         />
 
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateSelectedSL}
-          disabled={loading || selectedSLCount === 0 || updateStarted}
+          disabled={isUpdating || selectedSLCount === 0}
           icon="mdi:send-check"
-          label={`Update Selected SL`}
+          label='Update Selected SL'
         />
 
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateSelectedPT}
-          disabled={loading || selectedPTCount === 0 || updateStarted}
+          disabled={isUpdating || selectedPTCount === 0}
           icon="mdi:send-check"
-          label={`Update Selected PT`}
+          label='Update Selected PT'
+        />
+
+        <UpdaterButton
+          isPrimary={true}
+          onClick={onUpdateSelected}
+          disabled={isUpdating}
+          label='Update Selected'
         />
 
         <UpdaterButton
           isPrimary={false}
           onClick={onSelectAll}
-          disabled={loading || updateStarted}
-          label="Select All Ready"
+          disabled={isUpdating}
+          label='Select All Ready'
         />
 
         <UpdaterButton
           isPrimary={false}
           onClick={onClearAll}
-          disabled={loading || updateStarted || (selectedSLCount === 0 && selectedPTCount === 0)}
-          label="Clear All"
+          disabled={isUpdating || (selectedSLCount === 0 && selectedPTCount === 0)}
+          label='Clear All'
         />
       </div>
 

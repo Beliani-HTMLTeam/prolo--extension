@@ -1,6 +1,6 @@
 import { UpdaterSelectedItem, UpdaterSlugDateConfig, UpdaterSlugLPConfig } from '@/entrypoints/newtab/types/Updater';
 import { IssueListItem, LineTitleTranslations } from '../../lib/types';
-import planningStyles from '../../styles/updater.module.scss';
+import updaterStyles from '../../styles/updater.module.scss';
 import { formatDateForInput } from '@/entrypoints/newtab/utils/updater/dates';
 import DatePicker from 'react-datepicker';
 
@@ -11,11 +11,9 @@ interface UpdaterTableProps {
   onTogglePT?: (slug: string, checked: boolean, content: string) => void;
   selectedItems?: UpdaterSelectedItem[];
   useGlobalDates?: boolean;
-  slugDateConfig?: UpdaterSlugDateConfig;
   onSlugActivateDateChange?: (slug: string, date: Date | null) => void;
   onSlugDeactivateDateChange?: (slug: string, date: Date | null) => void;
   getDateForSlug?: (slug: string, type: 'activate' | 'deactivate') => Date;
-  slugLPConfig?: UpdaterSlugLPConfig;
   getLPForSlug?: (slug: string) => string;
   onSlugLPChange?: (slug: string, lp: string) => void;
   useGlobalLP?: boolean;
@@ -30,11 +28,9 @@ const UpdaterTable = ({
   onTogglePT,
   selectedItems = [],
   useGlobalDates = true,
-  slugDateConfig = {},
   onSlugActivateDateChange,
   onSlugDeactivateDateChange,
   getDateForSlug,
-  slugLPConfig = {},
   getLPForSlug,
   onSlugLPChange,
   useGlobalLP = true,
@@ -43,9 +39,9 @@ const UpdaterTable = ({
 }: UpdaterTableProps) => {
   if (loading) {
     return (
-      <div className={planningStyles.planningTable}>
-        <div className={planningStyles.shopRow}>
-          <div className={planningStyles.shopSelector}>Loading...</div>
+      <div className={updaterStyles.updaterTable}>
+        <div className={updaterStyles.shopRow}>
+          <div className={updaterStyles.shopSelector}>Loading...</div>
         </div>
       </div>
     );
@@ -53,9 +49,9 @@ const UpdaterTable = ({
 
   if (!translations?.subjectLine || !translations?.pageTitle) {
     return (
-      <div className={planningStyles.planningTable}>
-        <div className={planningStyles.shopRow}>
-          <div className={planningStyles.shopSelector}>No translations found</div>
+      <div className={updaterStyles.updaterTable}>
+        <div className={updaterStyles.shopRow}>
+          <div className={updaterStyles.shopSelector}>No translations found</div>
         </div>
       </div>
     );
@@ -110,11 +106,12 @@ const UpdaterTable = ({
   const allPTSelected = allPTSlugs.length > 0 && allPTSlugs.every(slug => isPTSelected(slug));
 
   return (
-    <div className={planningStyles.planningTable}>
-      <div className={planningStyles.tableHeader}>
-        <div className={planningStyles.shopLabel}>Country</div>
-        <div className={planningStyles.subjectLineHeader}>
+    <div className={updaterStyles.updaterTable}>
+      <div className={updaterStyles.tableHeader}>
+        <div className={updaterStyles.shopLabel}>Country</div>
+        <div className={updaterStyles.subjectLineHeader}>
           <span>Subject Line</span>
+                  <span className={updaterStyles.selectLabel}>Select all SL</span>
           <input
             type="checkbox"
             onChange={e => {
@@ -130,8 +127,9 @@ const UpdaterTable = ({
             disabled={allSLSlugs.length === 0}
           />
         </div>
-        <div className={planningStyles.pageTitleHeader}>
+        <div className={updaterStyles.pageTitleHeader}>
           <span>Page Title</span>
+           <span className={updaterStyles.selectLabel}>Select all PT</span>
           <input
             type="checkbox"
             onChange={e => {
@@ -147,12 +145,12 @@ const UpdaterTable = ({
             disabled={allPTSlugs.length === 0}
           />
         </div>
-        <div className={planningStyles.fdMdHeader}>FD / MD</div>
-        {!useGlobalLP && <div className={planningStyles.landingPageHeader}>Landing Page</div>}
+        <div className={updaterStyles.fdMdHeader}>FD / MD</div>
+        {!useGlobalLP && <div className={updaterStyles.landingPageHeader}>Landing Page</div>}
         {!useGlobalDates && (
           <>
-            <div className={planningStyles.activateDateHeader}>Activate Date</div>
-            <div className={planningStyles.deactivateDateHeader}>Deactivate Date</div>
+            <div className={updaterStyles.activateDateHeader}>Activate Date</div>
+            <div className={updaterStyles.deactivateDateHeader}>Deactivate Date</div>
           </>
         )}
       </div>
@@ -171,8 +169,8 @@ const UpdaterTable = ({
           const mdMode = slugFMDModes[slug]?.md || false;
 
           return (
-            <div key={slug} className={planningStyles.shopRow}>
-              <div className={planningStyles.shopLabel}>
+            <div key={slug} className={updaterStyles.shopRow}>
+              <div className={updaterStyles.shopLabel}>
                 <input
                   type="checkbox"
                   checked={isSLSelected(slug) || isPTSelected(slug)}
@@ -199,7 +197,7 @@ const UpdaterTable = ({
                 <span>{slug}</span>
               </div>
 
-              <div className={planningStyles.subjectLine}>
+              <div className={updaterStyles.subjectLine}>
                 <span>{subjectLine || '-'}</span>
                 {hasSL && (
                   <input
@@ -207,11 +205,12 @@ const UpdaterTable = ({
                     checked={isSLSelected(slug)}
                     onChange={e => handleToggleSL(slug, e.target.checked, subjectLine)}
                     disabled={loading}
+                    title='Select subject line for update'
                   />
                 )}
               </div>
 
-              <div className={planningStyles.pageTitle}>
+              <div className={updaterStyles.pageTitle}>
                 <span>{pageTitle || '-'}</span>
                 {hasPT && (
                   <input
@@ -219,12 +218,13 @@ const UpdaterTable = ({
                     checked={isPTSelected(slug)}
                     onChange={e => handleTogglePT(slug, e.target.checked, pageTitle)}
                     disabled={loading}
+                     title="Select page title for update"
                   />
                 )}
               </div>
 
-              <div className={planningStyles.fdMd}>
-                <label className={`${planningStyles.checkboxLabel} ${mdMode ? planningStyles.disabled : ''}`}>
+              <div className={updaterStyles.fdMd}>
+                <label className={`${updaterStyles.checkboxLabel} ${mdMode ? updaterStyles.disabled : ''}`}>
                   <input
                     type="checkbox"
                     checked={fdMode}
@@ -233,7 +233,7 @@ const UpdaterTable = ({
                   />
                   <span>FD</span>
                 </label>
-                <label className={`${planningStyles.checkboxLabel} ${fdMode ? planningStyles.disabled : ''}`}>
+                <label className={`${updaterStyles.checkboxLabel} ${fdMode ? updaterStyles.disabled : ''}`}>
                   <input
                     type="checkbox"
                     checked={mdMode}
@@ -245,20 +245,20 @@ const UpdaterTable = ({
               </div>
 
               {!useGlobalLP && (
-                <div className={planningStyles.landingPage}>
+                <div className={updaterStyles.landingPage}>
                   <input
                     type="text"
                     value={lp}
                     onChange={e => onSlugLPChange?.(slug, e.target.value)}
                     disabled={loading}
                     placeholder="lp26-04-05"
-                    className={planningStyles.lpInput}
+                    className={updaterStyles.lpInput}
                   />
                 </div>
               )}
               {!useGlobalDates && (
                 <>
-                  <div className={planningStyles.activateDate}>
+                  <div className={updaterStyles.activateDate}>
                     <DatePicker
                       selected={activateDate}
                       onChange={(date: Date | null) => onSlugActivateDateChange?.(slug, date)}
@@ -269,7 +269,7 @@ const UpdaterTable = ({
                       placeholderText="Select activate date"
                     />
                   </div>
-                  <div className={planningStyles.deactivateDate}>
+                  <div className={updaterStyles.deactivateDate}>
                     <DatePicker
                       selected={deactivateDate}
                       onChange={(date: Date | null) => onSlugDeactivateDateChange?.(slug, date)}

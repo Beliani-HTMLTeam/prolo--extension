@@ -11,7 +11,7 @@ import { IssueListItem, LineTitleTranslations } from '../lib/types';
 import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
-import planningStyles from '../styles/updater.module.scss';
+import updaterStyles from '../styles/updater.module.scss';
 import { ModalHeader } from './planningmodal/ModalHeader';
 import UpdaterTable from './slptupdater/UpdaterTable';
 import UpdaterButtons from './slptupdater/UpdaterButtons';
@@ -178,8 +178,6 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     }
   };
 
-
-
   const handleToggleSL = (slug: string, checked: boolean, content: string) => {
     if (checked) {
       setSelectedItems(prev => [...prev, { slug, type: 'subjectLine', content }]);
@@ -238,8 +236,9 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
 
   const handleGlobalActivateDateChange = (date: Date | null) => {
     if (date) {
-      date.setHours(0, 0, 0, 0);
-      setGlobalDateConfig(prev => ({ ...prev, activateDate: date }));
+      const newDate = new Date(date);
+      newDate.setHours(0, 0, 0, 0);
+      setGlobalDateConfig(prev => ({ ...prev, activateDate: newDate }));
     }
   };
 
@@ -275,11 +274,10 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
       const resetFMDModes: Record<string, { fd: boolean; md: boolean }> = {};
       Object.keys(slugFMDModes).forEach(slug => {
         resetFMDModes[slug] = { fd: false, md: false };
-      }
-      );
+      });
       setSlugFMDModes(resetFMDModes);
     }
-  }
+  };
 
   const handleSlugActivateDateChange = (slug: string, date: Date | null) => {
     if (date) {
@@ -316,12 +314,12 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
   };
 
   const getLPForSlug = (slug: string): string => {
-   if (useGlobalLP) {
-    return globalLP;
-   }
+    if (useGlobalLP) {
+      return globalLP;
+    }
 
     let baseLP = slugLPConfig[slug] || globalLP;
-    baseLP = baseLP.replace(/fd|md$/, ''); 
+    baseLP = baseLP.replace(/fd|md$/, '');
 
     // FD/MD is enabled
     const modes = slugFMDModes[slug];
@@ -454,52 +452,81 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     console.log('Selecting all ready items:', readyItems);
   };
 
-  const getTotalAvailable = () => {
-    let slValid = 0;
-    let slMissing = 0;
-    let stTotal = 0;
-
-    let ptValid = 0;
-    let ptMissing = 0;
-    let ptTotal = 0;
-
-    if (translations?.subjectLine) {
-      Object.values(translations.subjectLine).forEach(content => {
-        stTotal++;
-        if (content === 'TRANSLATION NOT FOUND') {
-          slMissing++;
-        } else {
-          slValid++;
-        }
-      });
-    }
-    if (translations?.pageTitle) {
-      Object.values(translations.pageTitle).forEach(content => {
-        ptTotal++;
-        if (content === 'TRANSLATION NOT FOUND') {
-          ptMissing++;
-        } else {
-          ptValid++;
-        }
-      });
-    }
-    return {
-      sl: { valid: slValid, missing: slMissing, total: stTotal },
-      pt: { valid: ptValid, missing: ptMissing, total: ptTotal },
-    };
-  };
-
-  const totalAvailable = getTotalAvailable();
 
   return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-      <div className={clsx(planningStyles.modal)} onClick={e => e.stopPropagation()}>
+      <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
         <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
-        <div className={planningStyles.modalContent}>
-          <div className={planningStyles.menu}>
+        <div className={updaterStyles.modalContent}>
+          <div className={updaterStyles.menu}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className={updaterStyles.dateSection}>
+                <div className={updaterStyles.dateHeader}>
+                  <label>
+                    <input type="checkbox" checked={useGlobalDate} onChange={e => setUseGlobalDate(e.target.checked)} />
+                    Regular dates
+                  </label>
+                </div>
+                <div className={updaterStyles.dateFields}>
+                  <div className={updaterStyles.dateField}>
+                    <label>Activate Date (00:00):</label>
+                    <DatePicker
+                      selected={globalDateConfig.activateDate}
+                      onChange={handleGlobalActivateDateChange}
+                      dateFormat="yyyy-MM-dd"
+                      minDate={new Date()}
+                      disabled={true}
+                      className={!useGlobalDate ? updaterStyles.datePickerDisabled : updaterStyles.datePicker}
+                      placeholderText="Select activate date"
+                      wrapperClassName={updaterStyles.datePickerWrapper}
+                    />
+                  </div>
+                  <div className={updaterStyles.dateField}>
+                    <label>Deactivate Date (23:59, Sunday):</label>
+                    <DatePicker
+                      selected={globalDateConfig.deactivateDate}
+                      onChange={handleGlobalDeactivateDateChange}
+                      shouldCloseOnSelect={true}
+                      dateFormat="yyyy-MM-dd"
+                      minDate={new Date()}
+                      disabled={!useGlobalDate}
+                      className={!useGlobalDate ? updaterStyles.datePickerDisabled : updaterStyles.datePicker}
+                      placeholderText="Select deactivate date"
+                      wrapperClassName={updaterStyles.datePickerWrapper}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className={updaterStyles.lpSection}>
+                <div className={updaterStyles.lpHeader}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={useGlobalLP}
+                      onChange={e => handleUseGlobalLPToggle(e.target.checked)}
+                    />
+                    Regular LP
+                  </label>
+                  {!useGlobalLP && (
+                    <span className={updaterStyles.warningText}>(FD/MD mode enabled - per-shop LP IDs)</span>
+                  )}
+                </div>
+                <div className={updaterStyles.lpField}>
+                  <label>Landing Page:</label>
+                  <input
+                    type="text"
+                    value={globalLP}
+                    onChange={e => handleGlobalLPChange(e.target.value)}
+                    disabled={!useGlobalLP}
+                    className={!useGlobalLP ? updaterStyles.lpInputDisabled : ''}
+                    placeholder="lp26-04-05"
+                  />
+                </div>
+              </div>
+            </div>
             <UpdaterButtons
-              loading={loading}
-              updateStarted={false}
+              loading={loading || isUpdating}
+              updateStarted={isUpdating}
               selectedSLCount={selectedItems.filter(item => item.type === 'subjectLine').length}
               selectedPTCount={selectedItems.filter(item => item.type === 'pageTitle').length}
               hasManualSelection={selectedItems.length > 0}
@@ -515,74 +542,13 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
             />
           </div>
 
-          <div className={planningStyles.lpSection}>
-            <div className={planningStyles.lpHeader}>
-              <label>
-                <input type="checkbox" checked={useGlobalLP} onChange={e => setUseGlobalLP(e.target.checked)} />
-                Use same Landing Page for all shops
-              </label>
-              {!useGlobalLP && (
-                <span className={planningStyles.warningText}>
-                   (FD/MD mode enabled - per-shop LP IDs)
-                </span>)}
-            </div>
-            <div className={planningStyles.lpField}>
-              <label>Landing Page:</label>
-              <input
-                type="text"
-                value={globalLP}
-                onChange={e => handleGlobalLPChange(e.target.value)}
-                disabled={!useGlobalLP}
-                className={!useGlobalLP ? planningStyles.lpInputDisabled : ''}
-                placeholder="lp26-04-05"
-              />
-            </div>
-          </div>
-
-          <div>
-            <div className={planningStyles.dateSection}>
-              <div className={planningStyles.dateHeader}>
-                <label>
-                  <input type="checkbox" checked={useGlobalDate} onChange={e => setUseGlobalDate(e.target.checked)} />
-                  Use same dates for all shops
-                </label>
-              </div>
-              <div className={planningStyles.dateFields}>
-                <div className={planningStyles.dateField}>
-                  <label>Activate Date (00:00):</label>
-                  <input
-                    type="date"
-                    value={formatDateForInput(globalDateConfig.activateDate)}
-                    onChange={e => {
-                      const newDate = new Date(e.target.value);
-                      newDate.setHours(0, 0, 0, 0);
-                      handleGlobalActivateDateChange(newDate);
-                    }}
-                    disabled={!useGlobalDate}
-                    className={!useGlobalDate ? planningStyles.dateInputDisabled : ''}
-                  />
-                </div>
-                <div className={planningStyles.dateField}>
-                  <label>Deactivate Date (23:59, Sunday):</label>
-                  <DatePicker
-                    selected={globalDateConfig.deactivateDate}
-                    onChange={handleGlobalDeactivateDateChange}
-                    dateFormat="yyyy-MM-dd"
-                    minDate={new Date()}
-                    disabled={!useGlobalDate}
-                    className={!useGlobalDate ? planningStyles.datePickerDisabled : planningStyles.datePicker}
-                  />
-                </div>
-              </div>
-            </div>
+          <div style={{ flex: 1 }}>
             <UpdaterTable
               translations={translations}
-              loading={loading}
+              loading={loading || isUpdating}
               onToggleSL={handleToggleSL}
               onTogglePT={handleTogglePT}
               selectedItems={selectedItems}
-              slugDateConfig={slugDateConfig}
-              slugLPConfig={slugLPConfig}
               getDateForSlug={getDateForSlug}
               getLPForSlug={getLPForSlug}
               onSlugActivateDateChange={handleSlugActivateDateChange}
