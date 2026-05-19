@@ -86,14 +86,6 @@ export const useLPConfig = (initialGlobalLP: string) => {
       if (modes?.fd) return `${baseLP}fd`;
       if (modes?.md) return `${baseLP}md`;
 
-      console.log('getLPForSlug', {
-        slug,
-        useGlobalLP,
-        globalLP,
-        slugLPConfig: slugLPConfig[slug],
-        slugFMDModes: slugFMDModes[slug],
-      });
-
       return baseLP;
     },
     [useGlobalLP, globalLP, slugLPConfig, slugFMDModes],
@@ -102,7 +94,6 @@ export const useLPConfig = (initialGlobalLP: string) => {
   const initializeSlugLPs = useCallback((slugs: string[], lp: string) => {
     if (initializedRef.current && Object.keys(slugLPConfig).length > 0) return;
 
-        console.log('Initializing slug LPs with:', lp); // Debug log
 
     const initialLPs: UpdaterSlugLPConfig = {};
     const initialModes: Record<string, { fd: boolean; md: boolean }> = {};

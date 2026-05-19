@@ -1,18 +1,19 @@
-export const getDefaultDeactivateDate = (): Date => {
-  const date = new Date();
-  date.setMonth(date.getMonth() + 1);
+export const getDefaultDeactivateDate = (tabDate?: Date): Date => {  
+  const baseDate = tabDate ? new Date(tabDate) : new Date();
 
-  // we need to check if it is Sunday (0)
-if (date.getDay() !== 0) {
-  // moving to the next closest Sunday
-  const daysUntilSunday = 7 - date.getDay();
-  date.setDate(date.getDate() + daysUntilSunday);
-}
-
-date.setHours(23,59, 59, 999)
-  return date;
-}
-
+  // Always add one month to the base date
+  baseDate.setMonth(baseDate.getMonth() + 1);
+  
+  // Check if it's Sunday (0)
+  if (baseDate.getDay() !== 0) {
+    // Move to the next closest Sunday
+    const daysUntilSunday = 7 - baseDate.getDay();
+    baseDate.setDate(baseDate.getDate() + daysUntilSunday);
+  }
+  
+  baseDate.setHours(23, 59, 59, 999);
+  return baseDate;
+};
 export const getTodayAtMidnight = (): Date => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

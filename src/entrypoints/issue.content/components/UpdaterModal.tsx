@@ -6,10 +6,7 @@ import layoutStyles from '../styles/layout.module.scss';
 import updaterStyles from '../styles/updater.module.scss';
 import { ModalHeader } from './planningmodal/ModalHeader';
 import UpdaterTable from './updater/UpdaterTable';
-import UpdaterButtons from './updater/UpdaterButtons';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import Skeleton from 'react-loading-skeleton';
 import { useTranslationsLoader } from '@/entrypoints/newtab/utils/updater/hooks/useTranslationsLoader';
 import { useDateConfig } from '@/entrypoints/newtab/utils/updater/hooks/useDateConfig';
 import { useLPConfig } from '@/entrypoints/newtab/utils/updater/hooks/useLPConfig';
@@ -25,8 +22,9 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     loading,
     error,
     globalLP: initialGlobalLP,
-    setGlobalLP: setLoaderGlobalLP
+    deactivateDate,
   } = useTranslationsLoader({ issueId, rows });
+  
   const {
     useGlobalDate,
     setUseGlobalDate,
@@ -37,7 +35,7 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     handleSlugDeactivateDateChange,
     getDateForSlug,
     initializeSlugDates,
-  } = useDateConfig();
+  } = useDateConfig(deactivateDate);
 
   const {
     useGlobalLP,
@@ -49,7 +47,7 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     handleSlugLPChange,
     getLPForSlug,
     initializeSlugLPs,
-      setGlobalLP: setHookGlobalLP,
+    setGlobalLP: setHookGlobalLP,
   } = useLPConfig(initialGlobalLP);
 
   const {
@@ -74,7 +72,6 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     }
   }, [initialGlobalLP, setHookGlobalLP]);
 
-
   useEffect(() => {
     if (translations) {
       const allSlugs = new Set([
@@ -90,14 +87,6 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
       }
     }
   }, [translations]);
-
-  useEffect(() => {
-    return () => handleClose()
-  }, [])
-
-  const handleClose = () => {
-    onClose();
-  };
 
   const handleUpdateSelectedWrapper = () => handleUpdateSelected(selectedItems);
   const handleUpdateAllWrapper = () => handleUpdateAll(translations, handleUpdateSelected);

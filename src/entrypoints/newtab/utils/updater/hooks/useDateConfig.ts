@@ -1,17 +1,30 @@
-import { UpdaterDateConfig, UpdaterSlugDateConfig } from "@/entrypoints/newtab/types/Updater";
-import { getDefaultDeactivateDate, getTodayAtMidnight, setDateToSunday23_59 } from "../dates";
+import { UpdaterDateConfig, UpdaterSlugDateConfig } from '@/entrypoints/newtab/types/Updater';
+import { getDefaultDeactivateDate, getTodayAtMidnight, setDateToSunday23_59 } from '../dates';
 
-export const useDateConfig = () => {
-   const [useGlobalDate, setUseGlobalDate] = useState(true);
-     const [globalDateConfig, setGlobalDateConfig] = useState<UpdaterDateConfig>({
-       activateDate: getTodayAtMidnight(),
-       deactivateDate: getDefaultDeactivateDate(),
-     });
-     const [slugDateConfig, setSlugDateConfig] = useState<UpdaterSlugDateConfig>({});
-   
-      const initializedRef = useRef(false);
+export const useDateConfig = (initialDeactivateDate: Date | null) => {
+  const [useGlobalDate, setUseGlobalDate] = useState(true);
+  const [globalDateConfig, setGlobalDateConfig] = useState<UpdaterDateConfig>({
+    activateDate: getTodayAtMidnight(),
+    deactivateDate: initialDeactivateDate || getDefaultDeactivateDate(),
+  });
+  const [slugDateConfig, setSlugDateConfig] = useState<UpdaterSlugDateConfig>({});
 
-    const handleGlobalActivateDateChange = useCallback((date: Date | null) => {
+  const initializedRef = useRef(false);
+  const initialDateSetRef = useRef(false);
+    const correctDeactivateDate = useRef<Date | null>(initialDeactivateDate);
+
+   useEffect(() => {
+    if (initialDeactivateDate && !initialDateSetRef.current) {
+            correctDeactivateDate.current = initialDeactivateDate;
+      setGlobalDateConfig(prev => ({
+        ...prev,
+        deactivateDate: initialDeactivateDate,
+      }));
+      initialDateSetRef.current = true;
+    }
+  }, [initialDeactivateDate]);
+
+  const handleGlobalActivateDateChange = useCallback((date: Date | null) => {
     if (date) {
       const newDate = new Date(date);
       newDate.setHours(0, 0, 0, 0);
@@ -44,30 +57,36 @@ export const useDateConfig = () => {
     }
   }, []);
 
-  const getDateForSlug = useCallback((slug: string, type: 'activate' | 'deactivate'): Date => {
-    if (!useGlobalDate && slugDateConfig[slug]) {
-      return slugDateConfig[slug][type === 'activate' ? 'activateDate' : 'deactivateDate'];
-    }
-    return globalDateConfig[type === 'activate' ? 'activateDate' : 'deactivateDate'];
-  }, [useGlobalDate, slugDateConfig, globalDateConfig]);
+  const getDateForSlug = useCallback(
+    (slug: string, type: 'activate' | 'deactivate'): Date => {
+      if (!useGlobalDate && slugDateConfig[slug]) {
+        return slugDateConfig[slug][type === 'activate' ? 'activateDate' : 'deactivateDate'];
+      }
+      return globalDateConfig[type === 'activate' ? 'activateDate' : 'deactivateDate'];
+    },
+    [useGlobalDate, slugDateConfig, globalDateConfig],
+  );
 
   const initializeSlugDates = useCallback((slugs: string[]) => {
     // Only initialize if not already initialized
     if (initializedRef.current) return;
     
+    const deactivateDateToUse = correctDeactivateDate.current || globalDateConfig.deactivateDate;
+    
     const initialDates: UpdaterSlugDateConfig = {};
     slugs.forEach(slug => {
       initialDates[slug] = {
         activateDate: getTodayAtMidnight(),
-        deactivateDate: getDefaultDeactivateDate(),
+        deactivateDate: deactivateDateToUse,
       };
     });
     setSlugDateConfig(initialDates);
     initializedRef.current = true;
-  }, []);
+  }, [globalDateConfig.deactivateDate]);
 
-   const resetInitialization = useCallback(() => {
+  const resetInitialization = useCallback(() => {
     initializedRef.current = false;
+      initialDateSetRef.current = false;
   }, []);
 
   return {
@@ -82,5 +101,5 @@ export const useDateConfig = () => {
     getDateForSlug,
     initializeSlugDates,
     resetInitialization,
-  }
-}
+  };
+};

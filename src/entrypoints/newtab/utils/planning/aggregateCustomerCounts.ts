@@ -17,18 +17,11 @@ export const aggregateCustomerCounts = async (
     throw new DOMException('Cancelled', 'AbortError');
   }
 
-  console.log('Fetching spam plan for newsletter IDs:', allNewsletterIds);
-
   const spamPlanMap = await fetchCustomerCountsForNewsletters(allNewsletterIds, { signal });
-
-  console.log('Customer count map entries:', Array.from(spamPlanMap.entries()));
 
   let updatedResults = results.map(result => {
     const entry = spamPlanMap.get(result.newsletterId);
     if (entry) {
-      console.log(
-        `Found data for newsletter ${result.newsletterId} (${result.slug}): ${entry.customerCount} customers - "${entry.subjectLine}"`,
-      );
       return {
         ...result,
         customers: entry.customerCount,

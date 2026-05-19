@@ -1,6 +1,7 @@
 import { fetchIssueData, fetchSubjectPageTranslations } from '@/entrypoints/issue.content/api/issueData';
 import { fetchLPPaths } from '@/entrypoints/issue.content/api/updater';
 import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
+import { getDefaultDeactivateDate } from '../dates';
 
 interface UseTranslationsLoaderProps {
   issueId: number;
@@ -12,8 +13,10 @@ export const useTranslationsLoader = ({ issueId, rows }: UseTranslationsLoaderPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [globalLP, setGlobalLP] = useState('');
+    const [deactivateDate, setDeactivateDate] = useState<Date | null>(null);
 
-  useEffect(() => {
+
+ useEffect(() => {
     const loadIssueData = async () => {
       setLoading(true);
       try {
@@ -24,15 +27,21 @@ export const useTranslationsLoader = ({ issueId, rows }: UseTranslationsLoaderPr
           return;
         }
 
-        const [rawTranslations, lpPath] = await Promise.all([
+        const [rawTranslations, lpResult] = await Promise.all([
           fetchSubjectPageTranslations(issueItem),
           fetchLPPaths(issueItem),
         ]);
 
-         console.log('Fetched LP Path:', lpPath); 
+        setGlobalLP(lpResult.lp);
 
-          const finalLP = lpPath || 'lp00-00-00';
-        setGlobalLP(finalLP);
+        let calculatedDate: Date;
+        if (lpResult.date) {
+          calculatedDate = getDefaultDeactivateDate(lpResult.date);
+        } else {
+          calculatedDate = getDefaultDeactivateDate();
+        }
+        
+        setDeactivateDate(calculatedDate);
 
         const availableSlugs = new Set(rows.map(row => row.shop));
 
@@ -73,5 +82,5 @@ export const useTranslationsLoader = ({ issueId, rows }: UseTranslationsLoaderPr
     void loadIssueData();
   }, [issueId, rows]);
 
-  return { translations, loading, error, globalLP, setGlobalLP };
+  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate };
 };
