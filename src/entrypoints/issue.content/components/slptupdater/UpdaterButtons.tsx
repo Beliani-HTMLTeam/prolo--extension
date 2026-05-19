@@ -3,11 +3,9 @@ import { UpdaterButtonsProps } from '@/entrypoints/newtab/types/Updater';
 import UpdaterButton from './UpdaterButton';
 
 const UpdaterButtons = ({
-  loading,
   updateStarted,
   selectedSLCount,
   selectedPTCount,
-  hasManualSelection,
   onUpdateAllSL,
   onUpdateSelectedSL,
   onUpdateAllPT,
@@ -18,7 +16,7 @@ const UpdaterButtons = ({
   onClearAll,
   onCancel,
 }: UpdaterButtonsProps) => {
-  const isUpdating = loading || updateStarted;
+  const isUpdating = updateStarted;
 
   return (
     <>
@@ -26,7 +24,7 @@ const UpdaterButtons = ({
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateAll}
-          disabled={isUpdating || hasManualSelection}
+          disabled={isUpdating}
           icon="mdi:send"
           label='Update All'
         />
@@ -85,7 +83,7 @@ const UpdaterButtons = ({
         />
       </div>
 
-      {loading && updateStarted && <UpdaterButton isPrimary={false} onClick={onCancel} label="Cancel" />}
+      {isUpdating && <UpdaterButton isPrimary={false} onClick={onCancel} label="Cancel" />}
     </>
   );
 };

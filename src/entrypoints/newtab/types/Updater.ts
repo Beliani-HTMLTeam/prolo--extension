@@ -15,11 +15,9 @@ export interface UpdaterButtonProps {
 };
 
 export interface UpdaterButtonsProps {
-  loading: boolean;
   updateStarted: boolean;
   selectedSLCount: number;
   selectedPTCount: number;
-  hasManualSelection: boolean;
   onUpdateAllSL: () => void;
   onUpdateSelectedSL: () => void;
   onUpdateAllPT: () => void;

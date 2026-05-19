@@ -3,6 +3,7 @@ import { IssueListItem, LineTitleTranslations } from '../../lib/types';
 import updaterStyles from '../../styles/updater.module.scss';
 import { formatDateForInput } from '@/entrypoints/newtab/utils/updater/dates';
 import DatePicker from 'react-datepicker';
+import Skeleton from 'react-loading-skeleton';
 
 interface UpdaterTableProps {
   translations: LineTitleTranslations | null;
@@ -19,7 +20,10 @@ interface UpdaterTableProps {
   useGlobalLP?: boolean;
   slugFMDModes?: Record<string, { fd: boolean; md: boolean }>;
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
+  availableSlugs?: string[];
 }
+
+const SKELETON_ROWS_COUNT = 10;
 
 const UpdaterTable = ({
   translations,
@@ -36,13 +40,73 @@ const UpdaterTable = ({
   useGlobalLP = true,
   slugFMDModes = {},
   onSlugFMDModeChange,
+  availableSlugs = [],
 }: UpdaterTableProps) => {
-  if (loading) {
+if (loading) {
+    const skeletonSlugs = availableSlugs.length > 0 ? availableSlugs : Array(SKELETON_ROWS_COUNT).fill('loading');
+    
     return (
       <div className={updaterStyles.updaterTable}>
-        <div className={updaterStyles.shopRow}>
-          <div className={updaterStyles.shopSelector}>Loading...</div>
+        <div className={updaterStyles.tableHeader}>
+          <div className={updaterStyles.shopLabel}>Country</div>
+          <div className={updaterStyles.subjectLineHeader}>
+            <span>Subject Line</span>
+            <span className={updaterStyles.selectLabel}>Select all SL</span>
+          </div>
+          <div className={updaterStyles.pageTitleHeader}>
+            <span>Page Title</span>
+            <span className={updaterStyles.selectLabel}>Select all PT</span>
+          </div>
+          <div className={updaterStyles.fdMdHeader}>FD / MD</div>
+          {!useGlobalLP && <div className={updaterStyles.landingPageHeader}>Landing Page</div>}
+          {!useGlobalDates && (
+            <>
+              <div className={updaterStyles.activateDateHeader}>Activate Date</div>
+              <div className={updaterStyles.deactivateDateHeader}>Deactivate Date</div>
+            </>
+          )}
         </div>
+
+        {skeletonSlugs.map((slug, index) => (
+          <div key={`skeleton-${index}`} className={updaterStyles.shopRow}>
+            <div className={updaterStyles.shopLabel}>
+              <Skeleton circle width={16} height={16} />
+              <Skeleton width={60} />
+            </div>
+
+            <div className={updaterStyles.subjectLine}>
+              <Skeleton width="100%" height={20} />
+              <Skeleton width={20} height={20} />
+            </div>
+
+            <div className={updaterStyles.pageTitle}>
+              <Skeleton width="100%" height={20} />
+              <Skeleton width={20} height={20} />
+            </div>
+
+            <div className={updaterStyles.fdMd}>
+              <Skeleton width={40} height={20} />
+              <Skeleton width={40} height={20} />
+            </div>
+
+            {!useGlobalLP && (
+              <div className={updaterStyles.landingPage}>
+                <Skeleton width="100%" height={30} />
+              </div>
+            )}
+
+            {!useGlobalDates && (
+              <>
+                <div className={updaterStyles.activateDate}>
+                  <Skeleton width="100%" height={30} />
+                </div>
+                <div className={updaterStyles.deactivateDate}>
+                  <Skeleton width="100%" height={30} />
+                </div>
+              </>
+            )}
+          </div>
+        ))}
       </div>
     );
   }

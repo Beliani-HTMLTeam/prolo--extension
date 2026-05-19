@@ -24,31 +24,10 @@ import {
 } from '@/entrypoints/newtab/utils/updater/dates';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Skeleton from 'react-loading-skeleton';
+import { fetchLPPaths } from '../api/updater';
 
-const fetchLPPaths = async (issueItem: IssueListItem): Promise<string> => {
-  const tabName = await fetchSpreadsheetTranslationsTab(issueItem); // "22.05.26 - Beds" format
 
-  if (!tabName) return '';
-
-  let year: string, month: string, day: string;
-
-  let dateMatch = tabName.match(/(\d{2})\.(\d{2})\.(\d{2})/); // DD.MM.YY format
-  if (dateMatch) {
-    // format: DD.MM.YY
-    [, day, month, year] = dateMatch;
-  } else {
-    // DD.MM.YYYY format
-    dateMatch = tabName.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-    if (dateMatch) {
-      [, day, month, year] = dateMatch;
-      year = year.slice(-2);
-    } else {
-      return '';
-    }
-  }
-
-  return `lp${year}-${month}-${day}`;
-};
 
 const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
   const [translations, setTranslations] = useState<LineTitleTranslations | null>(null);
@@ -76,6 +55,8 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
   const [slugFMDModes, setSlugFMDModes] = useState<Record<string, { fd: boolean; md: boolean }>>({});
 
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const availableSlugs = rows.map(row => row.shop);
 
   useEffect(() => {
     const loadIssueData = async () => {
@@ -452,94 +433,131 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     console.log('Selecting all ready items:', readyItems);
   };
 
-
   return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
       <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
         <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
         <div className={updaterStyles.modalContent}>
           <div className={updaterStyles.menu}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px' }}>
               <div className={updaterStyles.dateSection}>
                 <div className={updaterStyles.dateHeader}>
                   <label>
-                    <input type="checkbox" checked={useGlobalDate} onChange={e => setUseGlobalDate(e.target.checked)} />
-                    Regular dates
+                    {loading ? (
+                      <Skeleton width="100%" height={20} />
+                    ) : (
+                      <>
+                        <input
+                          type="checkbox"
+                          checked={useGlobalDate}
+                          onChange={e => setUseGlobalDate(e.target.checked)}
+                        />
+                        Regular dates
+                      </>
+                    )}
                   </label>
                 </div>
                 <div className={updaterStyles.dateFields}>
                   <div className={updaterStyles.dateField}>
-                    <label>Activate Date (00:00):</label>
-                    <DatePicker
-                      selected={globalDateConfig.activateDate}
-                      onChange={handleGlobalActivateDateChange}
-                      dateFormat="yyyy-MM-dd"
-                      minDate={new Date()}
-                      disabled={true}
-                      className={!useGlobalDate ? updaterStyles.datePickerDisabled : updaterStyles.datePicker}
-                      placeholderText="Select activate date"
-                      wrapperClassName={updaterStyles.datePickerWrapper}
-                    />
+                    {loading ? (
+                      <Skeleton width="100%" height={34} count={2} style={{ marginBottom: '5px' }} />
+                    ) : (
+                      <>
+                        <label>Activate Date (00:00):</label>
+                        <DatePicker
+                          selected={globalDateConfig.activateDate}
+                          onChange={handleGlobalActivateDateChange}
+                          dateFormat="yyyy-MM-dd"
+                          minDate={new Date()}
+                          disabled={true}
+                          className={!useGlobalDate ? updaterStyles.datePickerDisabled : updaterStyles.datePicker}
+                          placeholderText="Select activate date"
+                          wrapperClassName={updaterStyles.datePickerWrapper}
+                        />
+                      </>
+                    )}
                   </div>
                   <div className={updaterStyles.dateField}>
-                    <label>Deactivate Date (23:59, Sunday):</label>
-                    <DatePicker
-                      selected={globalDateConfig.deactivateDate}
-                      onChange={handleGlobalDeactivateDateChange}
-                      shouldCloseOnSelect={true}
-                      dateFormat="yyyy-MM-dd"
-                      minDate={new Date()}
-                      disabled={!useGlobalDate}
-                      className={!useGlobalDate ? updaterStyles.datePickerDisabled : updaterStyles.datePicker}
-                      placeholderText="Select deactivate date"
-                      wrapperClassName={updaterStyles.datePickerWrapper}
-                    />
+                    {loading ? (
+                      <Skeleton width="100%" height={34} count={2} style={{ marginBottom: '5px' }} />
+                    ) : (
+                      <>
+                        <label>Deactivate Date (23:59, Sunday):</label>
+                        <DatePicker
+                          selected={globalDateConfig.deactivateDate}
+                          onChange={handleGlobalDeactivateDateChange}
+                          shouldCloseOnSelect={true}
+                          dateFormat="yyyy-MM-dd"
+                          minDate={new Date()}
+                          disabled={!useGlobalDate}
+                          className={!useGlobalDate ? updaterStyles.datePickerDisabled : updaterStyles.datePicker}
+                          placeholderText="Select deactivate date"
+                          wrapperClassName={updaterStyles.datePickerWrapper}
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
               <div className={updaterStyles.lpSection}>
                 <div className={updaterStyles.lpHeader}>
                   <label>
-                    <input
-                      type="checkbox"
-                      checked={useGlobalLP}
-                      onChange={e => handleUseGlobalLPToggle(e.target.checked)}
-                    />
-                    Regular LP
+                    {loading ? (
+                      <Skeleton width="100%" height={20} />
+                    ) : (
+                      <>
+                        <input
+                          type="checkbox"
+                          checked={useGlobalLP}
+                          onChange={e => handleUseGlobalLPToggle(e.target.checked)}
+                        />
+                        Regular LP
+                      </>
+                    )}
                   </label>
                   {!useGlobalLP && (
                     <span className={updaterStyles.warningText}>(FD/MD mode enabled - per-shop LP IDs)</span>
                   )}
                 </div>
                 <div className={updaterStyles.lpField}>
-                  <label>Landing Page:</label>
-                  <input
-                    type="text"
-                    value={globalLP}
-                    onChange={e => handleGlobalLPChange(e.target.value)}
-                    disabled={!useGlobalLP}
-                    className={!useGlobalLP ? updaterStyles.lpInputDisabled : ''}
-                    placeholder="lp26-04-05"
-                  />
+                  {loading ? (
+                    <Skeleton width="100%" height={34} />
+                  ) : (
+                    <>
+                      <label>Landing Page:</label>
+                      <input
+                        type="text"
+                        value={globalLP}
+                        onChange={e => handleGlobalLPChange(e.target.value)}
+                        disabled={!useGlobalLP}
+                        className={!useGlobalLP ? updaterStyles.lpInputDisabled : ''}
+                        placeholder="lp26-04-05"
+                      />
+                    </>
+                  )}
                 </div>
               </div>
             </div>
-            <UpdaterButtons
-              loading={loading || isUpdating}
-              updateStarted={isUpdating}
-              selectedSLCount={selectedItems.filter(item => item.type === 'subjectLine').length}
-              selectedPTCount={selectedItems.filter(item => item.type === 'pageTitle').length}
-              hasManualSelection={selectedItems.length > 0}
-              onUpdateAllSL={handleSelectedAllSL}
-              onUpdateSelectedSL={handleUpdateSelected}
-              onUpdateAllPT={handleSelectedAllPT}
-              onUpdateSelectedPT={handleUpdateSelected}
-              onUpdateAll={handleUpdateAll}
-              onUpdateSelected={handleUpdateSelected}
-              onSelectAll={handleSelectAllReady}
-              onClearAll={handleClearAll}
-              onCancel={onClose}
-            />
+            {loading ? (
+              <div className={updaterStyles.skeletonButtons}>
+                <Skeleton height={28} count={10} style={{ marginBottom: '8px' }} />
+              </div>
+            ) : (
+              <UpdaterButtons
+                updateStarted={isUpdating}
+                selectedSLCount={selectedItems.filter(item => item.type === 'subjectLine').length}
+                selectedPTCount={selectedItems.filter(item => item.type === 'pageTitle').length}
+                onUpdateAllSL={handleSelectedAllSL}
+                onUpdateSelectedSL={handleUpdateSelected}
+                onUpdateAllPT={handleSelectedAllPT}
+                onUpdateSelectedPT={handleUpdateSelected}
+                onUpdateAll={handleUpdateAll}
+                onUpdateSelected={handleUpdateSelected}
+                onSelectAll={handleSelectAllReady}
+                onClearAll={handleClearAll}
+                onCancel={onClose}
+              />
+            )}
           </div>
 
           <div style={{ flex: 1 }}>
@@ -558,6 +576,7 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
               useGlobalLP={useGlobalLP}
               slugFMDModes={slugFMDModes}
               onSlugFMDModeChange={handleSlugFMDModeChange}
+              availableSlugs={availableSlugs}
             />
           </div>
         </div>
