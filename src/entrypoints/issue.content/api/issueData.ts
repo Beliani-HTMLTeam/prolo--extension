@@ -67,7 +67,7 @@ export const fetchSpreadsheetTranslations = async (issueItem: IssueListItem): Pr
     if (dynJson?.code !== 200) return empty;
 
     const data: Record<string, string[]> = dynJson.data ?? {};
-    console.log('data', dynJson)
+    console.log('data', dynJson);
     const timer: Record<string, boolean> = {};
     const push: Record<string, boolean> = {};
     let hasTimerEntries = false;
@@ -100,7 +100,6 @@ export const fetchSpreadsheetTranslations = async (issueItem: IssueListItem): Pr
     return empty;
   }
 };
-
 
 export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Promise<LineTitleTranslations> => {
   const empty: LineTitleTranslations = { subjectLine: null, pageTitle: null };
@@ -142,14 +141,13 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
 
     const subjectLineIndex = keys.findIndex(k => k.toLowerCase().includes('subject line'));
     const pageTitleIndex = keys.findIndex(k => k.toLowerCase().includes('page title'));
-    
+
     const subjectLine: Record<string, string> = {};
     const pageTitle: Record<string, string> = {};
-    
-    
+
     for (const [rawCountry, countryData] of Object.entries(data)) {
       const country = SLUG_CANONICAL_ALIAS[rawCountry.toUpperCase()] ?? rawCountry;
-     
+
       if (subjectLineIndex !== -1 && countryData[subjectLineIndex]) {
         const subjectLineValue = countryData[subjectLineIndex];
         if (subjectLineValue && typeof subjectLineValue === 'string' && subjectLineValue.trim()) {
@@ -168,8 +166,7 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
         } else {
           pageTitle[country] = 'TRANSLATION NOT FOUND';
         }
-      }
-      else {
+      } else {
         pageTitle[country] = 'TRANSLATION NOT FOUND';
       }
     }
@@ -213,4 +210,71 @@ export const fetchSpreadsheetTranslationsTab = async (issueItem: IssueListItem):
     console.warn('[spreadsheet] Failed to fetch translations:', e);
     return null;
   }
+};
+
+export interface SundayTranslationsResult {
+  subjectLines: Record<number, Record<string, string>>; 
+}
+
+const SUNDAY_SPREADSHEET_ID = '1RcsQspit0B3b3xX1NwZ9RWnUzZrkoVDULu2cnPMZ04U'
+const SUNDAY_GID = '2042078338';
+
+export const fetchAllSundayTranslations = async (
+  issueItem: IssueListItem
+): Promise<SundayTranslationsResult | null> => {
+   try {
+    const sundayField = issueItem.additional_fields?.['Sunday newsletter']
+    if (!sundayField) return null;
+
+    const spreadsheetId = SUNDAY_SPREADSHEET_ID;
+    const gid = SUNDAY_GID;
+
+    const tabRes = await withZrokTimeout(
+      fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+        headers: ZROK_HEADERS,
+        mode: 'cors',
+        credentials: 'omit',
+      }),
+    );
+    const tabJson = await tabRes.json();
+    if (tabJson?.code !== 200) return null;
+
+    const dynRes = await withZrokTimeout(
+      fetch(`${ZROK_BASE}/dynamic/${tabJson.year}/${tabJson.tab}`, {
+        headers: ZROK_HEADERS,
+        mode: 'cors',
+        credentials: 'omit',
+      }),
+    );
+    const dynJson = await dynRes.json();
+    if (dynJson?.code !== 200) return null;
+
+    const data: Record<string, string[]> = dynJson.data ?? {};
+
+    const subjectLineIndices = [4, 5, 6, 7, 8, 9];
+
+    const subjectLine: Record<number, Record<string, string>> = {};
+
+    subjectLineIndices.forEach((_, idx) => {
+      subjectLine[idx] = {};
+    })
+
+    for (const [rawCountry, countryData] of Object.entries(data)) {
+      const country = SLUG_CANONICAL_ALIAS[rawCountry.toUpperCase()] ?? rawCountry;
+
+      subjectLineIndices.forEach((dataIndex, optionIndex) => {
+        const value = countryData[dataIndex];
+        if (value && typeof value === 'string' && value.trim()) {
+          subjectLine[optionIndex][country] = value.trim();
+        } else {
+          subjectLine[optionIndex][country] = 'TRANSLATION NOT FOUND';
+        }
+      });
+    }
+
+    return {subjectLines: subjectLine}
+  } catch (e) {
+    console.warn('[spreadsheet] Failed to fetch translations:', e);
+    return null;
   }
+}

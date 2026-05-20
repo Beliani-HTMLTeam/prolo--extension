@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import updaterStyles from '../styles/updater.module.scss';
+import sundayStyles from '../styles/sunday.module.scss';
 import { ModalHeader } from './planningmodal/ModalHeader';
 import UpdaterTable from './updater/UpdaterTable';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -13,6 +14,10 @@ import { useLPConfig } from '@/entrypoints/newtab/utils/updater/hooks/useLPConfi
 import { useUpdateHandler } from '@/entrypoints/newtab/utils/updater/hooks/useUpdateHandler';
 import { useSelectionManager } from '@/entrypoints/newtab/utils/updater/hooks/useSelectionManager';
 import { MenuContent } from './updater/MenuContent';
+import { useSundayTranslations } from '@/entrypoints/newtab/utils/updater/hooks/useSundayTranslations';
+import { SundayTable } from './updater/SundayTable';
+import { SundayButtons } from './updater/SundayButtons';
+import { Icon } from '@iconify/react';
 
 const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
@@ -24,7 +29,17 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     globalLP: initialGlobalLP,
     deactivateDate,
   } = useTranslationsLoader({ issueId, rows });
-  
+
+  const {
+    subjectLines,
+    loading: sundayLoading,
+    isSundayNewsletter,
+    selectedIndex,
+    selectOption,
+    clearSelection,
+    getSelectedTranslations,
+  } = useSundayTranslations({ issueId });
+
   const {
     useGlobalDate,
     setUseGlobalDate,
@@ -96,6 +111,50 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
 
   const selectedSLCount = selectedItems.filter(item => item.type === 'subjectLine').length;
   const selectedPTCount = selectedItems.filter(item => item.type === 'pageTitle').length;
+
+   if (isSundayNewsletter === null) {
+    return (
+      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+          <ModalHeader title="Loading..." onClose={onClose} />
+          <div className={sundayStyles.container}>
+            <div className={sundayStyles.loading}>
+               <Icon icon={ 'svg-spinners:180-ring'} width="70" height="70" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+   if (isSundayNewsletter) {
+    return (
+      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+          <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
+          <div className={sundayStyles.container}>
+            <SundayTable
+              subjectLines={subjectLines}
+              selectedIndex={selectedIndex}
+              onSelectOption={selectOption}
+              loading={sundayLoading}
+              availableSlugs={availableSlugs}
+            />
+            <SundayButtons
+              hasSelection={selectedIndex !== null}
+              onUpdate={() => {
+                const selected = getSelectedTranslations();
+                console.log('Updating Sunday subject lines:', selected);
+                onClose();
+              }}
+              onClear={clearSelection}
+              loading={sundayLoading}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>

@@ -25,6 +25,8 @@ interface UpdaterTableProps {
   slugFMDModes?: Record<string, { fd: boolean; md: boolean }>;
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
   availableSlugs?: string[];
+  newsletterIds?: Record<string, {aId?: string; bId?: string}>;
+  landingPageIds?: Record<string, string>
 }
 
 const UpdaterTable = ({
@@ -42,10 +44,10 @@ const UpdaterTable = ({
   useGlobalLP = true,
   slugFMDModes = {},
   onSlugFMDModeChange,
+   newsletterIds = {},
+  landingPageIds = {},
   availableSlugs = [],
 }: UpdaterTableProps) => {
-  const isUpdatingLPRef = useRef(false);
-
   const isSLSelected = useCallback(
     (slug: string) => selectedItems.some(item => item.slug === slug && item.type === 'subjectLine'),
     [selectedItems],
@@ -144,6 +146,9 @@ const UpdaterTable = ({
         const fdMode = slugFMDModes[slug]?.fd || false;
         const mdMode = slugFMDModes[slug]?.md || false;
 
+          const newsletterId = newsletterIds[slug];
+        const landingPageId = landingPageIds[slug];
+
         const handleToggleCountry = (checked: boolean) => {
           if (checked) {
             if (hasSL && subjectLine) onToggleSL?.(slug, true, subjectLine);
@@ -172,6 +177,8 @@ const UpdaterTable = ({
             loading={loading || false}
             useGlobalLP={useGlobalLP}
             useGlobalDates={useGlobalDates}
+            //  newsletterId={newsletterId}
+            // landingPageId={landingPageId}
             onToggleCountry={handleToggleCountry}
             onToggleSL={checked => onToggleSL?.(slug, checked, subjectLine || '')}
             onTogglePT={checked => onTogglePT?.(slug, checked, pageTitle || '')}

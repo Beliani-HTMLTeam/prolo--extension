@@ -94,7 +94,7 @@ const ActionsPanel = ({
   onStartPlanning,
 }: ActionsPanelProps) => {
   const shouldShowActions = showDashboardActions ?? mode !== 'cgb';
-  const shouldShowSLPTUpdater = mode === 'newsletter';
+  const shouldShowSLPTUpdater = mode === 'newsletter' || mode === 'sunday';
   const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
   const rows = tableData?.rows ?? [];
@@ -188,7 +188,7 @@ const ActionsPanel = ({
           {shouldShowSLPTUpdater && (
             <ActionButton
               variant="primary"
-              label="Update Subject Lines | Page Titles"
+              label={mode === 'newsletter' ? 'Update SL/PT' : 'Update SL'}
               icon="mdi:format-title"
               onClick={() => setShowSLPTUpdaterModal(true)}
             />
