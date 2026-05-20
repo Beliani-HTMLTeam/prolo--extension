@@ -19,7 +19,7 @@ import { SundayTable } from './updater/SundayTable';
 import { SundayButtons } from './updater/SundayButtons';
 import { Icon } from '@iconify/react';
 
-const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
+const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose, }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
 
   const {
@@ -28,7 +28,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     error,
     globalLP: initialGlobalLP,
     deactivateDate,
-  } = useTranslationsLoader({ issueId, rows });
+  } = useTranslationsLoader({ issueId, rows,});
 
   const {
     subjectLines,
@@ -38,7 +38,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     selectOption,
     clearSelection,
     getSelectedTranslations,
-  } = useSundayTranslations({ issueId });
+  } = useSundayTranslations({ issueId, availableSlugs: rows.map(r => r.shop) });
 
   const {
     useGlobalDate,

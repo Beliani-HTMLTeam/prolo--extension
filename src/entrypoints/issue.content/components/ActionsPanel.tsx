@@ -12,6 +12,7 @@ import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
 import PlanningModal from './PlanningModal';
 import UpdaterModal from './UpdaterModal';
 import { useTableDataIds } from '@/entrypoints/newtab/utils/updater/hooks/useTableDataIds';
+import { filterSlugsWithNewsletterIds } from '@/entrypoints/newtab/utils/updater/filterSlugs';
 
 type ActionButtonProps = {
   label: string;
@@ -108,8 +109,7 @@ const ActionsPanel = ({
     ? (rows.filter(r => r.shop === 'CHDE')[0]?.nsltId ?? null)
     : (rows.filter(r => r.shop === 'CHDE')[0]?.nsltAId ?? null);
 
-    const { newsletterIds, landingPageIds } = useTableDataIds(rows);
-
+  const { newsletterIds, landingPageIds } = useTableDataIds(rows);
 
   console.log('tableData', tableData);
 
@@ -122,6 +122,16 @@ const ActionsPanel = ({
     }
     return true;
   }, [mode, rows]);
+
+  const filteredRows = useMemo(() => {
+  if (mode === 'sunday') {
+    return rows.filter(row => row.nsltId);
+  }
+  return rows.filter(row => row.nsltId || row.nsltAId || row.nsltBId);
+}, [rows, mode]);
+
+console.log('filteredRows', filteredRows);
+
 
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
@@ -189,14 +199,14 @@ const ActionsPanel = ({
       {shouldShowActions && (
         <div className={styles.actionsContainer}>
           <div className={styles.actionsGrid}>
-          {shouldShowSLPTUpdater && (
-            <ActionButton
-              variant="primary"
-              label={mode === 'newsletter' ? 'Update SL/PT' : 'Update SL'}
-              icon="mdi:format-title"
-              onClick={() => setShowSLPTUpdaterModal(true)}
-            />
-          )}
+            {shouldShowSLPTUpdater && (
+              <ActionButton
+                variant="primary"
+                label={mode === 'newsletter' ? 'Update SL/PT' : 'Update SL'}
+                icon="mdi:format-title"
+                onClick={() => setShowSLPTUpdaterModal(true)}
+              />
+            )}
             <ActionButton
               variant="primary"
               label="Generate Checklists"
@@ -297,13 +307,13 @@ const ActionsPanel = ({
           allowSelection={true}
         />
       )}
-       {showSLPTUpdaterModal && shouldShowActions && (
+      {showSLPTUpdaterModal && shouldShowActions && (
         <UpdaterModal
-        rows={rows}
-        issueId={issueId}
-         newsletterIds={newsletterIds}
-    landingPageIds={landingPageIds}
-        onClose={() => setShowSLPTUpdaterModal(false)}
+          rows={filteredRows}
+          issueId={issueId}
+          newsletterIds={newsletterIds}
+          landingPageIds={landingPageIds}
+          onClose={() => setShowSLPTUpdaterModal(false)}
         />
       )}
     </div>

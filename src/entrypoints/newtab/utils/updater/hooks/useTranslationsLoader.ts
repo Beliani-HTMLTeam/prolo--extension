@@ -8,15 +8,17 @@ interface UseTranslationsLoaderProps {
   rows: Array<{ shop: string }>;
 }
 
-export const useTranslationsLoader = ({ issueId, rows }: UseTranslationsLoaderProps) => {
+export const useTranslationsLoader = ({
+  issueId,
+  rows,
+}: UseTranslationsLoaderProps) => {
   const [translations, setTranslations] = useState<LineTitleTranslations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [globalLP, setGlobalLP] = useState('');
-    const [deactivateDate, setDeactivateDate] = useState<Date | null>(null);
+  const [deactivateDate, setDeactivateDate] = useState<Date | null>(null);
 
-
- useEffect(() => {
+  useEffect(() => {
     const loadIssueData = async () => {
       setLoading(true);
       try {
@@ -40,15 +42,16 @@ export const useTranslationsLoader = ({ issueId, rows }: UseTranslationsLoaderPr
         } else {
           calculatedDate = getDefaultDeactivateDate();
         }
-        
+
         setDeactivateDate(calculatedDate);
 
-        const availableSlugs = new Set(rows.map(row => row.shop));
+          const availableSlugsSet = new Set(rows.map(row => row.shop));
+
 
         const filteredTranslations: LineTitleTranslations = {
           subjectLine: rawTranslations.subjectLine
             ? Object.entries(rawTranslations.subjectLine)
-                .filter(([slug]) => availableSlugs.has(slug))
+                .filter(([slug]) => availableSlugsSet.has(slug))
                 .reduce(
                   (acc, [slug, content]) => ({
                     ...acc,
@@ -59,7 +62,7 @@ export const useTranslationsLoader = ({ issueId, rows }: UseTranslationsLoaderPr
             : null,
           pageTitle: rawTranslations.pageTitle
             ? Object.entries(rawTranslations.pageTitle)
-                .filter(([slug]) => availableSlugs.has(slug))
+                .filter(([slug]) => availableSlugsSet.has(slug))
                 .reduce(
                   (acc, [slug, content]) => ({
                     ...acc,

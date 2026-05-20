@@ -2,10 +2,11 @@ import { fetchAllSundayTranslations, fetchIssueData } from '@/entrypoints/issue.
 
 interface UseSundayTranslationsProps {
   issueId: number;
+  availableSlugs?: string[];
 }
 
-export const useSundayTranslations = ({ issueId }: UseSundayTranslationsProps) => {
-  const [subjectLines, setSubjectLines] = useState<Record<number, Record<string, string>> | null>(null);
+export const useSundayTranslations = ({ issueId, availableSlugs: propAvailableSlugs }: UseSundayTranslationsProps) => {
+  const [rawSubjectLines, setRawSubjectLines] = useState<Record<number, Record<string, string>> | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isSundayNewsletter, setIsSundayNewsletter] = useState<boolean | null>(null);
@@ -29,7 +30,7 @@ export const useSundayTranslations = ({ issueId }: UseSundayTranslationsProps) =
         }
 
         const result = await fetchAllSundayTranslations(issueItem);
-        setSubjectLines(result?.subjectLines ?? {});
+        setRawSubjectLines(result?.subjectLines ?? {});
       } catch (e) {
         console.error('Failed to load Sunday translations:', e);
         setIsSundayNewsletter(false);
@@ -40,6 +41,30 @@ export const useSundayTranslations = ({ issueId }: UseSundayTranslationsProps) =
 
     loadSundayData();
   }, [issueId]);
+
+  const subjectLines = useMemo(() => {
+    if (!rawSubjectLines) return null;
+
+    if (!propAvailableSlugs || propAvailableSlugs.length === 0) {
+      return rawSubjectLines;
+    }
+
+    const slugSet = new Set(propAvailableSlugs);
+    const filtered: Record<number, Record<string, string>> = {};
+
+    Object.entries(rawSubjectLines).forEach(([optionIndex, slugsMap]) => {
+      const optionIdx = Number(optionIndex);
+      filtered[optionIdx] = {};
+
+      Object.entries(slugsMap)
+        .filter(([slug]) => slugSet.has(slug))
+        .forEach(([slug, content]) => {
+          filtered[optionIdx][slug] = content;
+        });
+    });
+
+    return filtered;
+  }, [rawSubjectLines, propAvailableSlugs]);
 
   const selectOption = (index: number) => {
     setSelectedIndex(index);
