@@ -1,6 +1,6 @@
-import DatePicker from "react-datepicker";
+import DatePicker from 'react-datepicker';
 import updaterStyles from '../../styles/updater.module.scss';
-import { formatDateForInput } from "@/entrypoints/newtab/utils/updater/dates";
+import { formatDateForInput } from '@/entrypoints/newtab/utils/updater/dates';
 
 interface TableRowProps {
   slug: string;
@@ -18,6 +18,8 @@ interface TableRowProps {
   loading: boolean;
   useGlobalLP: boolean;
   useGlobalDates: boolean;
+  newsletterId?: { aId?: string; bId?: string };
+  landingPageId?: string;
   onToggleCountry: (checked: boolean) => void;
   onToggleSL: (checked: boolean) => void;
   onTogglePT: (checked: boolean) => void;
@@ -44,6 +46,8 @@ export const TableRow = ({
   loading,
   useGlobalLP,
   useGlobalDates,
+  newsletterId,
+  landingPageId,
   onToggleCountry,
   onToggleSL,
   onTogglePT,
@@ -52,13 +56,31 @@ export const TableRow = ({
   onLPChange,
   onActivateDateChange,
   onDeactivateDateChange,
-}: TableRowProps) => (
+}: TableRowProps) => {
+const getNewsletterIdsDisplay = () => {
+  if (!newsletterId) return '-';
+  const ids = [];
+  if (newsletterId.aId) ids.push(newsletterId.aId);
+  if (newsletterId.bId) ids.push(newsletterId.bId);
+  return ids.length > 0 ? ids.join(' | ') : '-';
+};
+
+  return (
   <div className={updaterStyles.shopRow}>
     {/* Country Column */}
     <div className={updaterStyles.shopLabel}>
-      <input type="checkbox" checked={isSLSelected || isPTSelected} onChange={e => onToggleCountry(e.target.checked)} disabled={loading} />
+      <input
+        type="checkbox"
+        checked={isSLSelected || isPTSelected}
+        onChange={e => onToggleCountry(e.target.checked)}
+        disabled={loading}
+      />
       <span>{slug}</span>
     </div>
+
+    <div className={updaterStyles.newsletterId}>
+        <span className={updaterStyles.idText}>{getNewsletterIdsDisplay()}</span>
+      </div>
 
     {/* Subject Line Column */}
     <div className={updaterStyles.subjectLine}>
@@ -73,6 +95,10 @@ export const TableRow = ({
         />
       )}
     </div>
+
+     <div className={updaterStyles.landingPageId}>
+        <span className={updaterStyles.idText}>{landingPageId || '-'}</span>
+      </div>
 
     {/* Page Title Column */}
     <div className={updaterStyles.pageTitle}>
@@ -91,11 +117,21 @@ export const TableRow = ({
     {/* FD/MD Column */}
     <div className={updaterStyles.fdMd}>
       <label className={`${updaterStyles.checkboxLabel} ${mdMode ? updaterStyles.disabled : ''}`}>
-        <input type="checkbox" checked={fdMode} onChange={e => onFDModeChange(e.target.checked)} disabled={loading || mdMode} />
+        <input
+          type="checkbox"
+          checked={fdMode}
+          onChange={e => onFDModeChange(e.target.checked)}
+          disabled={loading || mdMode}
+        />
         <span>FD</span>
       </label>
       <label className={`${updaterStyles.checkboxLabel} ${fdMode ? updaterStyles.disabled : ''}`}>
-        <input type="checkbox" checked={mdMode} onChange={e => onMDModeChange(e.target.checked)} disabled={loading || fdMode} />
+        <input
+          type="checkbox"
+          checked={mdMode}
+          onChange={e => onMDModeChange(e.target.checked)}
+          disabled={loading || fdMode}
+        />
         <span>MD</span>
       </label>
     </div>
@@ -103,7 +139,14 @@ export const TableRow = ({
     {/* Landing Page Column (conditional) */}
     {!useGlobalLP && (
       <div className={updaterStyles.landingPage}>
-        <input type="text" value={lp || ''} onChange={e => onLPChange(e.target.value)} disabled={loading} placeholder="lp26-04-05" className={updaterStyles.lpInput} />
+        <input
+          type="text"
+          value={lp || ''}
+          onChange={e => onLPChange(e.target.value)}
+          disabled={loading}
+          placeholder="lp26-04-05"
+          className={updaterStyles.lpInput}
+        />
       </div>
     )}
 
@@ -135,3 +178,4 @@ export const TableRow = ({
     )}
   </div>
 );
+}

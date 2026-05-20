@@ -11,6 +11,7 @@ import { getShopId } from './familytable/../../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
 import PlanningModal from './PlanningModal';
 import UpdaterModal from './UpdaterModal';
+import { useTableDataIds } from '@/entrypoints/newtab/utils/updater/hooks/useTableDataIds';
 
 type ActionButtonProps = {
   label: string;
@@ -106,6 +107,9 @@ const ActionsPanel = ({
   const chdeNsltId = !tableData?.hasGroupedNslt
     ? (rows.filter(r => r.shop === 'CHDE')[0]?.nsltId ?? null)
     : (rows.filter(r => r.shop === 'CHDE')[0]?.nsltAId ?? null);
+
+    const { newsletterIds, landingPageIds } = useTableDataIds(rows);
+
 
   console.log('tableData', tableData);
 
@@ -297,6 +301,8 @@ const ActionsPanel = ({
         <UpdaterModal
         rows={rows}
         issueId={issueId}
+         newsletterIds={newsletterIds}
+    landingPageIds={landingPageIds}
         onClose={() => setShowSLPTUpdaterModal(false)}
         />
       )}

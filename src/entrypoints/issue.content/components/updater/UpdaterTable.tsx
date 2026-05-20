@@ -1,11 +1,7 @@
-import { UpdaterSelectedItem, UpdaterSlugDateConfig, UpdaterSlugLPConfig } from '@/entrypoints/newtab/types/Updater';
-import { IssueListItem, LineTitleTranslations } from '../../lib/types';
+import { UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
+import { LineTitleTranslations } from '../../lib/types';
 import updaterStyles from '../../styles/updater.module.scss';
-import { formatDateForInput } from '@/entrypoints/newtab/utils/updater/dates';
-import DatePicker from 'react-datepicker';
-import Skeleton from 'react-loading-skeleton';
 import { TableSkeleton } from './TableSkeleton';
-import { EmptyState } from './EmptyState';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 
@@ -25,8 +21,8 @@ interface UpdaterTableProps {
   slugFMDModes?: Record<string, { fd: boolean; md: boolean }>;
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
   availableSlugs?: string[];
-  newsletterIds?: Record<string, {aId?: string; bId?: string}>;
-  landingPageIds?: Record<string, string>
+  newsletterIds?: Record<string, { aId?: string; bId?: string }>;
+  landingPageIds?: Record<string, string>;
 }
 
 const UpdaterTable = ({
@@ -44,7 +40,7 @@ const UpdaterTable = ({
   useGlobalLP = true,
   slugFMDModes = {},
   onSlugFMDModeChange,
-   newsletterIds = {},
+  newsletterIds = {},
   landingPageIds = {},
   availableSlugs = [],
 }: UpdaterTableProps) => {
@@ -118,10 +114,6 @@ const UpdaterTable = ({
     return <TableSkeleton useGlobalLP={useGlobalLP} useGlobalDates={useGlobalDates} availableSlugs={availableSlugs} />;
   }
 
-  if (!translations?.subjectLine || !translations.pageTitle) {
-    return <EmptyState />;
-  }
-
   return (
     <div className={updaterStyles.updaterTable}>
       <TableHeader
@@ -136,8 +128,8 @@ const UpdaterTable = ({
       />
 
       {allSlugs.map(slug => {
-        const subjectLine = translations.subjectLine?.[slug];
-        const pageTitle = translations.pageTitle?.[slug];
+        const subjectLine = translations?.subjectLine?.[slug];
+        const pageTitle = translations?.pageTitle?.[slug];
         const hasSL = !!subjectLine;
         const hasPT = !!pageTitle;
         const activateDate = getDateForSlug?.(slug, 'activate');
@@ -146,7 +138,7 @@ const UpdaterTable = ({
         const fdMode = slugFMDModes[slug]?.fd || false;
         const mdMode = slugFMDModes[slug]?.md || false;
 
-          const newsletterId = newsletterIds[slug];
+        const newsletterId = newsletterIds[slug];
         const landingPageId = landingPageIds[slug];
 
         const handleToggleCountry = (checked: boolean) => {
@@ -177,8 +169,8 @@ const UpdaterTable = ({
             loading={loading || false}
             useGlobalLP={useGlobalLP}
             useGlobalDates={useGlobalDates}
-            //  newsletterId={newsletterId}
-            // landingPageId={landingPageId}
+            newsletterId={newsletterId}
+            landingPageId={landingPageId}
             onToggleCountry={handleToggleCountry}
             onToggleSL={checked => onToggleSL?.(slug, checked, subjectLine || '')}
             onTogglePT={checked => onTogglePT?.(slug, checked, pageTitle || '')}

@@ -1,8 +1,10 @@
-import { ChecklistTableData, ChecklistTableRow } from "@/entrypoints/issue.content/lib/types";
+import { ChecklistTableData, ChecklistTableRow } from '@/entrypoints/issue.content/lib/types';
 
 export interface UpdaterProps {
   rows: ChecklistTableRow[];
   issueId: number;
+  newsletterIds?: Record<string, { aId?: string; bId?: string }>;
+  landingPageIds?: Record<string, string>;
   onClose: () => void;
 }
 
@@ -12,7 +14,7 @@ export interface UpdaterButtonProps {
   disabled?: boolean;
   icon?: string;
   label: string;
-};
+}
 
 export interface UpdaterButtonsProps {
   updateStarted: boolean;
@@ -27,7 +29,7 @@ export interface UpdaterButtonsProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   onCancel: () => void;
-};
+}
 
 export interface UpdaterSelectedItem {
   slug: string;

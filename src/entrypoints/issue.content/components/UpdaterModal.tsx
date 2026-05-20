@@ -19,7 +19,7 @@ import { SundayTable } from './updater/SundayTable';
 import { SundayButtons } from './updater/SundayButtons';
 import { Icon } from '@iconify/react';
 
-const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
+const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
 
   const {
@@ -112,14 +112,14 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
   const selectedSLCount = selectedItems.filter(item => item.type === 'subjectLine').length;
   const selectedPTCount = selectedItems.filter(item => item.type === 'pageTitle').length;
 
-   if (isSundayNewsletter === null) {
+  if (isSundayNewsletter === null || loading || sundayLoading) {
     return (
       <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
         <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
           <ModalHeader title="Loading..." onClose={onClose} />
           <div className={sundayStyles.container}>
             <div className={sundayStyles.loading}>
-               <Icon icon={ 'svg-spinners:180-ring'} width="70" height="70" />
+              <Icon icon={'svg-spinners:180-ring'} width="70" height="70" />
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
     );
   }
 
-   if (isSundayNewsletter) {
+  if (isSundayNewsletter) {
     return (
       <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
         <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
@@ -150,6 +150,27 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
               onClear={clearSelection}
               loading={sundayLoading}
             />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const hasNoTranslations =
+    !translations?.subjectLine ||
+    !translations?.pageTitle ||
+    Object.keys(translations.subjectLine).length === 0 ||
+    Object.keys(translations.pageTitle).length === 0;
+
+  if (hasNoTranslations) {
+    return (
+      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+          <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
+          <div className={updaterStyles.modalContent} style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <div className={updaterStyles.shopRow} style={{ border: 'none' }}>
+              <span>No translations found</span>
+            </div>
           </div>
         </div>
       </div>
@@ -205,6 +226,8 @@ const UpdaterModal = ({ rows, issueId, onClose }: UpdaterProps) => {
               slugFMDModes={slugFMDModes}
               onSlugFMDModeChange={handleSlugFMDModeChange}
               availableSlugs={availableSlugs}
+              newsletterIds={newsletterIds}
+              landingPageIds={landingPageIds}
             />
           </div>
         </div>

@@ -1,6 +1,5 @@
 import updaterStyles from '../../styles/updater.module.scss';
 
-
 interface TableHeaderProps {
   useGlobalLP: boolean;
   useGlobalDates: boolean;
@@ -22,9 +21,13 @@ export const TableHeader = ({
   onSelectAllSL,
   onSelectAllPT,
 }: TableHeaderProps) => (
-    <div className={updaterStyles.tableHeader}>
+  <div className={updaterStyles.tableHeader}>
     <div className={updaterStyles.shopLabel}>Country</div>
-    
+
+    <div className={updaterStyles.newsletterIdHeader}>
+      <span>NSLT ID</span>
+    </div>
+
     <div className={updaterStyles.subjectLineHeader}>
       <span>Subject Line</span>
       <span className={updaterStyles.selectLabel}>Select all SL</span>
@@ -36,6 +39,10 @@ export const TableHeader = ({
       />
     </div>
     
+    <div className={updaterStyles.landingPageIdHeader}>
+      <span>LP ID</span>
+    </div>
+
     <div className={updaterStyles.pageTitleHeader}>
       <span>Page Title</span>
       <span className={updaterStyles.selectLabel}>Select all PT</span>
@@ -46,11 +53,11 @@ export const TableHeader = ({
         disabled={allPTSlugsLength === 0}
       />
     </div>
-    
+
     <div className={updaterStyles.fdMdHeader}>FD / MD</div>
-    
+
     {!useGlobalLP && <div className={updaterStyles.landingPageHeader}>Landing Page</div>}
-    
+
     {!useGlobalDates && (
       <>
         <div className={updaterStyles.activateDateHeader}>Activate Date</div>
@@ -58,4 +65,4 @@ export const TableHeader = ({
       </>
     )}
   </div>
-)
+);

@@ -9,13 +9,21 @@ interface TableRowSkeletonProps {
 export const TableRowSkeleton = ({ useGlobalLP, useGlobalDates }: TableRowSkeletonProps) => (
   <div className={updaterStyles.shopRow}>
     <div className={updaterStyles.shopLabel}>
-      <Skeleton circle width={16} height={16} />
-      <Skeleton width={60} />
+      <Skeleton circle width={16} height={20} />
+      <Skeleton width={40} height={20} />
+    </div>
+
+    <div className={updaterStyles.newsletterId}>
+      <Skeleton width="100%" height={20} />
     </div>
 
     <div className={updaterStyles.subjectLine}>
       <Skeleton width="100%" height={20} />
       <Skeleton width={20} height={20} />
+    </div>
+
+    <div className={updaterStyles.landingPageId}>
+      <Skeleton width="100%" height={20} />
     </div>
 
     <div className={updaterStyles.pageTitle}>
