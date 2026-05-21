@@ -1,4 +1,4 @@
-import { UpdaterProps } from '@/entrypoints/newtab/types/Updater';
+import { UpdaterProps, UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
 import { useEffect } from 'react';
 import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
@@ -19,7 +19,7 @@ import { SundayTable } from './updater/SundayTable';
 import { SundayButtons } from './updater/SundayButtons';
 import { Icon } from '@iconify/react';
 
-const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose, }: UpdaterProps) => {
+const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
 
   const {
@@ -28,7 +28,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose, }
     error,
     globalLP: initialGlobalLP,
     deactivateDate,
-  } = useTranslationsLoader({ issueId, rows,});
+  } = useTranslationsLoader({ issueId, rows });
 
   const {
     subjectLines,
@@ -75,10 +75,12 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose, }
     handleClearAll,
   } = useSelectionManager();
 
-  const { isUpdating, handleUpdateSelected, handleUpdateAll } = useUpdateHandler({
+  const { isUpdating, updateProgress, handleUpdateSelected, handleUpdateAll } = useUpdateHandler({
     getLPForSlug,
     getDateForSlug,
     onClose,
+    newsletterIds,
+    landingPageIds,
   });
 
   useEffect(() => {
@@ -128,11 +130,43 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose, }
   }
 
   if (isSundayNewsletter) {
+    const handleSundayUpdate = async () => {
+      const selectedTranslations = getSelectedTranslations();
+      if (!selectedTranslations) return;
+
+      const selectedItems: UpdaterSelectedItem[] = Object.entries(selectedTranslations).map(([slug, content]) => ({
+        slug,
+        type: 'subjectLine',
+        content,
+      }));
+
+      await handleUpdateSelected(selectedItems);
+    };
+
     return (
       <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
         <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
           <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
           <div className={sundayStyles.container}>
+            {isUpdating && updateProgress.total > 0 && (
+              <div className={sundayStyles.progressOverlay}>
+                <div className={sundayStyles.progressContainer}>
+                  <div className={sundayStyles.progressHeader}>
+                    <Icon icon="svg-spinners:180-ring" width="20" height="20" />
+                    <span>Updating subject lines...</span>
+                  </div>
+                  <div className={sundayStyles.progressBar}>
+                    <div
+                      className={sundayStyles.progressFill}
+                      style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  <div className={sundayStyles.progressText}>
+                    {updateProgress.completed} / {updateProgress.total} completed
+                  </div>
+                </div>
+              </div>
+            )}
             <SundayTable
               subjectLines={subjectLines}
               selectedIndex={selectedIndex}
@@ -142,11 +176,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose, }
             />
             <SundayButtons
               hasSelection={selectedIndex !== null}
-              onUpdate={() => {
-                const selected = getSelectedTranslations();
-                console.log('Updating Sunday subject lines:', selected);
-                onClose();
-              }}
+              onUpdate={handleSundayUpdate}
               onClear={clearSelection}
               loading={sundayLoading}
             />
@@ -182,6 +212,25 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose, }
       <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
         <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
         <div className={updaterStyles.modalContent}>
+          {isUpdating && updateProgress.total > 0 && (
+            <div className={updaterStyles.progressOverlay}>
+              <div className={updaterStyles.progressContainer}>
+                <div className={updaterStyles.progressHeader}>
+                  <Icon icon="svg-spinners:180-ring" width="20" height="20" />
+                  <span>Updating translations...</span>
+                </div>
+                <div className={updaterStyles.progressBar}>
+                  <div
+                    className={updaterStyles.progressFill}
+                    style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
+                  />
+                </div>
+                <div className={updaterStyles.progressText}>
+                  {updateProgress.completed} / {updateProgress.total} completed
+                </div>
+              </div>
+            </div>
+          )}
           <div className={updaterStyles.menu}>
             <MenuContent
               loading={loading}

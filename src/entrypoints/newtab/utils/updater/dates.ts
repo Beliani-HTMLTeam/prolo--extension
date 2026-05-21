@@ -11,7 +11,7 @@ export const getDefaultDeactivateDate = (tabDate?: Date): Date => {
     baseDate.setDate(baseDate.getDate() + daysUntilSunday);
   }
   
-  baseDate.setHours(23, 59, 59, 999);
+  baseDate.setHours(23, 59, 0, 0);
   return baseDate;
 };
 export const getTodayAtMidnight = (): Date => {
@@ -51,6 +51,6 @@ export const setDateToSunday23_59 = (date: Date): Date => {
     newDate.setDate(newDate.getDate() + daysUntilSunday);
   }
 
-  newDate.setHours(23, 59, 59, 999);
+  newDate.setHours(23, 59, 0, 0);
   return newDate;
 }

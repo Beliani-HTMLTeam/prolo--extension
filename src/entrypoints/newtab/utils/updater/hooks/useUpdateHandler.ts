@@ -1,17 +1,50 @@
 import { UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
 import { formatDateForAPI } from '../dates';
 import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
+import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../constants';
+import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
+import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';
+
+interface FormattedUpdateRecord {
+  slug: string;
+  nsltId: string;
+  lpId?: string;
+  landingPage?: string;
+  activateDate: { date: string; time: string };
+  deactivateDate: { date: string; time: string };
+  subjectLine?: string;
+  pageTitle?: string;
+  seller?: string;
+  lang?: string;
+  servers?: number[];
+  shopId?: string;
+}
 
 interface UseUpdateHandlerProps {
   getLPForSlug: (slug: string) => string;
   getDateForSlug: (slug: string, type: 'activate' | 'deactivate') => Date;
+  newsletterIds?: Record<string, { aId?: string; bId?: string }>;
+  landingPageIds?: Record<string, string>;
   onClose: () => void;
 }
 
-export const useUpdateHandler = ({ getLPForSlug, getDateForSlug, onClose }: UseUpdateHandlerProps) => {
+export const useUpdateHandler = ({
+  getLPForSlug,
+  getDateForSlug,
+  newsletterIds,
+  landingPageIds,
+  onClose,
+}: UseUpdateHandlerProps) => {
+  const [updateProgress, setUpdateProgress] = useState({ completed: 0, total: 0 });
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const getServersForSlug = (slug: string): number[] => {
+    return slug === 'NL' ? NL_SERVERS : DEFAULT_SERVERS;
+  };
+
   const handleUpdateSelected = async (selectedItems: UpdaterSelectedItem[]) => {
+    console.log('🔍 handleUpdateSelected called with:', selectedItems);
+
     if (selectedItems.length === 0) {
       console.warn('No items selected to update');
       return;
@@ -20,18 +53,36 @@ export const useUpdateHandler = ({ getLPForSlug, getDateForSlug, onClose }: UseU
     setIsUpdating(true);
 
     try {
-      const updatesBySlug: Record<string, any> = {};
+      console.log('🔍 newsletterIds:', newsletterIds);
+      console.log('🔍 landingPageIds:', landingPageIds);
+
+      const formattedUpdates: FormattedUpdateRecord[] = [];
+
+      const updatesBySlug: Record<
+        string,
+        {
+          slug: string;
+          subjectLine?: string;
+          pageTitle?: string;
+          landingPage?: string;
+          activateDate: Date;
+          deactivateDate: Date;
+          lpId?: string;
+        }
+      > = {};
 
       selectedItems.forEach(item => {
+        console.log('🔍 Processing item:', item);
+
         if (!updatesBySlug[item.slug]) {
           updatesBySlug[item.slug] = {
             slug: item.slug,
-            subjectLine: null,
-            pageTitle: null,
             landingPage: getLPForSlug(item.slug),
             activateDate: getDateForSlug(item.slug, 'activate'),
             deactivateDate: getDateForSlug(item.slug, 'deactivate'),
+            lpId: landingPageIds?.[item.slug],
           };
+          console.log(`🔍 Created update for slug ${item.slug}:`, updatesBySlug[item.slug]);
         }
 
         if (item.type === 'subjectLine') {
@@ -41,20 +92,143 @@ export const useUpdateHandler = ({ getLPForSlug, getDateForSlug, onClose }: UseU
         }
       });
 
-      const formattedUpdates = Object.values(updatesBySlug).map(update => ({
-        slug: update.slug,
-        subjectLine: update.subjectLine,
-        pageTitle: update.pageTitle,
-        activateDate: formatDateForAPI(update.activateDate),
-        deactivateDate: formatDateForAPI(update.deactivateDate),
-        landingPage: update.landingPage,
-      }));
+      console.log('🔍 updatesBySlug:', updatesBySlug);
+
+      Object.values(updatesBySlug).forEach(update => {
+        const nsltData = newsletterIds?.[update.slug];
+        console.log(`🔍 nsltData for ${update.slug}:`, nsltData);
+
+        const slug = update.slug;
+        const seller = SELLER_TO_SLUG[slug as keyof typeof SELLER_TO_SLUG];
+        const lang = LANG_TO_SLUG[slug as keyof typeof LANG_TO_SLUG];
+        const servers = getServersForSlug(slug);
+        const shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
+
+        if (nsltData?.aId && nsltData?.bId) {
+          console.log(`🔍 Both A and B exist for ${update.slug}`);
+          // Both A and B exist - create two records
+          const recordA: FormattedUpdateRecord = {
+            slug: update.slug,
+            nsltId: nsltData.aId,
+            lpId: update.lpId,
+            landingPage: update.landingPage!,
+            activateDate: formatDateForAPI(update.activateDate),
+            deactivateDate: formatDateForAPI(update.deactivateDate),
+            seller,
+            lang,
+            servers,
+            shopId,
+          };
+          if (update.subjectLine !== undefined) recordA.subjectLine = update.subjectLine;
+          if (update.pageTitle !== undefined) recordA.pageTitle = update.pageTitle;
+          formattedUpdates.push(recordA);
+
+          const recordB: FormattedUpdateRecord = {
+            slug: update.slug,
+            nsltId: nsltData.bId,
+            landingPage: update.landingPage!,
+            activateDate: formatDateForAPI(update.activateDate),
+            deactivateDate: formatDateForAPI(update.deactivateDate),
+            seller,
+            lang,
+            servers,
+            shopId,
+          };
+          if (update.subjectLine !== undefined) recordB.subjectLine = update.subjectLine;
+          if (update.pageTitle !== undefined) recordB.pageTitle = update.pageTitle;
+          formattedUpdates.push(recordB);
+        } else if (nsltData?.aId) {
+          console.log(`🔍 Only A exists for ${update.slug}`);
+          const record: FormattedUpdateRecord = {
+            slug: update.slug,
+            nsltId: nsltData.aId,
+            lpId: update.lpId,
+            ...(update.landingPage && update.landingPage !== 'lp00-00-00' && { landingPage: update.landingPage }),
+            activateDate: formatDateForAPI(update.activateDate),
+            deactivateDate: formatDateForAPI(update.deactivateDate),
+            seller,
+            lang,
+            servers,
+            shopId,
+          };
+          if (update.subjectLine !== undefined) record.subjectLine = update.subjectLine;
+          if (update.pageTitle !== undefined) record.pageTitle = update.pageTitle;
+          formattedUpdates.push(record);
+        }
+      });
+
+      console.log('🔍 Final formattedUpdates:', formattedUpdates);
+
+      if (formattedUpdates.length === 0) {
+        console.warn('No formatted updates to send');
+        return;
+      }
 
       console.log('Updating with dates: ', formattedUpdates);
 
-      // call to the API
+      const updatesToSend: Array<{ type: 'newsletter' | 'landing-page'; data: any; slug: string }> = [];
 
-      console.log('Successfully updated translations: ');
+      for (const update of formattedUpdates) {
+        const hasSubjectLine = !!update.subjectLine;
+        const hasPageTitle = !!update.pageTitle;
+
+        if (hasSubjectLine && update.nsltId) {
+          updatesToSend.push({
+            type: 'newsletter',
+            slug: update.slug,
+            data: {
+              activate_from_date: update.activateDate.date,
+              activate_from_time: update.activateDate.time,
+              deactivate_from_date: update.deactivateDate.date,
+              deactivate_from_time: update.deactivateDate.time,
+              update: 'Update',
+              seller: update.seller || '',
+              shop_content_id: update.lpId || null, // Use lpId, not null
+              lang: update.lang || '',
+              subject: update.subjectLine,
+              id: update.nsltId,
+              smtp_id: update.servers || [],
+            },
+          });
+        }
+        if (hasPageTitle && update.lpId && update.shopId) {
+          updatesToSend.push({
+            type: 'landing-page',
+            slug: update.slug,
+            data: {
+              activate_from_date: update.activateDate.date,
+              activate_from_time: update.activateDate.time,
+              deactivate_from_date: update.deactivateDate.date,
+              deactivate_from_time: update.deactivateDate.time,
+              update: 'Update',
+              name: update.landingPage,
+              newsletter_template_id: update.nsltId,
+              id: update.lpId,
+              shop_id: update.shopId,
+              title_menu: { [update.lang || '']: update.landingPage },
+              alias: { [update.lang || '']: update.landingPage },
+              description: { [update.lang || '']: update.landingPage },
+              title: { [update.lang || '']: update.pageTitle },
+            },
+          });
+        }
+      }
+
+       if (updatesToSend.length === 0) {
+    console.warn('No updates to send');
+    return;
+  }
+
+  const results = await sendBatchUpdates(updatesToSend, (completed, total, result) => {
+    console.log(`Progress: ${completed}/${total} - ${result.slug} (${result.type}): ${result.success ? '✅' : '❌'}`);
+    setUpdateProgress({ completed, total });
+  });
+
+  const successCount = results.filter(r => r.success).length;
+  const failureCount = results.filter(r => !r.success).length;
+  
+  console.log(`Update complete! Success: ${successCount}, Failed: ${failureCount}`);
+
       onClose();
     } catch (error) {
       console.error('Failed to update translations: ', error);
@@ -102,6 +276,7 @@ export const useUpdateHandler = ({ getLPForSlug, getDateForSlug, onClose }: UseU
 
   return {
     isUpdating,
+    updateProgress,
     handleUpdateSelected,
     handleUpdateAll,
   };
