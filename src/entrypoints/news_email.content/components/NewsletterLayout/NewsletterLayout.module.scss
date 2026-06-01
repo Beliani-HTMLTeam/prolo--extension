@@ -1,0 +1,98 @@
+@use '../../../../assets/styles/_variables.scss' as _;
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+.bannerList {
+  font-family: _.$font-family;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  max-width: 650px;
+
+  overflow-y: scroll;
+  padding: 16px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: _.$medium-grey;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  .bannerItem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 6px;
+
+    background: _.$light-grey;
+    border: 1px solid _.$medium-grey;
+
+    position: relative;
+
+    &:hover {
+      cursor: grab;
+      svg {
+        opacity: 1;
+      }
+    }
+
+    span {
+      user-select: none;
+      box-sizing: border-box;
+      font-size: 14px;
+      font-weight: 600;
+      color: _.$medium-grey;
+      background: _.$light-grey;
+      padding: 12px;
+
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        transition: opacity 0.2s ease-in-out;
+        opacity: 0;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    img {
+      pointer-events: none;
+      user-select: none;
+      max-width: 300px;
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      // border: 1px solid _.$medium-grey;
+    }
+
+    button {
+      border: none;
+      background: transparent;
+      padding: 16px;
+      cursor: pointer;
+
+      svg {
+        height: 32px;
+        width: 32px;
+        color: _.$deep-red;
+      }
+    }
+  }
+}
