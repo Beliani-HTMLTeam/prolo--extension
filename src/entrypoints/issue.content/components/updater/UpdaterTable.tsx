@@ -1,4 +1,4 @@
-import { UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
+import { UpdateResult, UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
 import { LineTitleTranslations } from '../../lib/types';
 import updaterStyles from '../../styles/updater.module.scss';
 import { TableSkeleton } from './TableSkeleton';
@@ -12,17 +12,22 @@ interface UpdaterTableProps {
   onTogglePT?: (slug: string, checked: boolean, content: string) => void;
   selectedItems?: UpdaterSelectedItem[];
   useGlobalDates?: boolean;
-  onSlugActivateDateChange?: (slug: string, date: Date | null) => void;
-  onSlugDeactivateDateChange?: (slug: string, date: Date | null) => void;
+  onSlugActivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
+  onSlugDeactivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
   getDateForSlug?: (slug: string, type: 'activate' | 'deactivate') => Date;
   getLPForSlug?: (slug: string) => string;
-  onSlugLPChange?: (slug: string, lp: string) => void;
+  onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
   useGlobalLP?: boolean;
   slugFMDModes?: Record<string, { fd: boolean; md: boolean }>;
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
   availableSlugs?: string[];
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
   landingPageIds?: Record<string, string>;
+  updatingSlugs?: Set<string>;
+  updateResults?: UpdateResult[];
+  getInitialActivateDate?: (slug: string) => Date;
+  getInitialDeactivateDate?: (slug: string) => Date;
+  getInitialLP?: (slug: string) => string;
 }
 
 const UpdaterTable = ({
@@ -43,6 +48,11 @@ const UpdaterTable = ({
   newsletterIds = {},
   landingPageIds = {},
   availableSlugs = [],
+  updatingSlugs = new Set(),
+  updateResults = [],
+  getInitialActivateDate,
+  getInitialDeactivateDate,
+  getInitialLP,
 }: UpdaterTableProps) => {
   const isSLSelected = useCallback(
     (slug: string) => selectedItems.some(item => item.slug === slug && item.type === 'subjectLine'),
@@ -53,6 +63,8 @@ const UpdaterTable = ({
     (slug: string) => selectedItems.some(item => item.slug === slug && item.type === 'pageTitle'),
     [selectedItems],
   );
+
+  const isResettingRef = useRef(false);
 
   const allSlugs = useMemo(() => {
     const slugs = new Set<string>();
@@ -141,13 +153,52 @@ const UpdaterTable = ({
         const newsletterId = newsletterIds[slug];
         const landingPageId = landingPageIds[slug];
 
+        const isUpdating = updatingSlugs.has(slug);
+        const result = updateResults.find(r => r.slug === slug);
+        const isSuccess = result?.success;
+        const isError = result && !result.success;
+        const errorMessage = isError ? result.error : undefined;
+
         const handleToggleCountry = (checked: boolean) => {
           if (checked) {
             if (hasSL && subjectLine) onToggleSL?.(slug, true, subjectLine);
             if (hasPT && pageTitle) onTogglePT?.(slug, true, pageTitle);
           } else {
+             if (typeof window !== 'undefined') {
+      (window as any).__isResetting = true;
+    }
+
             if (hasSL && subjectLine) onToggleSL?.(slug, false, subjectLine);
             if (hasPT && pageTitle) onTogglePT?.(slug, false, pageTitle);
+
+            // Also reset FD/MD immediately here, don't wait for useEffect
+            if (fdMode) {
+              onSlugFMDModeChange?.(slug, 'fd', false);
+            }
+            if (mdMode) {
+              onSlugFMDModeChange?.(slug, 'md', false);
+            }
+
+            // Reset dates and LP
+            const initialActivateDate = getInitialActivateDate?.(slug);
+            const initialDeactivateDate = getInitialDeactivateDate?.(slug);
+            const initialLP = getInitialLP?.(slug);
+
+            if (initialActivateDate) {
+              onSlugActivateDateChange?.(slug, initialActivateDate, true);
+            }
+            if (initialDeactivateDate) {
+              onSlugDeactivateDateChange?.(slug, initialDeactivateDate, true);
+            }
+            if (initialLP) {
+              onSlugLPChange?.(slug, initialLP, true);
+            }
+
+              setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        (window as any).__isResetting = false;
+      }
+    }, 200);
           }
         };
 
@@ -179,6 +230,17 @@ const UpdaterTable = ({
             onLPChange={value => onSlugLPChange?.(slug, value)}
             onActivateDateChange={date => onSlugActivateDateChange?.(slug, date)}
             onDeactivateDateChange={date => onSlugDeactivateDateChange?.(slug, date)}
+            isUpdating={isUpdating}
+            isSuccess={isSuccess}
+            isError={isError}
+            errorMessage={errorMessage}
+            getInitialActivateDate={getInitialActivateDate}
+            getInitialDeactivateDate={getInitialDeactivateDate}
+            getInitialLP={getInitialLP}
+            onSlugActivateDateChange={onSlugActivateDateChange}
+            onSlugDeactivateDateChange={onSlugDeactivateDateChange}
+            onSlugLPChange={onSlugLPChange}
+            onSlugFMDModeChange={onSlugFMDModeChange}
           />
         );
       })}

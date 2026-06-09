@@ -10,9 +10,9 @@ export const useSundayTranslations = ({ issueId, availableSlugs: propAvailableSl
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isSundayNewsletter, setIsSundayNewsletter] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadSundayData = async () => {
+    const loadSundayData = useCallback(async () => {
       setLoading(true);
       try {
         const issueData = await fetchIssueData(issueId);
@@ -33,14 +33,20 @@ export const useSundayTranslations = ({ issueId, availableSlugs: propAvailableSl
         setRawSubjectLines(result?.subjectLines ?? {});
       } catch (e) {
         console.error('Failed to load Sunday translations:', e);
+          setError(e instanceof Error ? e.message : 'Failed to load Sunday translations');
         setIsSundayNewsletter(false);
       } finally {
         setLoading(false);
       }
-    };
-
-    loadSundayData();
   }, [issueId]);
+
+  useEffect(() => {
+    loadSundayData();
+  }, [loadSundayData]);
+
+  const retry = useCallback(() => {
+    loadSundayData();
+  }, [loadSundayData]);
 
   const subjectLines = useMemo(() => {
     if (!rawSubjectLines) return null;
@@ -89,5 +95,7 @@ export const useSundayTranslations = ({ issueId, availableSlugs: propAvailableSl
     selectOption,
     clearSelection,
     getSelectedTranslations,
+    error,
+    retry
   };
 };

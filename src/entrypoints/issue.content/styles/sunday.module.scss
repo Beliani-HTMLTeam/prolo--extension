@@ -25,6 +25,40 @@
   overflow: auto;
   flex: 1;
   background: white;
+
+   .rowUpdating {
+    background-color: rgba(255, 193, 7, 0.1);
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.2), transparent);
+      animation: shimmer 1.5s infinite;
+      pointer-events: none;
+    }
+  }
+  
+  .rowSuccess {
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+  
+  .rowError {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .tableHeader {
@@ -51,6 +85,11 @@
   &:hover {
     background-color: rgba(0, 0, 0, 0.02);
   }
+
+  &.rowError {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left: 3px solid #dc3545;
+  }
 }
 
 .slugColumn {
@@ -62,6 +101,17 @@
   display: flex;
   align-items: center;
   color: $light-text-color-secondary;
+
+   .errorTooltip {
+    cursor: help;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    color: #dc3545;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 .subjectLineColumn {

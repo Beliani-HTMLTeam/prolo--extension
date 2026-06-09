@@ -18,9 +18,16 @@ import { useSundayTranslations } from '@/entrypoints/newtab/utils/updater/hooks/
 import { SundayTable } from './updater/SundayTable';
 import { SundayButtons } from './updater/SundayButtons';
 import { Icon } from '@iconify/react';
+import { UpdateResults } from './updater/UpdateResults';
+import { getTodayAtMidnight } from '@/entrypoints/newtab/utils/updater/dates';
 
 const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
+  const [showResults, setShowResults] = useState(false);
+
+  const [initialSlugDates, setInitialSlugDates] = useState<Record<string, { activate: Date; deactivate: Date }>>({});
+  const [initialSlugLPs, setInitialSlugLPs] = useState<Record<string, string>>({});
+  const isResettingRef = useRef(false);
 
   const {
     translations,
@@ -28,6 +35,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     error,
     globalLP: initialGlobalLP,
     deactivateDate,
+    retry,
   } = useTranslationsLoader({ issueId, rows });
 
   const {
@@ -38,7 +46,63 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     selectOption,
     clearSelection,
     getSelectedTranslations,
+    error: sundayError,
+    retry: retrySunday,
   } = useSundayTranslations({ issueId, availableSlugs: rows.map(r => r.shop) });
+
+  const {
+    selectedItems,
+    handleToggleSL,
+    handleTogglePT,
+    handleSelectedAllSL,
+    handleSelectedAllPT,
+    handleSelectAllReady,
+    handleClearAll,
+  } = useSelectionManager();
+
+  const translationsRef = useRef(translations);
+  const selectedItemsRef = useRef(selectedItems);
+  const handleToggleSLRef = useRef(handleToggleSL);
+  const handleTogglePTRef = useRef(handleTogglePT);
+
+  useEffect(() => {
+    translationsRef.current = translations;
+    selectedItemsRef.current = selectedItems;
+    handleToggleSLRef.current = handleToggleSL;
+    handleTogglePTRef.current = handleTogglePT;
+  }, [translations, selectedItems, handleToggleSL, handleTogglePT]);
+
+  const autoSelectSlug = useCallback((slug: string) => {
+    if (isResettingRef.current) return;
+
+    if (typeof window !== 'undefined' && (window as any).__isResetting) {
+      return;
+    }
+
+    const currentTranslations = translationsRef.current;
+    const currentSelectedItems = selectedItemsRef.current;
+    const currentHandleToggleSL = handleToggleSLRef.current;
+    const currentHandleTogglePT = handleTogglePTRef.current;
+
+    if (!currentTranslations) return;
+
+    const subjectLine = currentTranslations.subjectLine?.[slug];
+    const pageTitle = currentTranslations.pageTitle?.[slug];
+
+    if (subjectLine) {
+      const isAlreadySelected = currentSelectedItems.some(item => item.slug === slug && item.type === 'subjectLine');
+      if (!isAlreadySelected) {
+        currentHandleToggleSL(slug, true, subjectLine);
+      }
+    }
+
+    if (pageTitle) {
+      const isAlreadySelected = currentSelectedItems.some(item => item.slug === slug && item.type === 'pageTitle');
+      if (!isAlreadySelected) {
+        currentHandleTogglePT(slug, true, pageTitle);
+      }
+    }
+  }, []);
 
   const {
     useGlobalDate,
@@ -50,7 +114,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     handleSlugDeactivateDateChange,
     getDateForSlug,
     initializeSlugDates,
-  } = useDateConfig(deactivateDate);
+  } = useDateConfig({ initialDeactivateDate: deactivateDate, onAutoSelect: autoSelectSlug });
 
   const {
     useGlobalLP,
@@ -63,22 +127,21 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     getLPForSlug,
     initializeSlugLPs,
     setGlobalLP: setHookGlobalLP,
-  } = useLPConfig(initialGlobalLP);
+  } = useLPConfig({ initialGlobalLP, onAutoSelect: autoSelectSlug });
 
   const {
-    selectedItems,
-    handleToggleSL,
-    handleTogglePT,
-    handleSelectedAllSL,
-    handleSelectedAllPT,
-    handleSelectAllReady,
-    handleClearAll,
-  } = useSelectionManager();
-
-  const { isUpdating, updateProgress, handleUpdateSelected, handleUpdateAll } = useUpdateHandler({
+    isUpdating,
+    updateProgress,
+    updateResults,
+    updatingSlugs,
+    isComplete,
+    handleUpdateSelected,
+    handleUpdateAll,
+    handleRetryFailed,
+    reset,
+  } = useUpdateHandler({
     getLPForSlug,
     getDateForSlug,
-    onClose,
     newsletterIds,
     landingPageIds,
   });
@@ -88,6 +151,22 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       setHookGlobalLP(initialGlobalLP);
     }
   }, [initialGlobalLP, setHookGlobalLP]);
+
+  useEffect(() => {
+    if (isComplete && !isUpdating) {
+      setShowResults(true);
+    }
+  }, [isComplete, isUpdating]);
+
+  const handleModalClose = () => {
+    reset();
+    onClose();
+  };
+
+  const handleRetry = () => {
+    setShowResults(false);
+    handleRetryFailed();
+  };
 
   useEffect(() => {
     if (translations) {
@@ -101,9 +180,77 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       if (slugArray.length > 0) {
         initializeSlugDates(slugArray);
         initializeSlugLPs(slugArray, initialGlobalLP);
+
+        const initialDates: Record<string, { activate: Date; deactivate: Date }> = {};
+        const initialLPs: Record<string, string> = {};
+
+        slugArray.forEach(slug => {
+          initialDates[slug] = {
+            activate: getTodayAtMidnight(),
+            deactivate: deactivateDate || getTodayAtMidnight(),
+          };
+          initialLPs[slug] = initialGlobalLP;
+        });
+
+        setInitialSlugDates(initialDates);
+        setInitialSlugLPs(initialLPs);
       }
     }
   }, [translations]);
+
+  const getInitialActivateDate = useCallback(
+    (slug: string) => {
+      return initialSlugDates[slug]?.activate;
+    },
+    [initialSlugDates],
+  );
+
+  const getInitialDeactivateDate = useCallback(
+    (slug: string) => {
+      return initialSlugDates[slug]?.deactivate;
+    },
+    [initialSlugDates],
+  );
+
+  const getInitialLP = useCallback(
+    (slug: string) => {
+      return initialSlugLPs[slug];
+    },
+    [initialSlugLPs],
+  );
+
+  const handleGlobalActivateDateChangeWithAutoSelect = (date: Date | null) => {
+    handleGlobalActivateDateChange(date);
+    if (translations) {
+      const allSlugs = new Set([
+        ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
+        ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
+      ]);
+      allSlugs.forEach(slug => autoSelectSlug(slug));
+    }
+  };
+
+  const handleGlobalDeactivateDateChangeWithAutoSelect = (date: Date | null) => {
+    handleGlobalDeactivateDateChange(date);
+    if (translations) {
+      const allSlugs = new Set([
+        ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
+        ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
+      ]);
+      allSlugs.forEach(slug => autoSelectSlug(slug));
+    }
+  };
+
+  const handleGlobalLPChangeWithAutoSelect = (lp: string) => {
+    handleGlobalLPChange(lp);
+    if (translations) {
+      const allSlugs = new Set([
+        ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
+        ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
+      ]);
+      allSlugs.forEach(slug => autoSelectSlug(slug));
+    }
+  };
 
   const handleUpdateSelectedWrapper = () => handleUpdateSelected(selectedItems);
   const handleUpdateAllWrapper = () => handleUpdateAll(translations, handleUpdateSelected);
@@ -115,6 +262,36 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   const selectedPTCount = selectedItems.filter(item => item.type === 'pageTitle').length;
 
   if (isSundayNewsletter === null || loading || sundayLoading) {
+    if (error || sundayError) {
+      return (
+        <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+          <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+            <ModalHeader title="Error Loading Data" onClose={onClose} />
+            <div className={sundayStyles.container}>
+              <div className={sundayStyles.errorContainer}>
+                <Icon icon="mdi:alert-circle" width="48" height="48" className={sundayStyles.errorIcon} />
+                <h3>Failed to load translations</h3>
+                <p>{error || sundayError}</p>
+                <button
+                  className={sundayStyles.retryButton}
+                  onClick={() => {
+                    if (error) retry();
+                    if (sundayError) retrySunday();
+                  }}
+                >
+                  <Icon icon="mdi:refresh" width="18" height="18" />
+                  Retry
+                </button>
+                <button className={sundayStyles.closeButton} onClick={onClose}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
         <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
@@ -149,30 +326,34 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
           <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
           <div className={sundayStyles.container}>
             {isUpdating && updateProgress.total > 0 && (
-              <div className={sundayStyles.progressOverlay}>
-                <div className={sundayStyles.progressContainer}>
-                  <div className={sundayStyles.progressHeader}>
-                    <Icon icon="svg-spinners:180-ring" width="20" height="20" />
-                    <span>Updating subject lines...</span>
-                  </div>
-                  <div className={sundayStyles.progressBar}>
-                    <div
-                      className={sundayStyles.progressFill}
-                      style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
-                    />
-                  </div>
-                  <div className={sundayStyles.progressText}>
-                    {updateProgress.completed} / {updateProgress.total} completed
-                  </div>
+              <div className={sundayStyles.tableProgressBar}>
+                <div
+                  className={sundayStyles.tableProgressFill}
+                  style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
+                />
+              </div>
+            )}
+            {isUpdating && updateProgress.total > 0 && (
+              <div className={sundayStyles.progressStats}>
+                <div className={sundayStyles.progressInfo}>
+                  <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.progressSpinner} />
+                  <span>Updating subject lines...</span>
+                </div>
+                <div className={sundayStyles.progressCount}>
+                  {updateProgress.completed} / {updateProgress.total} completed
                 </div>
               </div>
             )}
+            {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
+
             <SundayTable
               subjectLines={subjectLines}
               selectedIndex={selectedIndex}
               onSelectOption={selectOption}
               loading={sundayLoading}
               availableSlugs={availableSlugs}
+              updateResults={updateResults}
+              updatingSlugs={updatingSlugs}
             />
             <SundayButtons
               hasSelection={selectedIndex !== null}
@@ -212,25 +393,6 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
         <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
         <div className={updaterStyles.modalContent}>
-          {isUpdating && updateProgress.total > 0 && (
-            <div className={updaterStyles.progressOverlay}>
-              <div className={updaterStyles.progressContainer}>
-                <div className={updaterStyles.progressHeader}>
-                  <Icon icon="svg-spinners:180-ring" width="20" height="20" />
-                  <span>Updating translations...</span>
-                </div>
-                <div className={updaterStyles.progressBar}>
-                  <div
-                    className={updaterStyles.progressFill}
-                    style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
-                  />
-                </div>
-                <div className={updaterStyles.progressText}>
-                  {updateProgress.completed} / {updateProgress.total} completed
-                </div>
-              </div>
-            </div>
-          )}
           <div className={updaterStyles.menu}>
             <MenuContent
               loading={loading}
@@ -242,10 +404,10 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               selectedPTCount={selectedPTCount}
               isUpdating={isUpdating}
               onToggleGlobalDate={checked => setUseGlobalDate(checked)}
-              onActivateDateChange={handleGlobalActivateDateChange}
-              onDeactivateDateChange={handleGlobalDeactivateDateChange}
+              onActivateDateChange={handleGlobalActivateDateChangeWithAutoSelect}
+              onDeactivateDateChange={handleGlobalDeactivateDateChangeWithAutoSelect}
               onToggleGlobalLP={handleUseGlobalLPToggle}
-              onGlobalLPChange={handleGlobalLPChange}
+              onGlobalLPChange={handleGlobalLPChangeWithAutoSelect}
               onUpdateAllSL={handleSelectedAllSLWrapper}
               onUpdateSelectedSL={handleUpdateSelectedWrapper}
               onUpdateAllPT={handleSelectedAllPTWrapper}
@@ -257,8 +419,34 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               onCancel={onClose}
             />
           </div>
-
           <div style={{ flex: 1 }}>
+            {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
+            <>
+              {isUpdating && updateProgress.total > 0 && (
+                <div className={updaterStyles.progressStats}>
+                  <div className={updaterStyles.progressInfo}>
+                    <Icon
+                      icon="svg-spinners:180-ring"
+                      width="14"
+                      height="14"
+                      className={updaterStyles.progressSpinner}
+                    />
+                    <span>Updating translations...</span>
+                  </div>
+                  <div className={updaterStyles.progressCount}>
+                    {updateProgress.completed} / {updateProgress.total} completed
+                  </div>
+                </div>
+              )}
+              {isUpdating && updateProgress.total > 0 && (
+                <div className={updaterStyles.tableProgressBar}>
+                  <div
+                    className={updaterStyles.tableProgressFill}
+                    style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
+                  />
+                </div>
+              )}
+            </>
             <UpdaterTable
               translations={translations}
               loading={loading || isUpdating}
@@ -277,6 +465,11 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               availableSlugs={availableSlugs}
               newsletterIds={newsletterIds}
               landingPageIds={landingPageIds}
+              updatingSlugs={updatingSlugs}
+              updateResults={updateResults}
+              getInitialActivateDate={getInitialActivateDate}
+              getInitialDeactivateDate={getInitialDeactivateDate}
+              getInitialLP={getInitialLP}
             />
           </div>
         </div>

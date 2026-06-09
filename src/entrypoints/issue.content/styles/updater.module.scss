@@ -144,6 +144,39 @@
     &:hover {
       background-color: rgba(0, 0, 0, 0.02);
     }
+    &.rowUpdating {
+      background-color: rgba(255, 193, 7, 0.1);
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.2), transparent);
+        animation: shimmer 1.5s infinite;
+        pointer-events: none;
+      }
+    }
+
+    &.rowSuccess {
+      background-color: rgba(40, 167, 69, 0.1);
+    }
+
+    &.rowError {
+      background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    &.rowError {
+      background-color: rgba(220, 53, 69, 0.1);
+      border-left: 3px solid #dc3545;
+
+      .errorTooltip {
+        color: #dc3545;
+      }
+    }
 
     .shopLabel {
       width: 70px;
@@ -163,6 +196,28 @@
       svg {
         margin-left: 8px;
         flex-shrink: 0;
+      }
+
+      .spinner {
+        animation: spin 1s linear infinite;
+      }
+
+      .successIcon {
+        color: #28a745;
+      }
+
+      .errorIcon {
+        color: #dc3545;
+      }
+
+      .errorTooltip {
+        cursor: help;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+
+        &:hover {
+          opacity: 1;
+        }
       }
     }
 
@@ -258,6 +313,24 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .dateHeader {
   margin-bottom: 12px;
 
@@ -321,7 +394,6 @@
   background-color: $happy-red;
   padding: 2px 8px;
   border-radius: 4px;
-
 }
 
 .lpHeader {
@@ -390,25 +462,25 @@
 .datePickerWrapper {
   width: 100%;
   display: block;
-  
+
   .react-datepicker__input-container {
     width: 100%;
     display: block;
   }
-  
+
   .react-datepicker__input-container input {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 14px;
-    
+
     &:focus {
       outline: none;
       border-color: #80bdff;
       box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
-    
+
     &:disabled {
       background-color: #e9ecef;
       cursor: not-allowed;
@@ -416,7 +488,8 @@
   }
 }
 
-.datePicker, .datePickerDisabled {
+.datePicker,
+.datePickerDisabled {
   width: 100%;
 }
 
@@ -447,62 +520,288 @@
   flex-shrink: 0;
   text-align: center;
   padding: 0 8px;
-  
+
   .idText {
     word-wrap: break-word;
     word-break: break-all;
   }
 }
 
-.progressOverlay {
+.tableProgressBar {
+  position: sticky;
+  top: 0;
+  height: 3px;
+  background: #e0e0e0;
+  z-index: 20;
+  border-radius: 0;
+  overflow: hidden;
+
+  .tableProgressFill {
+    height: 100%;
+    background: #28a745;
+    transition: width 0.3s ease;
+    border-radius: 0;
+  }
+}
+
+.progressStats {
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #666;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+
+  .progressCount {
+    font-weight: 500;
+    color: #28a745;
+  }
+
+  .progressSpinner {
+    animation: spin 1s linear infinite;
+  }
+}
+
+.resultsOverlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
   border-radius: 8px;
 }
 
-.progressContainer {
+.resultsContainer {
   background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 24px;
-  min-width: 300px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
+  min-width: 400px;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.progressHeader {
+.resultsHeader {
+  text-align: center;
+  margin-bottom: 20px;
+
+  .successIcon {
+    color: #28a745;
+  }
+
+  .errorIcon {
+    color: #dc3545;
+  }
+
+  h3 {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+}
+
+.resultsStats {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .statItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+
+    .successText {
+      color: #28a745;
+    }
+
+    .errorText {
+      color: #dc3545;
+    }
+  }
+}
+
+.failuresList {
+  margin-bottom: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+
+  h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #dc3545;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+
+      .errorDetail {
+        margin-left: auto;
+        color: #999;
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+.resultsActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+
+  button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .retryButton {
+    background: #ffc107;
+    color: #333;
+    border: none;
+
+    &:hover {
+      background: #e0a800;
+    }
+  }
+
+  .closeButton {
+    background: #28a745;
+    color: white;
+    border: none;
+
+    &:hover {
+      background: #218838;
+    }
+  }
+}
+
+.resultsInline {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.resultsInlineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.resultsInlineSummary {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  font-weight: 500;
-  color: #333;
-}
-
-.progressBar {
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.progressFill {
-  height: 100%;
-  background: #28a745;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.progressText {
-  text-align: center;
+  gap: 8px;
   font-size: 14px;
-  color: #666;
+  font-weight: 500;
+}
+
+.resultsInlineActions {
+  display: flex;
+  gap: 8px;
+}
+
+.retryButtonInline {
+  background: #ffc107;
+  color: #333;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  
+  &:hover {
+    background: #e0a800;
+  }
+}
+
+.closeButtonInline {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  
+  &:hover {
+    background: #218838;
+  }
+}
+
+.failuresInline {
+  border-top: 1px solid #dee2e6;
+  
+  .failuresToggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #dc3545;
+    background: #fff5f5;
+    
+    &:hover {
+      background: #ffe0e0;
+    }
+  }
+}
+
+.failuresListInline {
+  list-style: none;
+  margin: 0;
+  padding: 8px 16px;
+  background: #fff5f5;
+  border-top: 1px solid #ffe0e0;
+  
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #ffe0e0;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .errorDetail {
+      margin-left: auto;
+      color: #999;
+      font-size: 11px;
+    }
+  }
 }

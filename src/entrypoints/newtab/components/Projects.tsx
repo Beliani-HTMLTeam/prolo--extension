@@ -22,7 +22,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 
 const projectsConfig = [
   { name: 'Constructor', user: 'Beliani-HTMLTeam', repo: 'constructor', branch: 'dev' },
-  { name: 'Translations API', user: 'Beliani-HTMLTeam', repo: 'translations-api', branch: 'main' },
+  { name: 'Server Setup', user: 'Beliani-HTMLTeam', repo: 'server-setup', branch: 'main' },
   { name: 'Extension - Rewritten', user: 'Beliani-HTMLTeam', repo: 'prolo--extension', branch: 'dev' },
   { name: 'Extension - Legacy', user: 'Beliani-HTMLTeam', repo: 'prolo--extension-legacy', branch: 'future' },
   { name: 'Extension for Graphics', user: 'Beliani-HTMLTeam', repo: 'prolo--extension-for-graphics', branch: 'dev' },

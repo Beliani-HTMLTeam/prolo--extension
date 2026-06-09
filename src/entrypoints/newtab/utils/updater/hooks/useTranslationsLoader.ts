@@ -18,9 +18,9 @@ export const useTranslationsLoader = ({
   const [globalLP, setGlobalLP] = useState('');
   const [deactivateDate, setDeactivateDate] = useState<Date | null>(null);
 
-  useEffect(() => {
-    const loadIssueData = async () => {
+    const loadIssueData = useCallback(async () => {
       setLoading(true);
+        setError(null);
       try {
         const issueData = await fetchIssueData(issueId);
         const issueItem = issueData.issue_list?.[0];
@@ -76,14 +76,22 @@ export const useTranslationsLoader = ({
         setTranslations(filteredTranslations);
       } catch (e) {
         console.error('Failed to load SL/PT translations: ', e);
-        setError('Failed to load translations');
+        setError(e instanceof Error ? e.message : 'Failed to load translations');
       } finally {
         setLoading(false);
       }
-    };
 
-    void loadIssueData();
+
   }, [issueId, rows]);
 
-  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate };
+  useEffect(() => {
+        loadIssueData();
+
+  }, [loadIssueData]);
+
+  const retry = useCallback(() => {
+    loadIssueData();
+  }, [loadIssueData]);
+
+  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate, retry };
 };

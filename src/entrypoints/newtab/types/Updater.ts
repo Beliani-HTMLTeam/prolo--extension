@@ -49,3 +49,11 @@ export interface UpdaterSlugDateConfig {
 export interface UpdaterSlugLPConfig {
   [slug: string]: string;
 }
+
+export interface UpdateResult {
+  slug: string;
+  type: 'newsletter' | 'landing-page';
+  success: boolean;
+  status?: number;
+  error?: string;
+}

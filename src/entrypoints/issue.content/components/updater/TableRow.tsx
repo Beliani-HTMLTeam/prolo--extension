@@ -1,6 +1,8 @@
 import DatePicker from 'react-datepicker';
 import updaterStyles from '../../styles/updater.module.scss';
 import { formatDateForInput } from '@/entrypoints/newtab/utils/updater/dates';
+import { Icon } from '@iconify/react';
+import clsx from 'clsx';
 
 interface TableRowProps {
   slug: string;
@@ -28,6 +30,18 @@ interface TableRowProps {
   onLPChange: (value: string) => void;
   onActivateDateChange: (date: Date | null) => void;
   onDeactivateDateChange: (date: Date | null) => void;
+  isUpdating?: boolean;
+  isSuccess?: boolean;
+  isError?: boolean;
+  errorMessage?: string;
+   getInitialActivateDate?: (slug: string) => Date;
+  getInitialDeactivateDate?: (slug: string) => Date;
+  getInitialLP?: (slug: string) => string;
+  onSlugActivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
+  onSlugDeactivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
+  onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
+    onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
+
 }
 
 export const TableRow = ({
@@ -56,7 +70,27 @@ export const TableRow = ({
   onLPChange,
   onActivateDateChange,
   onDeactivateDateChange,
+  isUpdating = false,
+  isSuccess= false,
+  isError = false,
+  errorMessage,
+  getInitialActivateDate,
+  getInitialDeactivateDate,
+  getInitialLP,
+  onSlugActivateDateChange,
+  onSlugDeactivateDateChange,
+  onSlugLPChange,
+  onSlugFMDModeChange
 }: TableRowProps) => {
+ const prevSelectedRef = useRef({ sl: isSLSelected, pt: isPTSelected });
+  const isResettingRef = useRef(false);
+
+   const rowClass = clsx(updaterStyles.shopRow, {
+    [updaterStyles.rowUpdating]: isUpdating,
+    [updaterStyles.rowSuccess]: isSuccess,
+    [updaterStyles.rowError]: isError,
+  });
+
 const getNewsletterIdsDisplay = () => {
   if (!newsletterId) return '-';
   const ids = [];
@@ -66,16 +100,30 @@ const getNewsletterIdsDisplay = () => {
 };
 
   return (
-  <div className={updaterStyles.shopRow}>
+  <div className={rowClass}>
     {/* Country Column */}
     <div className={updaterStyles.shopLabel}>
       <input
         type="checkbox"
         checked={isSLSelected || isPTSelected}
         onChange={e => onToggleCountry(e.target.checked)}
-        disabled={loading}
+        disabled={loading || isUpdating}
       />
       <span>{slug}</span>
+       {isUpdating && (
+          <Icon icon="svg-spinners:180-ring" width="14" height="14" className={updaterStyles.spinner} />
+        )}
+        {isSuccess && (
+          <Icon icon="mdi:check-circle" width="14" height="14" className={updaterStyles.successIcon} />
+        )}
+        {isError && (
+          <Icon icon="mdi:alert-circle" width="14" height="14" className={updaterStyles.errorIcon} />
+        )}
+        {isError && errorMessage && (
+           <span className={updaterStyles.errorTooltip} title={errorMessage}>
+            <Icon icon="mdi:information" width="12" height="12" />
+          </span>
+        )}
     </div>
 
     <div className={updaterStyles.newsletterId}>
@@ -108,7 +156,7 @@ const getNewsletterIdsDisplay = () => {
           type="checkbox"
           checked={isPTSelected}
           onChange={e => onTogglePT(e.target.checked)}
-          disabled={loading}
+          disabled={loading || isUpdating}
           title="Select page title for update"
         />
       )}

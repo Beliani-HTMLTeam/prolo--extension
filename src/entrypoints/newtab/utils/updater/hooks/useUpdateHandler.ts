@@ -1,4 +1,4 @@
-import { UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
+import { UpdateResult, UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
 import { formatDateForAPI } from '../dates';
 import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../constants';
@@ -25,7 +25,6 @@ interface UseUpdateHandlerProps {
   getDateForSlug: (slug: string, type: 'activate' | 'deactivate') => Date;
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
   landingPageIds?: Record<string, string>;
-  onClose: () => void;
 }
 
 export const useUpdateHandler = ({
@@ -33,10 +32,13 @@ export const useUpdateHandler = ({
   getDateForSlug,
   newsletterIds,
   landingPageIds,
-  onClose,
 }: UseUpdateHandlerProps) => {
   const [updateProgress, setUpdateProgress] = useState({ completed: 0, total: 0 });
+  const [updateResults, setUpdateResults] = useState<UpdateResult[]>([]);
+  const [updatingSlugs, setUpdatingSlugs] = useState<Set<string>>(new Set());
+  const [originalSelectedItems, setOriginalSelectedItems] = useState<UpdaterSelectedItem[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
   const getServersForSlug = (slug: string): number[] => {
     return slug === 'NL' ? NL_SERVERS : DEFAULT_SERVERS;
@@ -50,7 +52,11 @@ export const useUpdateHandler = ({
       return;
     }
 
+    setOriginalSelectedItems(selectedItems);
     setIsUpdating(true);
+
+    const slugsToUpdate = new Set(selectedItems.map(item => item.slug));
+    setUpdatingSlugs(slugsToUpdate);
 
     try {
       console.log('🔍 newsletterIds:', newsletterIds);
@@ -214,22 +220,33 @@ export const useUpdateHandler = ({
         }
       }
 
-       if (updatesToSend.length === 0) {
-    console.warn('No updates to send');
-    return;
-  }
+      if (updatesToSend.length === 0) {
+        console.warn('No updates to send');
+        return;
+      }
 
-  const results = await sendBatchUpdates(updatesToSend, (completed, total, result) => {
-    console.log(`Progress: ${completed}/${total} - ${result.slug} (${result.type}): ${result.success ? '✅' : '❌'}`);
-    setUpdateProgress({ completed, total });
-  });
+      const totalUpdates = updatesToSend.length;
+      setUpdateProgress({ completed: 0, total: totalUpdates });
 
-  const successCount = results.filter(r => r.success).length;
-  const failureCount = results.filter(r => !r.success).length;
-  
-  console.log(`Update complete! Success: ${successCount}, Failed: ${failureCount}`);
+      const slugsToUpdate = new Set(selectedItems.map(item => item.slug));
+      setUpdatingSlugs(slugsToUpdate);
 
-      onClose();
+      const results = await sendBatchUpdates(updatesToSend, (completed, total, result) => {
+        console.log(
+          `Progress: ${completed}/${total} - ${result.slug} (${result.type}): ${result.success ? '✅' : '❌'}`,
+        );
+        setUpdateProgress({ completed, total });
+        setUpdateResults(prev => [...prev, result]);
+      });
+
+      const successCount = results.filter(r => r.success).length;
+      const failureCount = results.filter(r => !r.success).length;
+
+      setUpdatingSlugs(new Set());
+
+      console.log(`Update complete! Success: ${successCount}, Failed: ${failureCount}`);
+
+      setIsComplete(true);
     } catch (error) {
       console.error('Failed to update translations: ', error);
       throw error;
@@ -237,6 +254,20 @@ export const useUpdateHandler = ({
       setIsUpdating(false);
     }
   };
+
+  const handleRetryFailed = async () => {
+    if (updateResults.length === 0) return;
+
+    const failedSlugs = updateResults.filter(r => !r.success).map(r => r.slug);
+
+    const failedItems = originalSelectedItems.filter(item => failedSlugs.includes(item.slug));
+
+    if (failedItems.length === 0)  return;
+
+    setUpdateResults([]);
+    setUpdateProgress({ completed: 0, total: 0 });
+    await handleUpdateSelected(failedItems);
+  }
 
   const handleUpdateAll = async (
     translations: LineTitleTranslations | null,
@@ -277,7 +308,18 @@ export const useUpdateHandler = ({
   return {
     isUpdating,
     updateProgress,
+    updateResults,
+    updatingSlugs,
+    isComplete,
     handleUpdateSelected,
+    handleRetryFailed,
     handleUpdateAll,
+    reset: () => {
+      setIsUpdating(false);
+      setUpdatingSlugs(new Set());
+      setIsComplete(false);
+      setUpdateProgress({ completed: 0, total: 0 });
+      setUpdateResults([]);
+    },
   };
 };

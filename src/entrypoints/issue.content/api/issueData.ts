@@ -18,7 +18,7 @@ export const fetchIssueData = async (issueId: number) => {
   }
 };
 
-const ZROK_BASE = 'https://plgost2ibovu.share.zrok.io';
+const ZROK_BASE = 'https://tj31c889tzsk.share.zrok.io/api/sheets';
 const ZROK_HEADERS: Record<string, string> = {
   Accept: 'application/json',
   skip_zrok_interstitial: 'true',
