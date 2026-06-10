@@ -7,6 +7,7 @@ interface TableHeaderProps {
   allPTSlugsLength: number;
   allSLSelected: boolean;
   allPTSelected: boolean;
+  disableSelections?: boolean;
   onSelectAllSL: (checked: boolean) => void;
   onSelectAllPT: (checked: boolean) => void;
 }
@@ -18,6 +19,7 @@ export const TableHeader = ({
   allPTSlugsLength,
   allSLSelected,
   allPTSelected,
+  disableSelections = false,
   onSelectAllSL,
   onSelectAllPT,
 }: TableHeaderProps) => (
@@ -35,7 +37,7 @@ export const TableHeader = ({
         type="checkbox"
         onChange={e => onSelectAllSL(e.target.checked)}
         checked={allSLSelected}
-        disabled={allSLSlugsLength === 0}
+        disabled={allSLSlugsLength === 0 || disableSelections}
       />
     </div>
     
@@ -50,7 +52,7 @@ export const TableHeader = ({
         type="checkbox"
         onChange={e => onSelectAllPT(e.target.checked)}
         checked={allPTSelected}
-        disabled={allPTSlugsLength === 0}
+        disabled={allPTSlugsLength === 0 || disableSelections}
       />
     </div>
 

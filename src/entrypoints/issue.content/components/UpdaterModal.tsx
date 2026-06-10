@@ -27,6 +27,8 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const [initialSlugDates, setInitialSlugDates] = useState<Record<string, { activate: Date; deactivate: Date }>>({});
   const [initialSlugLPs, setInitialSlugLPs] = useState<Record<string, string>>({});
+  const [isGlobalLPChanged, setIsGlobalLPChanged] = useState(false);
+
   const isResettingRef = useRef(false);
 
   const {
@@ -54,8 +56,6 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     selectedItems,
     handleToggleSL,
     handleTogglePT,
-    handleSelectedAllSL,
-    handleSelectedAllPT,
     handleSelectAllReady,
     handleClearAll,
   } = useSelectionManager();
@@ -158,6 +158,12 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     }
   }, [isComplete, isUpdating]);
 
+  useEffect(() => {
+    if (isUpdating) {
+      setShowResults(false);
+    }
+  }, [isUpdating]);
+
   const handleModalClose = () => {
     reset();
     onClose();
@@ -232,30 +238,107 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const handleGlobalDeactivateDateChangeWithAutoSelect = (date: Date | null) => {
     handleGlobalDeactivateDateChange(date);
-    if (translations) {
-      const allSlugs = new Set([
-        ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
-        ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
-      ]);
-      allSlugs.forEach(slug => autoSelectSlug(slug));
-    }
   };
 
   const handleGlobalLPChangeWithAutoSelect = (lp: string) => {
     handleGlobalLPChange(lp);
+      setIsGlobalLPChanged(lp !== initialGlobalLP);
+
     if (translations) {
+      isResettingRef.current = true;
+        if (typeof window !== 'undefined') {
+      (window as any).__isResetting = true;
+    }
+
       const allSlugs = new Set([
         ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
         ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
       ]);
-      allSlugs.forEach(slug => autoSelectSlug(slug));
+      allSlugs.forEach(slug => {
+      const subjectLine = translations.subjectLine?.[slug];
+      const pageTitle = translations.pageTitle?.[slug];
+      
+      // Select subject line if exists and valid
+      if (subjectLine) {
+        const isAlreadySelected = selectedItems.some(
+          item => item.slug === slug && item.type === 'subjectLine'
+        );
+        if (!isAlreadySelected) {
+          handleToggleSL(slug, true, subjectLine);
+        }
+      }
+      
+      // Select page title if exists and valid
+      if (pageTitle) {
+        const isAlreadySelected = selectedItems.some(
+          item => item.slug === slug && item.type === 'pageTitle'
+        );
+        if (!isAlreadySelected) {
+          handleTogglePT(slug, true, pageTitle);
+        }
+      }
+    });
+     setTimeout(() => {
+      isResettingRef.current = false;
+      if (typeof window !== 'undefined') {
+        (window as any).__isResetting = false;
+      }
+    }, 200);
     }
   };
 
-  const handleUpdateSelectedWrapper = () => handleUpdateSelected(selectedItems);
+  const handleUpdateAllSL = () => {
+    if (!translations?.subjectLine) return;
+
+    const allSlugs = Object.keys(translations.subjectLine);
+    const allSLItems: UpdaterSelectedItem[] = allSlugs.map(slug => ({
+      slug,
+      type: 'subjectLine',
+      content: translations.subjectLine![slug],
+    }));
+
+    handleUpdateSelected(allSLItems);
+  };
+
+  const handleUpdateAllPT = () => {
+    if (!translations?.pageTitle) return;
+
+    const allSlugs = Object.keys(translations.pageTitle);
+    const allPTItems: UpdaterSelectedItem[] = allSlugs.map(slug => ({
+      slug,
+      type: 'pageTitle',
+      content: translations.pageTitle![slug],
+    }));
+
+    handleUpdateSelected(allPTItems);
+  };
+
+  const handleUpdateSelectedSL = () => {
+    const selectedSLItems = selectedItems.filter(item => item.type === 'subjectLine');
+    if (selectedSLItems.length === 0) {
+      console.warn('No subject lines selected to update');
+      return;
+    }
+    handleUpdateSelected(selectedSLItems);
+  };
+
+  const handleUpdateSelectedPT = () => {
+    const selectedPTItems = selectedItems.filter(item => item.type === 'pageTitle');
+    if (selectedPTItems.length === 0) {
+      console.warn('No page titles selected to update');
+      return;
+    }
+    handleUpdateSelected(selectedPTItems);
+  };
+
+  const handleUpdateSelectedWrapper = () => {
+    if (selectedItems.length === 0) {
+      console.warn('No items selected to update');
+      return;
+    }
+    handleUpdateSelected(selectedItems);
+  };
   const handleUpdateAllWrapper = () => handleUpdateAll(translations, handleUpdateSelected);
-  const handleSelectedAllSLWrapper = () => handleSelectedAllSL(translations);
-  const handleSelectedAllPTWrapper = () => handleSelectedAllPT(translations);
   const handleSelectAllReadyWrapper = () => handleSelectAllReady(translations);
 
   const selectedSLCount = selectedItems.filter(item => item.type === 'subjectLine').length;
@@ -382,6 +465,15 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
             <div className={updaterStyles.shopRow} style={{ border: 'none' }}>
               <span>No translations found</span>
             </div>
+            <button
+              className={updaterStyles.reloadButton}
+              onClick={() => {
+                retry();
+              }}
+            >
+              <Icon icon="mdi:refresh" width="16" height="16" />
+              Reload
+            </button>
           </div>
         </div>
       </div>
@@ -408,10 +500,10 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               onDeactivateDateChange={handleGlobalDeactivateDateChangeWithAutoSelect}
               onToggleGlobalLP={handleUseGlobalLPToggle}
               onGlobalLPChange={handleGlobalLPChangeWithAutoSelect}
-              onUpdateAllSL={handleSelectedAllSLWrapper}
-              onUpdateSelectedSL={handleUpdateSelectedWrapper}
-              onUpdateAllPT={handleSelectedAllPTWrapper}
-              onUpdateSelectedPT={handleUpdateSelectedWrapper}
+              onUpdateAllSL={handleUpdateAllSL}
+              onUpdateSelectedSL={handleUpdateSelectedSL}
+              onUpdateAllPT={handleUpdateAllPT}
+              onUpdateSelectedPT={handleUpdateSelectedPT}
               onUpdateAll={handleUpdateAllWrapper}
               onUpdateSelected={handleUpdateSelectedWrapper}
               onSelectAll={handleSelectAllReadyWrapper}
@@ -460,6 +552,8 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               onSlugLPChange={handleSlugLPChange}
               useGlobalDates={useGlobalDate}
               useGlobalLP={useGlobalLP}
+              globalLP={globalLP}
+              initialGlobalLP={initialGlobalLP}
               slugFMDModes={slugFMDModes}
               onSlugFMDModeChange={handleSlugFMDModeChange}
               availableSlugs={availableSlugs}

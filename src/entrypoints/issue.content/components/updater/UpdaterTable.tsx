@@ -18,6 +18,8 @@ interface UpdaterTableProps {
   getLPForSlug?: (slug: string) => string;
   onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
   useGlobalLP?: boolean;
+  globalLP?: string;
+  initialGlobalLP?: string;
   slugFMDModes?: Record<string, { fd: boolean; md: boolean }>;
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
   availableSlugs?: string[];
@@ -43,6 +45,8 @@ const UpdaterTable = ({
   getLPForSlug,
   onSlugLPChange,
   useGlobalLP = true,
+  globalLP = '',
+  initialGlobalLP = '',
   slugFMDModes = {},
   onSlugFMDModeChange,
   newsletterIds = {},
@@ -64,8 +68,7 @@ const UpdaterTable = ({
     [selectedItems],
   );
 
-  const isResettingRef = useRef(false);
-
+  const isGlobalLPModified = globalLP !== initialGlobalLP;
   const allSlugs = useMemo(() => {
     const slugs = new Set<string>();
     if (translations?.subjectLine) {
@@ -137,6 +140,7 @@ const UpdaterTable = ({
         allPTSelected={allPTSelected}
         onSelectAllSL={handleSelectAllSL}
         onSelectAllPT={handleSelectAllPT}
+        disableSelections={isGlobalLPModified}
       />
 
       {allSlugs.map(slug => {
@@ -164,9 +168,9 @@ const UpdaterTable = ({
             if (hasSL && subjectLine) onToggleSL?.(slug, true, subjectLine);
             if (hasPT && pageTitle) onTogglePT?.(slug, true, pageTitle);
           } else {
-             if (typeof window !== 'undefined') {
-      (window as any).__isResetting = true;
-    }
+            if (typeof window !== 'undefined') {
+              (window as any).__isResetting = true;
+            }
 
             if (hasSL && subjectLine) onToggleSL?.(slug, false, subjectLine);
             if (hasPT && pageTitle) onTogglePT?.(slug, false, pageTitle);
@@ -194,11 +198,11 @@ const UpdaterTable = ({
               onSlugLPChange?.(slug, initialLP, true);
             }
 
-              setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        (window as any).__isResetting = false;
-      }
-    }, 200);
+            setTimeout(() => {
+              if (typeof window !== 'undefined') {
+                (window as any).__isResetting = false;
+              }
+            }, 200);
           }
         };
 
@@ -241,6 +245,7 @@ const UpdaterTable = ({
             onSlugDeactivateDateChange={onSlugDeactivateDateChange}
             onSlugLPChange={onSlugLPChange}
             onSlugFMDModeChange={onSlugFMDModeChange}
+            disableSelections={isGlobalLPModified}
           />
         );
       })}

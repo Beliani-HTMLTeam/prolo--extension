@@ -52,7 +52,10 @@ export const useUpdateHandler = ({
       return;
     }
 
+    setUpdateResults([]);
+    setUpdateProgress({ completed: 0, total: 0 });
     setOriginalSelectedItems(selectedItems);
+    setIsComplete(false);
     setIsUpdating(true);
 
     const slugsToUpdate = new Set(selectedItems.map(item => item.slug));

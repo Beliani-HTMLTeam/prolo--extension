@@ -41,6 +41,7 @@ interface TableRowProps {
   onSlugDeactivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
   onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
     onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
+  disableSelections?: boolean;
 
 }
 
@@ -74,17 +75,8 @@ export const TableRow = ({
   isSuccess= false,
   isError = false,
   errorMessage,
-  getInitialActivateDate,
-  getInitialDeactivateDate,
-  getInitialLP,
-  onSlugActivateDateChange,
-  onSlugDeactivateDateChange,
-  onSlugLPChange,
-  onSlugFMDModeChange
+  disableSelections = false,
 }: TableRowProps) => {
- const prevSelectedRef = useRef({ sl: isSLSelected, pt: isPTSelected });
-  const isResettingRef = useRef(false);
-
    const rowClass = clsx(updaterStyles.shopRow, {
     [updaterStyles.rowUpdating]: isUpdating,
     [updaterStyles.rowSuccess]: isSuccess,
@@ -107,7 +99,7 @@ const getNewsletterIdsDisplay = () => {
         type="checkbox"
         checked={isSLSelected || isPTSelected}
         onChange={e => onToggleCountry(e.target.checked)}
-        disabled={loading || isUpdating}
+        disabled={loading || isUpdating || disableSelections}
       />
       <span>{slug}</span>
        {isUpdating && (
@@ -138,7 +130,7 @@ const getNewsletterIdsDisplay = () => {
           type="checkbox"
           checked={isSLSelected}
           onChange={e => onToggleSL(e.target.checked)}
-          disabled={loading}
+          disabled={loading || disableSelections}
           title="Select subject line for update"
         />
       )}
@@ -156,7 +148,7 @@ const getNewsletterIdsDisplay = () => {
           type="checkbox"
           checked={isPTSelected}
           onChange={e => onTogglePT(e.target.checked)}
-          disabled={loading || isUpdating}
+          disabled={loading || isUpdating || disableSelections}
           title="Select page title for update"
         />
       )}
@@ -169,7 +161,7 @@ const getNewsletterIdsDisplay = () => {
           type="checkbox"
           checked={fdMode}
           onChange={e => onFDModeChange(e.target.checked)}
-          disabled={loading || mdMode}
+          disabled={loading || mdMode || disableSelections}
         />
         <span>FD</span>
       </label>
@@ -178,7 +170,7 @@ const getNewsletterIdsDisplay = () => {
           type="checkbox"
           checked={mdMode}
           onChange={e => onMDModeChange(e.target.checked)}
-          disabled={loading || fdMode}
+          disabled={loading || fdMode || disableSelections}
         />
         <span>MD</span>
       </label>
