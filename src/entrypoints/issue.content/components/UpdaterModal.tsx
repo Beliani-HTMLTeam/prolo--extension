@@ -27,7 +27,6 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const [initialSlugDates, setInitialSlugDates] = useState<Record<string, { activate: Date; deactivate: Date }>>({});
   const [initialSlugLPs, setInitialSlugLPs] = useState<Record<string, string>>({});
-  const [isGlobalLPChanged, setIsGlobalLPChanged] = useState(false);
 
   const isResettingRef = useRef(false);
 
@@ -52,13 +51,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     retry: retrySunday,
   } = useSundayTranslations({ issueId, availableSlugs: rows.map(r => r.shop) });
 
-  const {
-    selectedItems,
-    handleToggleSL,
-    handleTogglePT,
-    handleSelectAllReady,
-    handleClearAll,
-  } = useSelectionManager();
+  const { selectedItems, handleToggleSL, handleTogglePT, handleSelectAllReady, handleClearAll } = useSelectionManager();
 
   const translationsRef = useRef(translations);
   const selectedItemsRef = useRef(selectedItems);
@@ -144,6 +137,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     getDateForSlug,
     newsletterIds,
     landingPageIds,
+    onClearSelections: handleClearAll,
   });
 
   useEffect(() => {
@@ -242,48 +236,43 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const handleGlobalLPChangeWithAutoSelect = (lp: string) => {
     handleGlobalLPChange(lp);
-      setIsGlobalLPChanged(lp !== initialGlobalLP);
 
     if (translations) {
       isResettingRef.current = true;
-        if (typeof window !== 'undefined') {
-      (window as any).__isResetting = true;
-    }
+      if (typeof window !== 'undefined') {
+        (window as any).__isResetting = true;
+      }
 
       const allSlugs = new Set([
         ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
         ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
       ]);
       allSlugs.forEach(slug => {
-      const subjectLine = translations.subjectLine?.[slug];
-      const pageTitle = translations.pageTitle?.[slug];
-      
-      // Select subject line if exists and valid
-      if (subjectLine) {
-        const isAlreadySelected = selectedItems.some(
-          item => item.slug === slug && item.type === 'subjectLine'
-        );
-        if (!isAlreadySelected) {
-          handleToggleSL(slug, true, subjectLine);
+        const subjectLine = translations.subjectLine?.[slug];
+        const pageTitle = translations.pageTitle?.[slug];
+
+        // Select subject line if exists and valid
+        if (subjectLine) {
+          const isAlreadySelected = selectedItems.some(item => item.slug === slug && item.type === 'subjectLine');
+          if (!isAlreadySelected) {
+            handleToggleSL(slug, true, subjectLine);
+          }
         }
-      }
-      
-      // Select page title if exists and valid
-      if (pageTitle) {
-        const isAlreadySelected = selectedItems.some(
-          item => item.slug === slug && item.type === 'pageTitle'
-        );
-        if (!isAlreadySelected) {
-          handleTogglePT(slug, true, pageTitle);
+
+        // Select page title if exists and valid
+        if (pageTitle) {
+          const isAlreadySelected = selectedItems.some(item => item.slug === slug && item.type === 'pageTitle');
+          if (!isAlreadySelected) {
+            handleTogglePT(slug, true, pageTitle);
+          }
         }
-      }
-    });
-     setTimeout(() => {
-      isResettingRef.current = false;
-      if (typeof window !== 'undefined') {
-        (window as any).__isResetting = false;
-      }
-    }, 200);
+      });
+      setTimeout(() => {
+        isResettingRef.current = false;
+        if (typeof window !== 'undefined') {
+          (window as any).__isResetting = false;
+        }
+      }, 200);
     }
   };
 

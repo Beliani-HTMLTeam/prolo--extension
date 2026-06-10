@@ -25,6 +25,7 @@ interface UseUpdateHandlerProps {
   getDateForSlug: (slug: string, type: 'activate' | 'deactivate') => Date;
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
   landingPageIds?: Record<string, string>;
+  onClearSelections?: () => void;
 }
 
 export const useUpdateHandler = ({
@@ -32,6 +33,7 @@ export const useUpdateHandler = ({
   getDateForSlug,
   newsletterIds,
   landingPageIds,
+  onClearSelections
 }: UseUpdateHandlerProps) => {
   const [updateProgress, setUpdateProgress] = useState({ completed: 0, total: 0 });
   const [updateResults, setUpdateResults] = useState<UpdateResult[]>([]);
@@ -248,6 +250,10 @@ export const useUpdateHandler = ({
       setUpdatingSlugs(new Set());
 
       console.log(`Update complete! Success: ${successCount}, Failed: ${failureCount}`);
+
+      if (onClearSelections) {
+        onClearSelections();
+      }
 
       setIsComplete(true);
     } catch (error) {
