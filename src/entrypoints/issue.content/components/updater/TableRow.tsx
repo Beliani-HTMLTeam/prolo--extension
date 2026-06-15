@@ -3,6 +3,7 @@ import updaterStyles from '../../styles/updater.module.scss';
 import { formatDateForInput } from '@/entrypoints/newtab/utils/updater/dates';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
+import { trimAllLineBreaks } from '@/entrypoints/newtab/utils/updater/stringUtils';
 
 interface TableRowProps {
   slug: string;
@@ -124,7 +125,7 @@ const getNewsletterIdsDisplay = () => {
 
     {/* Subject Line Column */}
     <div className={updaterStyles.subjectLine}>
-      <span>{subjectLine || '-'}</span>
+      <span>{subjectLine ? trimAllLineBreaks(subjectLine) : '-'}</span>
       {hasSL && (
         <input
           type="checkbox"
@@ -142,7 +143,7 @@ const getNewsletterIdsDisplay = () => {
 
     {/* Page Title Column */}
     <div className={updaterStyles.pageTitle}>
-      <span>{pageTitle || '-'}</span>
+      <span>{pageTitle ? trimAllLineBreaks(pageTitle) : '-'}</span>
       {hasPT && (
         <input
           type="checkbox"

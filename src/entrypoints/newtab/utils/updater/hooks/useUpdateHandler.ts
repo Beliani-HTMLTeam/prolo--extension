@@ -4,6 +4,7 @@ import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../constants';
 import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
 import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';
+import { trimAllLineBreaks } from '../stringUtils';
 
 interface FormattedUpdateRecord {
   slug: string;
@@ -130,8 +131,8 @@ export const useUpdateHandler = ({
             servers,
             shopId,
           };
-          if (update.subjectLine !== undefined) recordA.subjectLine = update.subjectLine;
-          if (update.pageTitle !== undefined) recordA.pageTitle = update.pageTitle;
+          if (update.subjectLine !== undefined) recordA.subjectLine = trimAllLineBreaks(update.subjectLine)
+          if (update.pageTitle !== undefined) recordA.pageTitle = trimAllLineBreaks(update.pageTitle);
           formattedUpdates.push(recordA);
 
           const recordB: FormattedUpdateRecord = {
@@ -145,8 +146,8 @@ export const useUpdateHandler = ({
             servers,
             shopId,
           };
-          if (update.subjectLine !== undefined) recordB.subjectLine = update.subjectLine;
-          if (update.pageTitle !== undefined) recordB.pageTitle = update.pageTitle;
+          if (update.subjectLine !== undefined) recordB.subjectLine = trimAllLineBreaks(update.subjectLine);
+          if (update.pageTitle !== undefined) recordB.pageTitle = trimAllLineBreaks(update.pageTitle);
           formattedUpdates.push(recordB);
         } else if (nsltData?.aId) {
           console.log(`🔍 Only A exists for ${update.slug}`);
@@ -162,8 +163,8 @@ export const useUpdateHandler = ({
             servers,
             shopId,
           };
-          if (update.subjectLine !== undefined) record.subjectLine = update.subjectLine;
-          if (update.pageTitle !== undefined) record.pageTitle = update.pageTitle;
+          if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
+          if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
           formattedUpdates.push(record);
         }
       });

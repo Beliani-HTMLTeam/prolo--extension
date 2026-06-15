@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { IssueListItem, IssueListResponse, LineTitleTranslations, SpreadsheetTranslations } from '../lib/types';
 import { SHOP_ALIASES } from '../lib/shopConfig';
+import { trimAllLineBreaks } from '@/entrypoints/newtab/utils/updater/stringUtils';
 export { extractIssueLinks } from './issueLinks';
 export { parseIssueInfo, getChecklistMode } from './issueParsing';
 export { fetchMentionableUsers } from './mentions';
@@ -151,7 +152,7 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
       if (subjectLineIndex !== -1 && countryData[subjectLineIndex]) {
         const subjectLineValue = countryData[subjectLineIndex];
         if (subjectLineValue && typeof subjectLineValue === 'string' && subjectLineValue.trim()) {
-          subjectLine[country] = subjectLineValue.trim();
+          subjectLine[country] = trimAllLineBreaks(subjectLineValue.trim());
         } else {
           subjectLine[country] = 'TRANSLATION NOT FOUND';
         }
@@ -162,7 +163,7 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
       if (pageTitleIndex !== -1 && countryData[pageTitleIndex]) {
         const pageTitleValue = countryData[pageTitleIndex];
         if (pageTitleValue && typeof pageTitleValue === 'string' && pageTitleValue.trim()) {
-          pageTitle[country] = pageTitleValue.trim();
+          pageTitle[country] = trimAllLineBreaks(pageTitleValue.trim());
         } else {
           pageTitle[country] = 'TRANSLATION NOT FOUND';
         }
@@ -265,7 +266,7 @@ export const fetchAllSundayTranslations = async (
       subjectLineIndices.forEach((dataIndex, optionIndex) => {
         const value = countryData[dataIndex];
         if (value && typeof value === 'string' && value.trim()) {
-          subjectLine[optionIndex][country] = value.trim();
+          subjectLine[optionIndex][country] = trimAllLineBreaks(value.trim());
         } else {
           subjectLine[optionIndex][country] = 'TRANSLATION NOT FOUND';
         }
