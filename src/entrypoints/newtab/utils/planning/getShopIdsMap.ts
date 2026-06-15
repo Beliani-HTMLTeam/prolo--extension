@@ -6,8 +6,15 @@ export const getShopIdsMap = (tableData: ChecklistTableData, startId: number) =>
   const idMap = new Map<string, Array<{ type: 'A' | 'B'; newsletterId: number }>>();
   let currentId = startId;
 
+  const existingSlugs = new Set(tableData.rows.map(r => r.shop));
+
   for (let i = 1; i <= NUMBER_OF_NEWSLETTERS; i++) {
     const slug = NEWSLETTER_SLUGS[i];
+
+    if (!existingSlugs.has(slug)) {
+      continue;
+    }
+    
     const row = tableData.rows.find(r => r.shop === slug);
 
     const ids: Array<{ type: 'A' | 'B'; newsletterId: number }> = [];

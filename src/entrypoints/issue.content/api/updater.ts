@@ -2,9 +2,10 @@ import pLimit from 'p-limit';
 import { IssueListItem } from '../lib/types';
 import { fetchSpreadsheetTranslationsTab } from './issueData';
 import { NEWSLETTER_ENDPOINT, SHOP_ENDPOINT } from '@/entrypoints/newtab/utils/updater/constants';
+import axios from 'axios';
 
 interface LPPathResult {
-  lp :string;
+  lp: string;
   date: Date | null;
 }
 
@@ -23,7 +24,7 @@ export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResu
   if (dateMatch) {
     // format: DD.MM.YY
     [, day, month, year] = dateMatch;
-        parsedDate = new Date(2000 + parseInt(year), parseInt(month) - 1, parseInt(day));
+    parsedDate = new Date(2000 + parseInt(year), parseInt(month) - 1, parseInt(day));
   } else {
     // DD.MM.YYYY format
     dateMatch = tabName.match(/(\d{2})\.(\d{2})\.(\d{4})/);
@@ -31,15 +32,14 @@ export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResu
       [, day, month, year] = dateMatch;
       const fullYear = year;
       year = year.slice(-2);
-            parsedDate = new Date(parseInt(fullYear), parseInt(month) - 1, parseInt(day));
-
+      parsedDate = new Date(parseInt(fullYear), parseInt(month) - 1, parseInt(day));
     } else {
       console.warn('Could not parse date from tab name:', tabName);
       return { lp: 'lp00-00-00', date: null };
     }
   }
 
-    if (parsedDate && isNaN(parsedDate.getTime())) {
+  if (parsedDate && isNaN(parsedDate.getTime())) {
     console.warn('Invalid date parsed from tab name:', tabName);
     parsedDate = null;
   }
@@ -49,7 +49,7 @@ export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResu
   return { lp: result, date: parsedDate };
 };
 
-const limit = pLimit(3)
+const limit = pLimit(3);
 
 interface NewsletterUpdateData {
   activate_from_date: string;
@@ -96,69 +96,57 @@ interface ProgressCallback {
 const sendNewsletterUpdate = async (data: NewsletterUpdateData, slug: string): Promise<UpdateResult> => {
   const formData = new FormData();
 
-    formData.append("activate_from_date", data.activate_from_date);
-  formData.append("activate_from_time", data.activate_from_time);
-  formData.append("deactivate_from_date", data.deactivate_from_date);
-  formData.append("deactivate_from_time", data.deactivate_from_time);
-  formData.append("update", data.update);
-  formData.append("seller", data.seller);
-  formData.append("shop_content_id", data.shop_content_id ?? "null");
-  formData.append("lang", data.lang);
-  formData.append("subject", data.subject);
-  formData.append("id", data.id);
-  
+  formData.append('activate_from_date', data.activate_from_date);
+  formData.append('activate_from_time', data.activate_from_time);
+  formData.append('deactivate_from_date', data.deactivate_from_date);
+  formData.append('deactivate_from_time', data.deactivate_from_time);
+  formData.append('update', data.update);
+  formData.append('seller', data.seller);
+  formData.append('shop_content_id', data.shop_content_id ?? 'null');
+  formData.append('lang', data.lang);
+  formData.append('subject', data.subject);
+  formData.append('id', data.id);
+
   data.smtp_id.forEach(server => {
-    formData.append("smtp_id[]", server.toString());
+    formData.append('smtp_id[]', server.toString());
   });
 
   try {
-    const response = await fetch(NEWSLETTER_ENDPOINT, {
-       headers: {
-        "accept": "application/json, text/plain, */*",
-        "accept-language": "en-US,en;q=0.9",
-        "cache-control": "no-cache",
-        "pragma": "no-cache",
-        "sec-ch-ua": '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": '"Windows"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "sec-fetch-user": "?1",
-        "upgrade-insecure-requests": "1",
-      },
-      referrer: `${NEWSLETTER_ENDPOINT}?id=${data.id}`,
-      referrerPolicy: "strict-origin-when-cross-origin",
-      body: formData,
-      method: "POST",
-      mode: "cors",
-      credentials: "include",
-    })
+    const response = await axios.post(NEWSLETTER_ENDPOINT, formData,  {
+      withCredentials: true,
+    }
+    );
 
     return {
-      slug, type: 'newsletter', success: response.ok, status: response.status
-    }
+      slug,
+      type: 'newsletter',
+      success: true,
+      status: response.status,
+    };
   } catch (error: any) {
-    console.error("Failed to send newsletter update:", error);
+    console.error('Failed to send newsletter update:', error);
     return {
-      slug, success: false, type: 'newsletter', error: error.message
-    }
+      slug,
+      success: false,
+      type: 'newsletter',
+      error: error.message,
+    };
   }
-}
+};
 
 const sendLandingPageUpdate = async (data: LandingPageUpdateData, slug: string): Promise<UpdateResult> => {
-    const formData = new FormData();
-  
-  formData.append("activate_from_date", data.activate_from_date);
-  formData.append("activate_from_time", data.activate_from_time);
-  formData.append("deactivate_from_date", data.deactivate_from_date);
-  formData.append("deactivate_from_time", data.deactivate_from_time);
-  formData.append("update", data.update);
-  formData.append("name", data.name);
-  formData.append("newsletter_template_id", data.newsletter_template_id);
-  formData.append("id", data.id);
-  formData.append("shop_id", data.shop_id);
-  
+  const formData = new FormData();
+
+  formData.append('activate_from_date', data.activate_from_date);
+  formData.append('activate_from_time', data.activate_from_time);
+  formData.append('deactivate_from_date', data.deactivate_from_date);
+  formData.append('deactivate_from_time', data.deactivate_from_time);
+  formData.append('update', data.update);
+  formData.append('name', data.name);
+  formData.append('newsletter_template_id', data.newsletter_template_id);
+  formData.append('id', data.id);
+  formData.append('shop_id', data.shop_id);
+
   Object.entries(data.title_menu).forEach(([lang, value]) => {
     formData.append(`title_menu[${lang}]`, value);
   });
@@ -173,70 +161,59 @@ const sendLandingPageUpdate = async (data: LandingPageUpdateData, slug: string):
   });
 
   try {
-     const response = await fetch(SHOP_ENDPOINT, {
-      headers: {
-        "accept": "application/json, text/plain, */*",
-        "accept-language": "en-US,en;q=0.9",
-        "cache-control": "no-cache",
-        "pragma": "no-cache",
-        "sec-ch-ua": '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": '"Windows"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "sec-fetch-user": "?1",
-        "upgrade-insecure-requests": "1",
-      },
-      referrer: `${NEWSLETTER_ENDPOINT}?id=${data.newsletter_template_id}`,
-      referrerPolicy: "strict-origin-when-cross-origin",
-      body: formData,
-      method: "POST",
-      mode: "cors",
-      credentials: "include",
+    const response = await axios.post(SHOP_ENDPOINT, formData, {
+      withCredentials: true,
     });
-    
-    return { 
-      slug, 
+
+    return {
+      slug,
       type: 'landing-page',
-      success: response.ok, 
-      status: response.status 
+      success: true,
+      status: response.status,
     };
   } catch (error: any) {
-    console.error("Failed to send landing page update:", error);
-    return { 
-      slug, 
+    console.error('Failed to send landing page update:', error);
+    return {
+      slug,
       type: 'landing-page',
-      success: false, 
-      error: error.message 
+      success: false,
+      error: error.message,
     };
   }
-}
+};
 
 export const sendBatchUpdates = async (
-  updates: Array<{type: 'newsletter' | 'landing-page'; data: NewsletterUpdateData | LandingPageUpdateData; slug: string }>, onProgress?: ProgressCallback): Promise<UpdateResult[]> => {
-    const total = updates.length;
-    let completed = 0;
+  updates: Array<{
+    type: 'newsletter' | 'landing-page';
+    data: NewsletterUpdateData | LandingPageUpdateData;
+    slug: string;
+  }>,
+  onProgress?: ProgressCallback,
+): Promise<UpdateResult[]> => {
+  const total = updates.length;
+  let completed = 0;
   const results: UpdateResult[] = [];
 
-  const promises = updates.map(update => limit(async () => {
-    let result: UpdateResult;
-    if (update.type === 'newsletter') {
-      result = await sendNewsletterUpdate(update.data as NewsletterUpdateData, update.slug);
-    } else {
-      result = await sendLandingPageUpdate(update.data as LandingPageUpdateData, update.slug);
-    }
+  const promises = updates.map(update =>
+    limit(async () => {
+      let result: UpdateResult;
+      if (update.type === 'newsletter') {
+        result = await sendNewsletterUpdate(update.data as NewsletterUpdateData, update.slug);
+      } else {
+        result = await sendLandingPageUpdate(update.data as LandingPageUpdateData, update.slug);
+      }
 
-    results.push(result);
-    completed++;
+      results.push(result);
+      completed++;
 
-    if (onProgress) {
-      onProgress(completed, total, result);
-    }
+      if (onProgress) {
+        onProgress(completed, total, result);
+      }
 
-    return result;
-  }))
+      return result;
+    }),
+  );
 
   await Promise.all(promises);
   return results;
-  }
+};
