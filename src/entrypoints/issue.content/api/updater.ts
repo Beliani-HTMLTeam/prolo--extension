@@ -105,17 +105,18 @@ const sendNewsletterUpdate = async (data: NewsletterUpdateData, slug: string): P
   formData.append('shop_content_id', data.shop_content_id ?? 'null');
   formData.append('lang', data.lang);
   formData.append('subject', data.subject);
+  formData.append('deleted_doc', '0');
   formData.append('id', data.id);
+  formData.append('delay', '0');
 
   data.smtp_id.forEach(server => {
     formData.append('smtp_id[]', server.toString());
   });
 
   try {
-    const response = await axios.post(NEWSLETTER_ENDPOINT, formData,  {
+    const response = await axios.post(NEWSLETTER_ENDPOINT, formData, {
       withCredentials: true,
-    }
-    );
+    });
 
     return {
       slug,
@@ -144,8 +145,11 @@ const sendLandingPageUpdate = async (data: LandingPageUpdateData, slug: string):
   formData.append('update', data.update);
   formData.append('name', data.name);
   formData.append('newsletter_template_id', data.newsletter_template_id);
+  formData.append('deleted_doc', '0');
   formData.append('id', data.id);
   formData.append('shop_id', data.shop_id);
+  formData.append('delay', '0');
+  formData.append('ordering', '1')
 
   Object.entries(data.title_menu).forEach(([lang, value]) => {
     formData.append(`title_menu[${lang}]`, value);

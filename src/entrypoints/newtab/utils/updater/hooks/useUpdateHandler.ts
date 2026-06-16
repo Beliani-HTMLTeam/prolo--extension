@@ -204,6 +204,21 @@ export const useUpdateHandler = ({
           });
         }
         if (hasPageTitle && update.lpId && update.shopId) {
+          let newsletterTemplateId = update.nsltId;
+
+          // if it is CHFR, use CHDE's nslt
+          if (update.slug === 'CHFR' || update.slug === 'CHDE') {
+             // Use CHDE's newsletter ID (which is the primary one)
+             const chdeNsltData = newsletterIds?.['CHDE'];
+              newsletterTemplateId = chdeNsltData?.aId || update.nsltId;
+          }
+
+            // If this is BEFR, use BENL's nsltId
+  if (update.slug === 'BEFR' || update.slug === 'BENL') {
+    // Use BENL's newsletter ID (which is the primary one)
+    const benlNsltData = newsletterIds?.['BENL'];
+    newsletterTemplateId = benlNsltData?.aId  || update.nsltId;
+  }
           updatesToSend.push({
             type: 'landing-page',
             slug: update.slug,
@@ -214,7 +229,7 @@ export const useUpdateHandler = ({
               deactivate_from_time: update.deactivateDate.time,
               update: 'Update',
               name: update.landingPage,
-              newsletter_template_id: update.nsltId,
+              newsletter_template_id: newsletterTemplateId,
               id: update.lpId,
               shop_id: update.shopId,
               title_menu: { [update.lang || '']: update.landingPage },

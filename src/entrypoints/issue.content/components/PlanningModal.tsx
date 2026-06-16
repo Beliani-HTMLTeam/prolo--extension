@@ -27,9 +27,12 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
   const availableSlugs = useMemo(() => {
     if (!tableData?.rows) return [];
 
-    const existingSlugs = new Set(tableData.rows.map(r => r.shop));
+    const originalSlugMap = new Map<string, string>();
+    for (const shop of tableData.rows) {
+      originalSlugMap.set(normalizeSlugForSlug(shop.shop), shop.shop);
+    }
 
-    return Object.values(NEWSLETTER_SLUGS).filter(slug => existingSlugs.has(slug));
+    return Object.values(NEWSLETTER_SLUGS).filter(slug => originalSlugMap.has(slug)).map(slug => originalSlugMap.get(slug)!)
   }, [tableData]);
 
   const filteredNewsletterIdMap = useMemo(() => {
@@ -201,8 +204,9 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
   useEffect(() => {
     if (tableData?.rows) {
       const existingSlugs = new Set(tableData.rows.map(r => r.shop));
+      const normalizeExistingSlugs = new Set(Array.from(existingSlugs).map(slug => normalizeSlugForSlug(slug)));
       const allSlugs = Object.values(NEWSLETTER_SLUGS);
-      const missingSlugs = allSlugs.filter(slug => !existingSlugs.has(slug));
+      const missingSlugs = allSlugs.filter(slug => !normalizeExistingSlugs.has(slug));
 
       if (missingSlugs.length > 0) {
         console.log(`Note: These newsletters are not in the checklist and will be omitted: ${missingSlugs.join(', ')}`);
