@@ -5,6 +5,7 @@ import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../co
 import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
 import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';
 import { trimAllLineBreaks } from '../stringUtils';
+import { normalizeSlugForSlug } from '../../planning/slugNormalization';
 
 interface FormattedUpdateRecord {
   slug: string;
@@ -34,7 +35,7 @@ export const useUpdateHandler = ({
   getDateForSlug,
   newsletterIds,
   landingPageIds,
-  onClearSelections
+  onClearSelections,
 }: UseUpdateHandlerProps) => {
   const [updateProgress, setUpdateProgress] = useState({ completed: 0, total: 0 });
   const [updateResults, setUpdateResults] = useState<UpdateResult[]>([]);
@@ -114,7 +115,12 @@ export const useUpdateHandler = ({
         const seller = SELLER_TO_SLUG[slug as keyof typeof SELLER_TO_SLUG];
         const lang = LANG_TO_SLUG[slug as keyof typeof LANG_TO_SLUG];
         const servers = getServersForSlug(slug);
-        const shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
+        let shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
+
+        if (!shopId) {
+          const normalizedSlug = normalizeSlugForSlug(slug);
+          shopId = SLUG_ID_MAP[normalizedSlug as keyof typeof SLUG_ID_MAP];
+        }
 
         if (nsltData?.aId && nsltData?.bId) {
           console.log(`🔍 Both A and B exist for ${update.slug}`);
@@ -131,7 +137,7 @@ export const useUpdateHandler = ({
             servers,
             shopId,
           };
-          if (update.subjectLine !== undefined) recordA.subjectLine = trimAllLineBreaks(update.subjectLine)
+          if (update.subjectLine !== undefined) recordA.subjectLine = trimAllLineBreaks(update.subjectLine);
           if (update.pageTitle !== undefined) recordA.pageTitle = trimAllLineBreaks(update.pageTitle);
           formattedUpdates.push(recordA);
 
@@ -208,17 +214,17 @@ export const useUpdateHandler = ({
 
           // if it is CHFR, use CHDE's nslt
           if (update.slug === 'CHFR' || update.slug === 'CHDE') {
-             // Use CHDE's newsletter ID (which is the primary one)
-             const chdeNsltData = newsletterIds?.['CHDE'];
-              newsletterTemplateId = chdeNsltData?.aId || update.nsltId;
+            // Use CHDE's newsletter ID (which is the primary one)
+            const chdeNsltData = newsletterIds?.['CHDE'];
+            newsletterTemplateId = chdeNsltData?.aId || update.nsltId;
           }
 
-            // If this is BEFR, use BENL's nsltId
-  if (update.slug === 'BEFR' || update.slug === 'BENL') {
-    // Use BENL's newsletter ID (which is the primary one)
-    const benlNsltData = newsletterIds?.['BENL'];
-    newsletterTemplateId = benlNsltData?.aId  || update.nsltId;
-  }
+          // If this is BEFR, use BENL's nsltId
+          if (update.slug === 'BEFR' || update.slug === 'BENL') {
+            // Use BENL's newsletter ID (which is the primary one)
+            const benlNsltData = newsletterIds?.['BENL'];
+            newsletterTemplateId = benlNsltData?.aId || update.nsltId;
+          }
           updatesToSend.push({
             type: 'landing-page',
             slug: update.slug,
@@ -287,12 +293,12 @@ export const useUpdateHandler = ({
 
     const failedItems = originalSelectedItems.filter(item => failedSlugs.includes(item.slug));
 
-    if (failedItems.length === 0)  return;
+    if (failedItems.length === 0) return;
 
     setUpdateResults([]);
     setUpdateProgress({ completed: 0, total: 0 });
     await handleUpdateSelected(failedItems);
-  }
+  };
 
   const handleUpdateAll = async (
     translations: LineTitleTranslations | null,

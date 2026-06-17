@@ -140,7 +140,17 @@
     font-size: 14px;
     color: $light-text-color-secondary;
     min-height: auto;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 
+      &.rowSelected {
+    background-color: rgba(0, 123, 255, 0.06);
+    border-left: 3px solid #007bff;
+    
+    &:hover {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+  }
+  
     &:hover {
       background-color: rgba(0, 0, 0, 0.02);
     }
@@ -189,8 +199,18 @@
         flex-shrink: 0;
       }
 
+      .flagIcon {
+        width: 18px;
+        height: 18px;
+        border-radius: 2px;
+        object-fit: cover;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+      }
+
       span {
         word-break: keep-all;
+        font-weight: 600;
       }
 
       svg {
@@ -274,6 +294,18 @@
       gap: 12px;
       justify-content: center;
       align-items: center;
+    }
+
+    .fdActive {
+      background-color: #007bff;
+      padding: 2px 6px;
+      color: white;
+    }
+
+    .mdActive {
+      background-color: #e83e8c;
+      padding: 2px 6px;
+      color: white;
     }
 
     .landingPage {
@@ -515,6 +547,27 @@
   width: 75px;
 }
 
+.idLink {
+  color: #3a99ff;
+  text-decoration: underline;
+  font-size: 12px;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+}
+
+.idSeparator {
+  color: #999;
+  margin: 0 2px;
+}
+
+.idText {
+    color: #666;
+}
+
 .newsletterId,
 .landingPageId {
   flex-shrink: 0;
@@ -740,7 +793,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  
+
   &:hover {
     background: #e0a800;
   }
@@ -754,7 +807,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
-  
+
   &:hover {
     background: #218838;
   }
@@ -762,7 +815,7 @@
 
 .failuresInline {
   border-top: 1px solid #dee2e6;
-  
+
   .failuresToggle {
     display: flex;
     align-items: center;
@@ -772,7 +825,7 @@
     font-size: 12px;
     color: #dc3545;
     background: #fff5f5;
-    
+
     &:hover {
       background: #ffe0e0;
     }
@@ -785,7 +838,7 @@
   padding: 8px 16px;
   background: #fff5f5;
   border-top: 1px solid #ffe0e0;
-  
+
   li {
     display: flex;
     align-items: center;
@@ -793,11 +846,11 @@
     padding: 4px 0;
     font-size: 12px;
     border-bottom: 1px solid #ffe0e0;
-    
+
     &:last-child {
       border-bottom: none;
     }
-    
+
     .errorDetail {
       margin-left: auto;
       color: #999;
@@ -805,3 +858,23 @@
     }
   }
 }
+
+.translationNotFound {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.subjectLine,
+.pageTitle {
+  .translationNotFound {
+    &::before {
+      content: '⚠️ ';
+      font-style: normal;
+    }
+  }
+}
+

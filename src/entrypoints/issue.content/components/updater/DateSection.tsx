@@ -42,12 +42,12 @@ export const DateSection = ({
       <div className={updaterStyles.dateHeader}>
         <label>
           <input type="checkbox" checked={useGlobalDate} onChange={e => onToggleGlobalDate(e.target.checked)} />
-          Regular dates
+          Regular deactivation date
         </label>
       </div>
       <div className={updaterStyles.dateFields}>
         <div className={updaterStyles.dateField}>
-          <label>Activate Date (00:00):</label>
+          <span>Activate Date (00:00):</span>
           <DatePicker
             selected={globalDateConfig.activateDate}
             onChange={onActivateDateChange}
@@ -56,6 +56,7 @@ export const DateSection = ({
             disabled={true}
             placeholderText="Select activate date"
             wrapperClassName={updaterStyles.datePickerWrapper}
+            filterDate={(date) => date.getDay() === 0}
           />
         </div>
         <div className={updaterStyles.dateField}>
@@ -68,6 +69,7 @@ export const DateSection = ({
             disabled={!useGlobalDate}
             placeholderText="Select deactivate date"
             wrapperClassName={updaterStyles.datePickerWrapper}
+            filterDate={(date) => date.getDay() === 0}
           />
         </div>
       </div>
