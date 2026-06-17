@@ -26,10 +26,10 @@
   flex: 1;
   background: white;
 
-   .rowUpdating {
+  .rowUpdating {
     background-color: rgba(255, 193, 7, 0.1);
     position: relative;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -42,11 +42,11 @@
       pointer-events: none;
     }
   }
-  
+
   .rowSuccess {
     background-color: rgba(40, 167, 69, 0.1);
   }
-  
+
   .rowError {
     background-color: rgba(220, 53, 69, 0.1);
   }
@@ -71,9 +71,25 @@
   z-index: 10;
   color: $dawn-grey;
 
-  .slugColumn, .subjectLineColumn .optionLabel span {
-     font-weight: bold;
+  .slugColumn,
+  .subjectLineColumn .optionLabel span {
+    font-weight: bold;
     color: $dawn-grey;
+   
+  }
+
+   .subjectLineColumn {
+    padding-top: 8px; // Add some padding for the border to be visible
+    
+    &.columnSelected {
+      border-top: 3px solid #007bff;
+      background-color: rgba(0, 123, 255, 0.1);
+      
+      .optionLabel {
+        color: #007bff;
+        font-weight: 700;
+      }
+    }
   }
 }
 
@@ -81,7 +97,7 @@
   display: flex;
   border-bottom: 1px solid $grey-border;
   min-height: 50px;
-  
+
   &:hover {
     background-color: rgba(0, 0, 0, 0.02);
   }
@@ -93,7 +109,7 @@
 }
 
 .slugColumn {
-  width: 70px;
+  width: 100px;
   flex-shrink: 0;
   padding: 4px 8px;
   font-weight: 500;
@@ -102,15 +118,72 @@
   align-items: center;
   color: $light-text-color-secondary;
 
-   .errorTooltip {
+  span {
+    margin-left: 6px;
+    word-break: keep-all;
+  }
+
+  .flagIcon {
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    object-fit: cover;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+  }
+
+  .errorTooltip {
     cursor: help;
     opacity: 0.7;
     transition: opacity 0.2s;
     color: #dc3545;
-    
+
     &:hover {
       opacity: 1;
     }
+  }
+}
+
+.newsletterIdHeader {
+  width: 90px;
+  flex-shrink: 0;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: #333;
+  border-right: 1px solid #eee;
+}
+
+.newsletterIdColumn {
+  width: 90px;
+  flex-shrink: 0;
+  padding: 12px 8px;
+  text-align: center;
+  border-right: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .idLink {
+    color: #007bff;
+    text-decoration: none;
+    font-family: monospace;
+    font-size: 12px;
+    transition: color 0.2s;
+    cursor: pointer;
+    word-break: break-all;
+
+    &:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+  }
+
+  .idText {
+    font-family: monospace;
+    font-size: 12px;
+    color: #999;
   }
 }
 
@@ -124,17 +197,27 @@
   line-height: 1.4;
   border-right: 1px solid #eee;
   color: $light-text-color-secondary;
+  transition: background-color 0.2s ease;
 
   label {
     margin: 0;
   }
 
-  .optionLabel input[type=radio] {
+  .optionLabel input[type='radio'] {
     margin: 0 !important;
   }
-  
+
   &:last-child {
     border-right: none;
+  }
+
+  &.columnSelected {
+    background-color: rgba(0, 123, 255, 0.08);
+    
+    .optionLabel {
+      color: #007bff;
+      font-weight: 600;
+    }
   }
 }
 
@@ -145,17 +228,61 @@
   cursor: pointer;
   font-weight: 500;
   font-size: 13px;
-  
+   width: 100%;
+    height: 100%;
+
   input {
     cursor: pointer;
     margin: 0;
     width: 16px;
     height: 16px;
+    transition: all 0.2s ease;
   }
-  
+
   span {
     user-select: none;
   }
+}
+
+// Custom radio styling for selected state
+.optionLabel input[type='radio'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:checked {
+    border-color: #007bff;
+    background-color: #007bff;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: white;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// When column is selected, highlight the radio
+.columnSelected .optionLabel input[type='radio'] {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
 .emptyState {
@@ -171,10 +298,10 @@
 }
 
 .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 .container {
@@ -193,7 +320,7 @@
   border-top: 1px solid #ddd;
   flex-shrink: 0;
   background: white;
-  
+
   button {
     padding: 8px 16px;
     border-radius: 4px;
@@ -201,28 +328,28 @@
     font-size: 14px;
     transition: all 0.2s;
     font-weight: 500;
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
-  
+
   .updateButton {
     background: #28a745;
     color: white;
     border: none;
-    
+
     &:hover:not(:disabled) {
       background: #218838;
     }
   }
-  
+
   .clearButton {
     background: #6c757d;
     color: white;
     border: none;
-    
+
     &:hover:not(:disabled) {
       background: #5a6268;
     }

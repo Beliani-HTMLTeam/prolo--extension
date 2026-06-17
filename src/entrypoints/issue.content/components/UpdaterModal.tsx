@@ -426,6 +426,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               availableSlugs={availableSlugs}
               updateResults={updateResults}
               updatingSlugs={updatingSlugs}
+              newsletterIds={newsletterIds}
             />
             <SundayButtons
               hasSelection={selectedIndex !== null}
