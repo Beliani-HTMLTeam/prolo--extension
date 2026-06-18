@@ -1,13 +1,7 @@
 import { TableHeader } from './TableHeader';
 import { TableRowSkeleton } from './TableRowSkeleton';
 import updaterStyles from '../../styles/updater.module.scss';
-
-interface TableSkeletonProps {
-  useGlobalLP: boolean;
-  useGlobalDates: boolean;
-  availableSlugs: string[];
-  skeletonRowsCount?: number;
-}
+import { TableSkeletonProps } from '@/entrypoints/newtab/types/Updater';
 
 const DEFAULT_SKELETON_ROWS = 10;
 
@@ -16,6 +10,7 @@ export const TableSkeleton = ({
   useGlobalDates,
   availableSlugs,
   skeletonRowsCount = DEFAULT_SKELETON_ROWS,
+  showSlugs = false,
 }: TableSkeletonProps) => {
   const skeletonSlugs = availableSlugs.length > 0 ? availableSlugs : Array(skeletonRowsCount).fill('loading');
 
@@ -31,8 +26,13 @@ export const TableSkeleton = ({
         onSelectAllSL={() => {}}
         onSelectAllPT={() => {}}
       />
-      {skeletonSlugs.map((_, index) => (
-        <TableRowSkeleton key={`skeleton-${index}`} useGlobalLP={useGlobalLP} useGlobalDates={useGlobalDates} />
+      {skeletonSlugs.map((slug, index) => (
+        <TableRowSkeleton
+          key={`skeleton-${index}`}
+          useGlobalLP={useGlobalLP}
+          useGlobalDates={useGlobalDates}
+          slug={showSlugs ? slug : undefined}
+        />
       ))}
     </div>
   );

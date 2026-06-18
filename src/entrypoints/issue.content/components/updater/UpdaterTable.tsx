@@ -1,36 +1,8 @@
-import { UpdateResult, UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
-import { LineTitleTranslations } from '../../lib/types';
+import { UpdaterTableProps } from '@/entrypoints/newtab/types/Updater';
 import updaterStyles from '../../styles/updater.module.scss';
 import { TableSkeleton } from './TableSkeleton';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
-
-interface UpdaterTableProps {
-  translations: LineTitleTranslations | null;
-  loading?: boolean;
-  onToggleSL?: (slug: string, checked: boolean, content: string) => void;
-  onTogglePT?: (slug: string, checked: boolean, content: string) => void;
-  selectedItems?: UpdaterSelectedItem[];
-  useGlobalDates?: boolean;
-  onSlugActivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
-  onSlugDeactivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
-  getDateForSlug?: (slug: string, type: 'activate' | 'deactivate') => Date;
-  getLPForSlug?: (slug: string) => string;
-  onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
-  useGlobalLP?: boolean;
-  globalLP?: string;
-  initialGlobalLP?: string;
-  slugFMDModes?: Record<string, { fd: boolean; md: boolean }>;
-  onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
-  availableSlugs?: string[];
-  newsletterIds?: Record<string, { aId?: string; bId?: string }>;
-  landingPageIds?: Record<string, string>;
-  updatingSlugs?: Set<string>;
-  updateResults?: UpdateResult[];
-  getInitialActivateDate?: (slug: string) => Date;
-  getInitialDeactivateDate?: (slug: string) => Date;
-  getInitialLP?: (slug: string) => string;
-}
 
 const UpdaterTable = ({
   translations,
@@ -214,7 +186,6 @@ const UpdaterTable = ({
             pageTitle={pageTitle || ''}
             hasSL={hasSL}
             hasPT={hasPT}
-            activateDate={activateDate!}
             deactivateDate={deactivateDate!}
             lp={lp}
             fdMode={fdMode}
@@ -232,7 +203,6 @@ const UpdaterTable = ({
             onFDModeChange={checked => handleFMDModeChange(slug, 'fd', checked)}
             onMDModeChange={checked => handleFMDModeChange(slug, 'md', checked)}
             onLPChange={value => onSlugLPChange?.(slug, value)}
-            onActivateDateChange={date => onSlugActivateDateChange?.(slug, date)}
             onDeactivateDateChange={date => onSlugDeactivateDateChange?.(slug, date)}
             isUpdating={isUpdating}
             isSuccess={isSuccess}

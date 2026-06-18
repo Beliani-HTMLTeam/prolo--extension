@@ -49,16 +49,15 @@
   .subjectLineColumn .optionLabel span {
     font-weight: bold;
     color: $dawn-grey;
-   
   }
 
-   .subjectLineColumn {
+  .subjectLineColumn {
     padding-top: 8px; // Add some padding for the border to be visible
-    
+
     &.columnSelected {
       border-top: 3px solid #007bff;
       background-color: rgba(0, 123, 255, 0.1);
-      
+
       .optionLabel {
         color: #007bff;
         font-weight: 700;
@@ -89,12 +88,20 @@
   font-weight: 500;
   border-right: 1px solid #eee;
   display: flex;
+  gap: 8px;
   align-items: center;
   color: $light-text-color-secondary;
 
   span {
-    margin-left: 6px;
     word-break: keep-all;
+  }
+
+  .successIcon {
+    color: #28a745;
+  }
+
+  .errorIcon {
+    color: #dc3545;
   }
 
   .flagIcon {
@@ -187,7 +194,7 @@
 
   &.columnSelected {
     background-color: rgba(0, 123, 255, 0.08);
-    
+
     .optionLabel {
       color: #007bff;
       font-weight: 600;
@@ -202,8 +209,8 @@
   cursor: pointer;
   font-weight: 500;
   font-size: 13px;
-   width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 
   input {
     cursor: pointer;
@@ -233,7 +240,7 @@
   &:checked {
     border-color: #007bff;
     background-color: #007bff;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -308,79 +315,6 @@
       cursor: not-allowed;
     }
   }
-
-  .updateButton {
-    background: #28a745;
-    color: white;
-    border: none;
-
-    &:hover:not(:disabled) {
-      background: #218838;
-    }
-  }
-
-  .clearButton {
-    background: #6c757d;
-    color: white;
-    border: none;
-
-    &:hover:not(:disabled) {
-      background: #5a6268;
-    }
-  }
-}
-
-.progressOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.95);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  border-radius: 8px;
-}
-
-.progressContainer {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  min-width: 300px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
-}
-
-.progressHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  font-weight: 500;
-  color: #333;
-}
-
-.progressBar {
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.progressFill {
-  height: 100%;
-  background: #28a745;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.progressText {
-  text-align: center;
-  font-size: 14px;
-  color: #666;
 }
 
 .tableProgressBar {
@@ -391,7 +325,7 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  
+
   .tableProgressFill {
     height: 100%;
     background: #28a745;
@@ -412,18 +346,18 @@
   z-index: 20;
   position: sticky;
   top: 0;
-  
+
   .progressInfo {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  
+
   .progressCount {
     font-weight: 500;
     color: #28a745;
   }
-  
+
   .progressSpinner {
     animation: spin 1s linear infinite;
   }

@@ -5,17 +5,7 @@ import clsx from 'clsx';
 import { Icon } from '@iconify/react';
 import { getFlagUrl } from '@/entrypoints/newtab/utils/updater/flag';
 import { SundayTableUpdateSkeleton } from './SundayTableUpdateSkeleton';
-
-interface SundayTableProps {
-  subjectLines: Record<number, Record<string, string>> | null;
-  selectedIndex: number | null;
-  onSelectOption: (index: number) => void;
-  loading: boolean;
-  availableSlugs?: string[];
-  updatingSlugs?: Set<string>;
-  updateResults?: Array<{ slug: string; success: boolean; error?: string }>;
-  newsletterIds?: Record<string,  { aId?: string; bId?: string }>;
-}
+import { SundayTableProps } from '@/entrypoints/newtab/types/Updater';
 
 const SKELETON_ROWS_COUNT = 10;
 
@@ -58,21 +48,24 @@ export const SundayTable = ({
     return null;
   };
 
- const getNewsletterId = (slug: string): string | null => {
+  const getNewsletterId = (slug: string): string | null => {
     const nsltData = newsletterIds[slug];
     return nsltData?.aId || nsltData?.bId || null;
-  }
+  };
 
   return (
     <div className={sundayStyles.sundaySection}>
       <div className={sundayStyles.sundayTable}>
         <div className={sundayStyles.tableHeader}>
           <div className={sundayStyles.slugColumn}>Country</div>
-            <div className={sundayStyles.newsletterIdHeader}>NSLT ID</div>
+          <div className={sundayStyles.newsletterIdHeader}>NSLT ID</div>
           {[0, 1, 2, 3, 4, 5].map(optionIndex => (
-            <div key={optionIndex} className={clsx(sundayStyles.subjectLineColumn, {
-                      [sundayStyles.columnSelected]: selectedIndex === optionIndex,
-                    })}>
+            <div
+              key={optionIndex}
+              className={clsx(sundayStyles.subjectLineColumn, {
+                [sundayStyles.columnSelected]: selectedIndex === optionIndex,
+              })}
+            >
               <label className={sundayStyles.optionLabel} htmlFor={`subjectLineOption_${optionIndex}`}>
                 <input
                   id={`subjectLineOption_${optionIndex}`}
@@ -96,19 +89,13 @@ export const SundayTable = ({
           });
           const result = updateResults.find(r => r.slug === slug);
           const errorMessage = result?.error;
-            const flagUrl = getFlagUrl(slug);
-              const nsltId = getNewsletterId(slug);
+          const flagUrl = getFlagUrl(slug);
+          const nsltId = getNewsletterId(slug);
 
           return (
             <div key={slug} className={rowClass}>
               <div className={sundayStyles.slugColumn}>
-                {flagUrl && (
-                  <img 
-                    src={flagUrl} 
-                    alt={`${slug} flag`} 
-                    className={sundayStyles.flagIcon}
-                  />
-                )}
+                {flagUrl && <img src={flagUrl} alt={`${slug} flag`} className={sundayStyles.flagIcon} />}
                 <span>{slug}</span>
                 {rowStatus === 'updating' && (
                   <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.spinner} />
@@ -127,7 +114,7 @@ export const SundayTable = ({
                   </>
                 )}
               </div>
-               <div className={sundayStyles.newsletterIdColumn}>
+              <div className={sundayStyles.newsletterIdColumn}>
                 {nsltId ? (
                   <a
                     href={`https://www.prologistics.info/news_email.php?id=${nsltId}`}
@@ -144,8 +131,8 @@ export const SundayTable = ({
               {[0, 1, 2, 3, 4, 5].map(optionIndex => {
                 const isSelected = selectedIndex === optionIndex;
                 return (
-                  <div 
-                    key={optionIndex} 
+                  <div
+                    key={optionIndex}
                     className={clsx(sundayStyles.subjectLineColumn, {
                       [sundayStyles.columnSelected]: isSelected,
                     })}

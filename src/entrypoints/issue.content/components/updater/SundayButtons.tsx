@@ -1,22 +1,17 @@
+import { SundayButtonsProps } from '@/entrypoints/newtab/types/Updater';
 import styles from '../../styles/sunday.module.scss';
 import UpdaterButton from './UpdaterButton';
 
-interface SundayButtonsProps {
-  hasSelection: boolean;
-  onUpdate: () => void;
-  onClear: () => void;
-  loading: boolean;
-}
 
-export const SundayButtons = ({ hasSelection, onUpdate, onClear, loading }: SundayButtonsProps) => {
-const isUpdating = loading;
+export const SundayButtons = ({ hasSelection, onUpdate, onClear, loading, isUpdating = false }: SundayButtonsProps) => {
+  const isDisabled = loading || isUpdating || !hasSelection;
 
   return (
     <div className={styles.sundayButtons}>
       <UpdaterButton
         isPrimary={true}
         onClick={onUpdate}
-        disabled={!hasSelection || isUpdating}
+        disabled={isDisabled}
         icon="mdi:send"
         label={isUpdating ? 'Updating...' : 'Update Selected Subject Line'}
       />
@@ -24,7 +19,7 @@ const isUpdating = loading;
       <UpdaterButton
         isPrimary={false}
         onClick={onClear}
-        disabled={!hasSelection || isUpdating}
+        disabled={isDisabled}
         icon="mdi:close"
         label="Clear Selection"
       />

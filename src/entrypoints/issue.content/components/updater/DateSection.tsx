@@ -1,15 +1,7 @@
 import Skeleton from "react-loading-skeleton";
 import updaterStyles from '../../styles/updater.module.scss';
 import { DatePicker } from "react-datepicker";
-
-interface DateSectionProps {
-  loading: boolean;
-  useGlobalDate: boolean;
-  globalDateConfig: { activateDate: Date; deactivateDate: Date };
-  onToggleGlobalDate: (checked: boolean) => void;
-  onActivateDateChange: (date: Date | null) => void;
-  onDeactivateDateChange: (date: Date | null) => void;
-}
+import { DateSectionProps } from "@/entrypoints/newtab/types/Updater";
 
 export const DateSection = ({
   loading,

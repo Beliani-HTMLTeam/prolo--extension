@@ -333,6 +333,9 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   const selectedSLCount = selectedItems.filter(item => item.type === 'subjectLine').length;
   const selectedPTCount = selectedItems.filter(item => item.type === 'pageTitle').length;
 
+  const isSundayUpdating = isUpdating || updateProgress.total > 0 || updatingSlugs.size > 0;
+
+
   if (isSundayNewsletter === null || loading || sundayLoading) {
     if (error || sundayError) {
       return (
@@ -435,6 +438,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
             onUpdate={handleSundayUpdate}
             onClear={clearSelection}
             loading={sundayLoading}
+            isUpdating={isSundayUpdating}
           />
         </div>
       </div>

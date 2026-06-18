@@ -1,53 +1,12 @@
 import DatePicker from 'react-datepicker';
 import updaterStyles from '../../styles/updater.module.scss';
-import { formatDateForInput } from '@/entrypoints/newtab/utils/updater/dates';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
-import { trimAllLineBreaks } from '@/entrypoints/newtab/utils/updater/stringUtils';
 import { getFlagUrl } from '@/entrypoints/newtab/utils/updater/flag';
 import { JSX } from 'react';
 import React from 'react';
 import { SHOP_ID_MAP } from '../../lib/shopConfig';
-
-interface TableRowProps {
-  slug: string;
-  subjectLine: string;
-  pageTitle: string;
-  hasSL: boolean;
-  hasPT: boolean;
-  activateDate: Date;
-  deactivateDate: Date;
-  lp: string;
-  fdMode: boolean;
-  mdMode: boolean;
-  isSLSelected: boolean;
-  isPTSelected: boolean;
-  loading: boolean;
-  useGlobalLP: boolean;
-  useGlobalDates: boolean;
-  newsletterId?: { aId?: string; bId?: string };
-  landingPageId?: string;
-  onToggleCountry: (checked: boolean) => void;
-  onToggleSL: (checked: boolean) => void;
-  onTogglePT: (checked: boolean) => void;
-  onFDModeChange: (checked: boolean) => void;
-  onMDModeChange: (checked: boolean) => void;
-  onLPChange: (value: string) => void;
-  onActivateDateChange: (date: Date | null) => void;
-  onDeactivateDateChange: (date: Date | null) => void;
-  isUpdating?: boolean;
-  isSuccess?: boolean;
-  isError?: boolean;
-  errorMessage?: string;
-  getInitialActivateDate?: (slug: string) => Date;
-  getInitialDeactivateDate?: (slug: string) => Date;
-  getInitialLP?: (slug: string) => string;
-  onSlugActivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
-  onSlugDeactivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
-  onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
-  onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
-  disableSelections?: boolean;
-}
+import { TableRowProps } from '@/entrypoints/newtab/types/Updater';
 
 export const TableRow = ({
   slug,
@@ -55,7 +14,6 @@ export const TableRow = ({
   pageTitle,
   hasSL,
   hasPT,
-  activateDate,
   deactivateDate,
   lp,
   fdMode,
@@ -73,7 +31,6 @@ export const TableRow = ({
   onFDModeChange,
   onMDModeChange,
   onLPChange,
-  onActivateDateChange,
   onDeactivateDateChange,
   isUpdating = false,
   isSuccess = false,
@@ -87,7 +44,7 @@ export const TableRow = ({
     [updaterStyles.rowError]: isError,
     [updaterStyles.rowFD]: fdMode,
     [updaterStyles.rowMD]: mdMode,
-     [updaterStyles.rowSelected]: isSLSelected || isPTSelected,
+    [updaterStyles.rowSelected]: isSLSelected || isPTSelected,
   });
 
   const renderNewsletterIds = () => {

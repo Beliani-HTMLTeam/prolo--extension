@@ -1,12 +1,8 @@
-import { UpdateResult } from "@/entrypoints/newtab/types/Updater"
+import { UpdateResult, UpdateResultsProps } from "@/entrypoints/newtab/types/Updater"
 import { Icon } from "@iconify/react";
 import updaterStyles from '../../styles/updater.module.scss';
 
-interface UpdateResultsProps {
-  results: UpdateResult[]
-  onClose: () => void;
-  onRetry?: () => void;
-}
+
 
 export const UpdateResults = ({results, onClose, onRetry}: UpdateResultsProps) => {
   const successCount = results.filter(r => r.success).length;

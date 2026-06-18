@@ -1,11 +1,9 @@
 import Skeleton from "react-loading-skeleton";
 import sundayStyles from '../../styles/sunday.module.scss';
 import { getFlagUrl } from "@/entrypoints/newtab/utils/updater/flag";
+import { SundayTableUpdateSkeletonProps } from "@/entrypoints/newtab/types/Updater";
 
-interface SundayTableUpdateSkeletonProps {
-  rowsCount: number;
-  availableSlugs?: string[];
-}
+
 
 export const SundayTableUpdateSkeleton = ({ rowsCount, availableSlugs }: SundayTableUpdateSkeletonProps) => {
  const slugs = availableSlugs && availableSlugs?.length > 0 ? availableSlugs : Array(rowsCount).fill('LOADING');

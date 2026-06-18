@@ -1,16 +1,6 @@
+import { TableHeaderProps } from '@/entrypoints/newtab/types/Updater';
 import updaterStyles from '../../styles/updater.module.scss';
 
-interface TableHeaderProps {
-  useGlobalLP: boolean;
-  useGlobalDates: boolean;
-  allSLSlugsLength: number;
-  allPTSlugsLength: number;
-  allSLSelected: boolean;
-  allPTSelected: boolean;
-  disableSelections?: boolean;
-  onSelectAllSL: (checked: boolean) => void;
-  onSelectAllPT: (checked: boolean) => void;
-}
 
 export const TableHeader = ({
   useGlobalLP,

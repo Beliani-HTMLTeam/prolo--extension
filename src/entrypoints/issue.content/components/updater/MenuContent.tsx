@@ -1,33 +1,8 @@
-import { LineTitleTranslations } from "../../lib/types";
+import { MenuContentProps } from "@/entrypoints/newtab/types/Updater";
 import { DateSection } from "./DateSection";
 import { LPSection } from "./LPSection";
 import { MenuSkeleton } from "./MenuSkeleton";
 import UpdaterButtons from "./UpdaterButtons";
-
-interface MenuContentProps {
-  loading: boolean;
-  useGlobalDate: boolean;
-  useGlobalLP: boolean;
-  globalDateConfig: { activateDate: Date; deactivateDate: Date };
-  globalLP: string;
-  selectedSLCount: number;
-  selectedPTCount: number;
-  isUpdating: boolean;
-  onToggleGlobalDate: (checked: boolean) => void;
-  onActivateDateChange: (date: Date | null) => void;
-  onDeactivateDateChange: (date: Date | null) => void;
-  onToggleGlobalLP: (checked: boolean) => void;
-  onGlobalLPChange: (lp: string) => void;
-  onUpdateAllSL: () => void;
-  onUpdateSelectedSL: () => void;
-  onUpdateAllPT: () => void;
-  onUpdateSelectedPT: () => void;
-  onUpdateAll: () => void;
-  onUpdateSelected: () => void;
-  onSelectAll: () => void;
-  onClearAll: () => void;
-  onCancel: () => void;
-}
 
 export const MenuContent = ({
   loading,
