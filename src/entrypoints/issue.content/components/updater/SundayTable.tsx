@@ -4,6 +4,7 @@ import sundayStyles from '../../styles/sunday.module.scss';
 import clsx from 'clsx';
 import { Icon } from '@iconify/react';
 import { getFlagUrl } from '@/entrypoints/newtab/utils/updater/flag';
+import { SundayTableUpdateSkeleton } from './SundayTableUpdateSkeleton';
 
 interface SundayTableProps {
   subjectLines: Record<number, Record<string, string>> | null;
@@ -28,9 +29,12 @@ export const SundayTable = ({
   updateResults = [],
   newsletterIds = {},
 }: SundayTableProps) => {
-  if (loading) {
+  if (loading || updatingSlugs.size > 0) {
     const rowsCount = availableSlugs.length > 0 ? availableSlugs.length : SKELETON_ROWS_COUNT;
-    return <SundayTableSkeleton rowsCount={rowsCount} />;
+    if (loading) {
+      return <SundayTableSkeleton rowsCount={rowsCount} />;
+    }
+    return <SundayTableUpdateSkeleton rowsCount={rowsCount} availableSlugs={availableSlugs} />;
   }
 
   // Show empty state if no data
@@ -57,7 +61,7 @@ export const SundayTable = ({
  const getNewsletterId = (slug: string): string | null => {
     const nsltData = newsletterIds[slug];
     return nsltData?.aId || nsltData?.bId || null;
-  };
+  }
 
   return (
     <div className={sundayStyles.sundaySection}>

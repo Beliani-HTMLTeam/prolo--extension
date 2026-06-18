@@ -49,7 +49,7 @@ export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResu
   return { lp: result, date: parsedDate };
 };
 
-const limit = pLimit(3);
+const limit = pLimit(5);
 
 interface NewsletterUpdateData {
   activate_from_date: string;

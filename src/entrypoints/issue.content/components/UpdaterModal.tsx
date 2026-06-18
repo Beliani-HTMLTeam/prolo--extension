@@ -393,51 +393,53 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     };
 
     return (
-      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-          <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
-          <div className={sundayStyles.container}>
-            {isUpdating && updateProgress.total > 0 && (
-              <div className={sundayStyles.tableProgressBar}>
-                <div
-                  className={sundayStyles.tableProgressFill}
-                  style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
-                />
+    <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+      <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+        <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
+        <div className={sundayStyles.container}>
+          {/* Progress bar and stats - same as regular newsletter */}
+          {isUpdating && updateProgress.total > 0 && (
+            <div className={sundayStyles.progressStats}>
+              <div className={sundayStyles.progressInfo}>
+                <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.progressSpinner} />
+                <span>Updating subject lines...</span>
               </div>
-            )}
-            {isUpdating && updateProgress.total > 0 && (
-              <div className={sundayStyles.progressStats}>
-                <div className={sundayStyles.progressInfo}>
-                  <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.progressSpinner} />
-                  <span>Updating subject lines...</span>
-                </div>
-                <div className={sundayStyles.progressCount}>
-                  {updateProgress.completed} / {updateProgress.total} completed
-                </div>
+              <div className={sundayStyles.progressCount}>
+                {updateProgress.completed} / {updateProgress.total} completed
               </div>
-            )}
-            {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
+            </div>
+          )}
+          {isUpdating && updateProgress.total > 0 && (
+            <div className={sundayStyles.tableProgressBar}>
+              <div
+                className={sundayStyles.tableProgressFill}
+                style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
+              />
+            </div>
+          )}
+          
+          {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
 
-            <SundayTable
-              subjectLines={subjectLines}
-              selectedIndex={selectedIndex}
-              onSelectOption={selectOption}
-              loading={sundayLoading}
-              availableSlugs={availableSlugs}
-              updateResults={updateResults}
-              updatingSlugs={updatingSlugs}
-              newsletterIds={newsletterIds}
-            />
-            <SundayButtons
-              hasSelection={selectedIndex !== null}
-              onUpdate={handleSundayUpdate}
-              onClear={clearSelection}
-              loading={sundayLoading}
-            />
-          </div>
+          <SundayTable
+            subjectLines={subjectLines}
+            selectedIndex={selectedIndex}
+            onSelectOption={selectOption}
+            loading={sundayLoading}
+            availableSlugs={availableSlugs}
+            updateResults={updateResults}
+            updatingSlugs={updatingSlugs}
+            newsletterIds={newsletterIds}
+          />
+          <SundayButtons
+            hasSelection={selectedIndex !== null}
+            onUpdate={handleSundayUpdate}
+            onClear={clearSelection}
+            loading={sundayLoading}
+          />
         </div>
       </div>
-    );
+    </div>
+  );
   }
 
   const hasNoTranslations =
