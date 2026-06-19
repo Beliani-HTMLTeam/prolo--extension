@@ -10,7 +10,7 @@ interface LPPathResult {
 }
 
 export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResult> => {
-  const tabName = await fetchSpreadsheetTranslationsTab(issueItem); // "22.05.26 - Beds" format
+  const tabName = await fetchSpreadsheetTranslationsTab(issueItem);
 
   if (!tabName) {
     console.warn('No tab name found, using default LP');
@@ -20,23 +20,27 @@ export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResu
   let year: string, month: string, day: string;
   let parsedDate: Date | null = null;
 
-  let dateMatch = tabName.match(/(\d{2})\.(\d{2})\.(\d{2})/); // DD.MM.YY format
-  if (dateMatch) {
-    // format: DD.MM.YY
-    [, day, month, year] = dateMatch;
-    parsedDate = new Date(2000 + parseInt(year), parseInt(month) - 1, parseInt(day));
+  // Try to extract date from the beginning of the string
+  // This handles both DD.MM.YY and DD.MM.YYYY formats
+  const dateRegex = /^(\d{2})\.(\d{2})\.(\d{2,4})/;
+  const match = tabName.match(dateRegex);
+
+  if (!match) {
+    console.warn('Could not parse date from tab name:', tabName);
+    return { lp: 'lp00-00-00', date: null };
+  }
+
+  day = match[1];
+  month = match[2];
+  const yearFull = match[3];
+
+  // If year has 4 digits, use it for Date object, but take last 2 for LP
+  if (yearFull.length === 4) {
+    year = yearFull.slice(-2);
+    parsedDate = new Date(parseInt(yearFull), parseInt(month) - 1, parseInt(day));
   } else {
-    // DD.MM.YYYY format
-    dateMatch = tabName.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-    if (dateMatch) {
-      [, day, month, year] = dateMatch;
-      const fullYear = year;
-      year = year.slice(-2);
-      parsedDate = new Date(parseInt(fullYear), parseInt(month) - 1, parseInt(day));
-    } else {
-      console.warn('Could not parse date from tab name:', tabName);
-      return { lp: 'lp00-00-00', date: null };
-    }
+    year = yearFull;
+    parsedDate = new Date(2000 + parseInt(yearFull), parseInt(month) - 1, parseInt(day));
   }
 
   if (parsedDate && isNaN(parsedDate.getTime())) {
@@ -149,7 +153,7 @@ const sendLandingPageUpdate = async (data: LandingPageUpdateData, slug: string):
   formData.append('id', data.id);
   formData.append('shop_id', data.shop_id);
   formData.append('delay', '0');
-  formData.append('ordering', '1')
+  formData.append('ordering', '1');
 
   Object.entries(data.title_menu).forEach(([lang, value]) => {
     formData.append(`title_menu[${lang}]`, value);

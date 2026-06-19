@@ -20,6 +20,7 @@ import { SundayButtons } from './updater/SundayButtons';
 import { Icon } from '@iconify/react';
 import { UpdateResults } from './updater/UpdateResults';
 import { getTodayAtMidnight } from '@/entrypoints/newtab/utils/updater/dates';
+import UpdaterButton from './updater/UpdaterButton';
 
 const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
@@ -335,7 +336,6 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const isSundayUpdating = isUpdating || updateProgress.total > 0 || updatingSlugs.size > 0;
 
-
   if (isSundayNewsletter === null || loading || sundayLoading) {
     if (error || sundayError) {
       return (
@@ -382,6 +382,28 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   }
 
   if (isSundayNewsletter) {
+    const hasValidSundayRows = rows.some(row => row.nsltId || row.nsltAId || row.nsltBId);
+
+    if (!hasValidSundayRows) {
+      return (
+        <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+          <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+            <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
+            <div className={sundayStyles.modalContent} style={{ height: '100%' }}>
+              <div className={sundayStyles.emptyIds}>
+                <Icon icon="mdi:file-document-outline" width="48" height="48" className={sundayStyles.emptyIcon} />
+                <h3>No checklists with IDs</h3>
+                <p>No newsletter IDs (NSLT) found for any shop in this Sunday newsletter.</p>
+                <div className={sundayStyles.emptyButtons}>
+                <UpdaterButton isPrimary={false} label="Close" onClick={onClose} icon="mdi:close" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const handleSundayUpdate = async () => {
       const selectedTranslations = getSelectedTranslations();
       if (!selectedTranslations) return;
@@ -396,54 +418,79 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     };
 
     return (
-    <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-      <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-        <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
-        <div className={sundayStyles.container}>
-          {/* Progress bar and stats - same as regular newsletter */}
-          {isUpdating && updateProgress.total > 0 && (
-            <div className={sundayStyles.progressStats}>
-              <div className={sundayStyles.progressInfo}>
-                <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.progressSpinner} />
-                <span>Updating subject lines...</span>
+      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+          <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
+          <div className={sundayStyles.container}>
+            {/* Progress bar and stats - same as regular newsletter */}
+            {isUpdating && updateProgress.total > 0 && (
+              <div className={sundayStyles.progressStats}>
+                <div className={sundayStyles.progressInfo}>
+                  <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.progressSpinner} />
+                  <span>Updating subject lines...</span>
+                </div>
+                <div className={sundayStyles.progressCount}>
+                  {updateProgress.completed} / {updateProgress.total} completed
+                </div>
               </div>
-              <div className={sundayStyles.progressCount}>
-                {updateProgress.completed} / {updateProgress.total} completed
+            )}
+            {isUpdating && updateProgress.total > 0 && (
+              <div className={sundayStyles.tableProgressBar}>
+                <div
+                  className={sundayStyles.tableProgressFill}
+                  style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
+                />
               </div>
-            </div>
-          )}
-          {isUpdating && updateProgress.total > 0 && (
-            <div className={sundayStyles.tableProgressBar}>
-              <div
-                className={sundayStyles.tableProgressFill}
-                style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
-              />
-            </div>
-          )}
-          
-          {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
+            )}
 
-          <SundayTable
-            subjectLines={subjectLines}
-            selectedIndex={selectedIndex}
-            onSelectOption={selectOption}
-            loading={sundayLoading}
-            availableSlugs={availableSlugs}
-            updateResults={updateResults}
-            updatingSlugs={updatingSlugs}
-            newsletterIds={newsletterIds}
-          />
-          <SundayButtons
-            hasSelection={selectedIndex !== null}
-            onUpdate={handleSundayUpdate}
-            onClear={clearSelection}
-            loading={sundayLoading}
-            isUpdating={isSundayUpdating}
-          />
+            {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
+
+            <SundayTable
+              subjectLines={subjectLines}
+              selectedIndex={selectedIndex}
+              onSelectOption={selectOption}
+              loading={sundayLoading}
+              availableSlugs={availableSlugs}
+              updateResults={updateResults}
+              updatingSlugs={updatingSlugs}
+              newsletterIds={newsletterIds}
+            />
+            <SundayButtons
+              hasSelection={selectedIndex !== null}
+              onUpdate={handleSundayUpdate}
+              onClear={clearSelection}
+              loading={sundayLoading}
+              isUpdating={isSundayUpdating}
+            />
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  const hasValidRows = rows.some(row => row.nsltId || row.nsltAId || row.nsltBId || row.lpId);
+
+  if (!hasValidRows) {
+    return (
+      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
+        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
+          <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
+          <div
+            className={clsx(updaterStyles.modalContent, updaterStyles.emptyAlignment)}
+            style={{}}
+          >
+            <div className={updaterStyles.emptyState}>
+              <Icon icon="mdi:file-document-outline" width="48" height="48" className={updaterStyles.emptyIcon} />
+              <h3>No checklists with IDs</h3>
+              <p>No newsletter IDs (NSLT) or landing page IDs (LP) found for any shop.</p>
+              <div className={updaterStyles.emptyButtons}>
+                <UpdaterButton isPrimary={false} label="Close" onClick={onClose} icon="mdi:close" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const hasNoTranslations =
