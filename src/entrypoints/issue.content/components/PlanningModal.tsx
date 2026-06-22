@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import clsx from 'clsx';
-import formStyles from '../styles/forms.module.scss';
+import formStyles from '@/assets/styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import planningStyles from '../styles/planning.module.scss';
 import { getShopIdsMap } from '@/entrypoints/newtab/utils/planning/getShopIdsMap';

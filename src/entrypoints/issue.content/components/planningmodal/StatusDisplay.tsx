@@ -1,7 +1,7 @@
 import { StatusDisplayProps } from '@/entrypoints/newtab/types/Planning';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
-import formStyles from '../../styles/forms.module.scss';
+import formStyles from '@/assets/styles/forms.module.scss';
 import planningStyles from '../../styles/planning.module.scss';
 
 const StatusLabel = ({ icon, text }: { icon: string; text: string }) => (

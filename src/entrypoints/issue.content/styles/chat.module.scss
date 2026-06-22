@@ -1,4 +1,4 @@
-@use '../../../assets/styles/variables' as *;
+@use '@/assets/styles/variables' as *;
 
 // Chat preview & messenger
 .chatPreview {
@@ -115,7 +115,8 @@
 }
 
 @keyframes blink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

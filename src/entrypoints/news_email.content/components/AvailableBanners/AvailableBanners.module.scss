@@ -1,56 +1,85 @@
-@use '../../../../assets/styles/_variables.scss' as _;
+@use '@/assets/styles/_variables.scss' as _;
 
 .availableBanners {
-  font-family: _.$font-family;
-
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 32px;
+  width: 100%;
+  height: 100%;
 
-  flex: 1;
-
-  overflow-y: scroll;
-  padding: 16px;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: _.$medium-grey;
-  }
-
-  &::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
 
   .bannerItem {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 16px;
+    align-items: center;
+    aspect-ratio: 610 / 181;
+    width: 610px;
+    border: 1px dashed _.$medium-grey;
+    border-radius: 8px;
+    height: 181px;
+    position: relative;
 
-    padding: 16px;
+    .bannerDate {
+      position: absolute;
+      top: 50%;
+      left: 12px;
 
-    img {
-      border-radius: 16px;
-    }
-
-    button {
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      color: white;
-      background: _.$medium-grey;
-      border: none;
+      transform: translateY(-50%);
+      background: _.$subtle-peach;
+      padding: 4px 8px;
       border-radius: 4px;
 
-      transition: background 0.2s;
+      color: inherit;
+      text-decoration: none;
+      user-select: none;
 
       &:hover {
-        background: _.$dark-grey;
-        cursor: pointer;
+        text-decoration: underline;
       }
     }
+
+    .previewButton {
+      position: absolute;
+      bottom: -12px;
+      right: 124px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      width: 128px;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .bannerButton {
+      position: absolute;
+      bottom: -12px;
+      right: 12px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      width: 100px;
+      justify-content: center;
+    }
+  }
+}
+
+.emptyState {
+  width: 100%;
+  padding: 24px;
+  border: 1px dashed _.$medium-grey;
+  border-radius: 8px;
+  background: _.$light-grey;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  p,
+  span {
+    margin: 0;
   }
 }

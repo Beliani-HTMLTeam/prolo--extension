@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 import { toast } from 'sonner';
-import formStyles from '../styles/forms.module.scss';
+import formStyles from '@/assets/styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import { generateChecklist } from '../api/checklistGeneration';
 import type { ChecklistMode } from '../lib/types';

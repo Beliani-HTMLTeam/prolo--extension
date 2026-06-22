@@ -4,7 +4,7 @@ import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 import { useCookies } from 'react-cookie';
 import styles from '../styles/chat.module.scss';
-import formStyles from '../styles/forms.module.scss';
+import formStyles from '@/assets/styles/forms.module.scss';
 import { extractMentionIds, fetchComments, notifyMentionedUsers, sendComment, type Comment } from '../api/comments';
 import { fetchMentionableUsers } from '../api/issueData';
 import { EmojiPicker } from './pickers/EmojiPicker';
@@ -251,7 +251,8 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const handleAddCgbHeader = () => {
     if (mode !== 'cgb') return;
 
-    const CGB_HEADER = '<link rel=stylesheet href=https:&#x2F;&#x2F;pictureserver.net/static/checklist_tickoff_reminder.css>';
+    const CGB_HEADER =
+      '<link rel=stylesheet href=https:&#x2F;&#x2F;pictureserver.net/static/checklist_tickoff_reminder.css>';
 
     const currentText = richInputRef.current?.getText() ?? messageText;
     const nextText = currentText.startsWith(CGB_HEADER)

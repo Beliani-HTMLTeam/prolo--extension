@@ -1,0 +1,269 @@
+@use 'sass:color';
+@use '@/assets/styles/variables' as *;
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 20px;
+  box-sizing: border-box;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: $dawn-grey;
+    line-height: 1.6;
+    font-family: $font-family;
+  }
+
+  .badgeRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .idBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: $subtle-peach;
+    border: 1px solid $soft-peach;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $cozy-brown-dark;
+    font-family: $font-family;
+  }
+}
+
+.mappingSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .mappingHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+
+    h4 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: $cozy-brown-dark;
+    }
+
+    span {
+      font-size: 12px;
+      color: $grey-dark;
+    }
+  }
+
+  .mappingList {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 6px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: $grey-border-dark;
+      border-radius: 4px;
+    }
+  }
+
+  .mappingRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: $pure-white;
+    border: 1px solid $grey-border;
+  }
+
+  .mappingSlug {
+    font-size: 13px;
+    font-weight: 600;
+    color: $dawn-grey;
+    text-transform: uppercase;
+  }
+
+  .mappingIdLink {
+    font-size: 13px;
+    font-weight: 600;
+    color: $happy-red;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.progressHint {
+  margin: 0;
+  font-size: 12px;
+  color: $grey-dark;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 6px;
+    border: 1px solid $grey-border-dark;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: $font-family;
+    transition: all 0.15s ease;
+
+    &.cancelBtn {
+      background: $pure-white;
+      color: $dawn-grey;
+
+      &:hover:not(:disabled) {
+        background: $grey-surface;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    &.confirmBtn {
+      background: $happy-red;
+      color: $pure-white;
+      border-color: $happy-red;
+      font-weight: 600;
+
+      &:hover:not(:disabled) {
+        background: color.adjust($happy-red, $lightness: -5%);
+        border-color: color.adjust($happy-red, $lightness: -5%);
+        box-shadow: 0 4px 8px rgba(255, 47, 0, 0.25);
+        transform: translateY(-1px);
+      }
+
+      &:active:not(:disabled) {
+        background: $cozy-brown;
+        border-color: $cozy-brown;
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 20px;
+  box-sizing: border-box;
+
+  .progressTitle {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: $cozy-brown-dark;
+  }
+
+  .progressList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 8px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: $grey-border-dark;
+      border-radius: 4px;
+    }
+  }
+
+  .resultItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: $font-family;
+    background: $pure-white;
+    border: 1px solid $grey-border;
+
+    .slug {
+      font-weight: 600;
+      text-transform: uppercase;
+      color: $dawn-grey;
+    }
+
+    .statusPending {
+      color: $grey-dark;
+      font-size: 12px;
+    }
+
+    &.success {
+      border-color: #a5d6a7;
+      background: #e8f5e9;
+
+      .statusSuccess {
+        color: #2e7d32;
+        font-weight: 600;
+      }
+    }
+
+    &.error {
+      border-color: #ef9a9a;
+      background: #ffebee;
+
+      .statusError {
+        color: #c62828;
+        font-weight: 600;
+        cursor: help;
+      }
+    }
+
+    &.skipping {
+      border-color: #e0c97f;
+      background: #fff8e1;
+
+      .statusSkipping {
+        color: #8d6e00;
+        font-weight: 600;
+      }
+    }
+  }
+}
