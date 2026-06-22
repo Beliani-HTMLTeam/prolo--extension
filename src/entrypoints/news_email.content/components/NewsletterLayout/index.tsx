@@ -1,18 +1,64 @@
+import appStyles from '../../App.module.scss';
 import styles from './NewsletterLayout.module.scss';
 
 import { BannerType } from '../../types';
 
 import MobileBanner from './MobileBanner';
 
-const NewsletterLayout = ({ banners }: { banners: BannerType[] }) => {
+type NewsletterLayoutProps = {
+  banners: BannerType[];
+  dragIndex: number | null;
+  onRemoveBanner: (banner: BannerType) => void;
+  onEditBannerRequest: (banner: BannerType) => void;
+  onTimerRequest: (banner: BannerType) => void;
+  onPreviewBannersRequest: (banner: BannerType) => void;
+  onDragStart: (index: number) => void;
+  onDragOver: (event: React.DragEvent<HTMLDivElement>, index: number) => void;
+  onDragEnd: () => void;
+};
+
+const NewsletterLayout = ({
+  banners,
+  dragIndex,
+  onRemoveBanner,
+  onEditBannerRequest,
+  onTimerRequest,
+  onPreviewBannersRequest,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+}: NewsletterLayoutProps) => {
   return (
-    <div className={styles.bannerList}>
+    <>
+      <div className={appStyles.panelHeader}>
+        <h2>Newsletter layout</h2>
+        <p>Drag banners to reorder them. Remove unwanted items with the trash icon.</p>
+      </div>
+
       {banners.length === 0 ? (
-        <p>No banners added yet</p>
+        <div className={styles.emptyState}>
+          <p>No banners added yet</p>
+          <span>Pick a banner from the available list to start building the newsletter.</span>
+        </div>
       ) : (
-        banners.map(banner => <MobileBanner key={banner.order} banner={banner} />)
+        <div className={styles.bannerList}>
+          {banners.map((banner, index) => (
+            <MobileBanner
+              key={banner.order}
+              banner={banner}
+              isDragging={dragIndex === index}
+              onRemove={onRemoveBanner}
+              onEditBannerRequest={onEditBannerRequest}
+              onTimerRequest={onTimerRequest}
+              onPreviewBannersRequest={onPreviewBannersRequest}
+              onDragStart={() => onDragStart(index)}
+              onDragOver={event => onDragOver(event, index)}
+              onDragEnd={onDragEnd}
+            />
+          ))}
+        </div>
       )}
-    </div>
+    </>
   );
 };
 

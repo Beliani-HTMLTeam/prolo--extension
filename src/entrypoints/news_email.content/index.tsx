@@ -5,7 +5,7 @@ export default defineContentScript({
   matches: [`*://*.prologistics.info/news_email.php*`],
   main() {
     const container = document.createElement('div');
-    
+
     container.id = 'prolo-extension-react-root';
     document.body.appendChild(container);
 
