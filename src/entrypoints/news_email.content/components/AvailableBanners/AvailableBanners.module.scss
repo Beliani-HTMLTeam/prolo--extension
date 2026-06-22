@@ -1,0 +1,85 @@
+@use '@/assets/styles/_variables.scss' as _;
+
+.availableBanners {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  height: 100%;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+
+  .bannerItem {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 610 / 181;
+    width: 610px;
+    border: 1px dashed _.$medium-grey;
+    border-radius: 8px;
+    height: 181px;
+    position: relative;
+
+    .bannerDate {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+
+      transform: translateY(-50%);
+      background: _.$subtle-peach;
+      padding: 4px 8px;
+      border-radius: 4px;
+
+      color: inherit;
+      text-decoration: none;
+      user-select: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .previewButton {
+      position: absolute;
+      bottom: -12px;
+      right: 124px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      width: 128px;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .bannerButton {
+      position: absolute;
+      bottom: -12px;
+      right: 12px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      width: 100px;
+      justify-content: center;
+    }
+  }
+}
+
+.emptyState {
+  width: 100%;
+  padding: 24px;
+  border: 1px dashed _.$medium-grey;
+  border-radius: 8px;
+  background: _.$light-grey;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  p,
+  span {
+    margin: 0;
+  }
+}

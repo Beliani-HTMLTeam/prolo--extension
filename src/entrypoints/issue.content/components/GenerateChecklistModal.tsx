@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
-import formStyles from '../styles/forms.module.scss';
+import { toast } from 'sonner';
+import formStyles from '@/assets/styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import { generateChecklist } from '../api/checklistGeneration';
 import type { ChecklistMode } from '../lib/types';
@@ -16,7 +17,8 @@ type GenerateChecklistModalProps = {
 const GenerateChecklistModal = ({ issueId, mode, onClose, onSuccess }: GenerateChecklistModalProps) => {
   const [startIdNewsletter, setStartIdNewsletter] = useState('');
   const [startIdLp, setStartIdLp] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loadingNslt, setLoadingNslt] = useState(false);
+  const [loadingLp, setLoadingLp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasLpGeneration = mode !== 'sunday';
 
@@ -24,22 +26,21 @@ const GenerateChecklistModal = ({ issueId, mode, onClose, onSuccess }: GenerateC
     const startId = mode === 'newsletter' ? startIdNewsletter : startIdLp;
 
     if (!startId.trim()) {
-      setError(`Please enter Start ID for ${mode}`);
+      toast.error(`Please enter Start ID for ${mode}`);
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    mode === 'newsletter' ? setLoadingNslt(true) : setLoadingLp(true);
 
     try {
       await generateChecklist(issueId, { startId, mode });
+      toast.success(`Successfully generated ${mode} checklist`);
       onSuccess?.();
-      onClose();
     } catch (err) {
-      setError(`Failed to generate ${mode} checklist: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      toast.error(`Failed to generate ${mode} checklist: ${err instanceof Error ? err.message : 'Unknown error'}`);
       console.error('Generate checklist error:', err);
     } finally {
-      setLoading(false);
+      mode === 'newsletter' ? setLoadingNslt(false) : setLoadingLp(false);
     }
   };
 
@@ -54,8 +55,6 @@ const GenerateChecklistModal = ({ issueId, mode, onClose, onSuccess }: GenerateC
         </div>
 
         <div className={formStyles.modalContent}>
-          {error && <div className={clsx(formStyles.error, formStyles.formError)}>{error}</div>}
-
           <div className={formStyles.formGroup}>
             <label htmlFor="startNewsletterInput">Start ID Newsletter</label>
             <input
@@ -65,8 +64,17 @@ const GenerateChecklistModal = ({ issueId, mode, onClose, onSuccess }: GenerateC
               placeholder="CHDE Newsletter ID"
               value={startIdNewsletter}
               onChange={e => setStartIdNewsletter(e.target.value)}
-              disabled={loading}
+              disabled={loadingNslt}
             />
+
+            <button
+              className={clsx(formStyles.btn, formStyles['btn--primary'])}
+              onClick={() => handleGenerate('newsletter')}
+              disabled={loadingNslt}
+            >
+              <Icon icon={loadingNslt ? 'svg-spinners:180-ring' : 'mdi:playlist-plus'} width="14" height="14" />
+              {loadingNslt ? 'Generating newsletter checklist...' : 'Generate Newsletter Checklist'}
+            </button>
           </div>
 
           {hasLpGeneration && (
@@ -79,41 +87,19 @@ const GenerateChecklistModal = ({ issueId, mode, onClose, onSuccess }: GenerateC
                 placeholder="CH Shop Content ID"
                 value={startIdLp}
                 onChange={e => setStartIdLp(e.target.value)}
-                disabled={loading}
+                disabled={loadingLp}
               />
-            </div>
-          )}
 
-          <div className={formStyles.modalButtons}>
-            <button
-              className={clsx(formStyles.btn, formStyles['btn--primary'])}
-              onClick={() => handleGenerate('newsletter')}
-              disabled={loading}
-            >
-              <Icon icon="mdi:playlist-plus" width="14" height="14" className={loading ? formStyles.spinning : ''} />
-              {loading ? 'Generating...' : 'Generate Newsletter Checklist'}
-            </button>
-
-            {hasLpGeneration && (
               <button
                 className={clsx(formStyles.btn, formStyles['btn--primary'])}
                 onClick={() => handleGenerate('lp')}
-                disabled={loading}
+                disabled={loadingLp}
               >
-                <Icon
-                  icon="mdi:playlist-plus"
-                  width="14"
-                  height="14"
-                  className={loading ? formStyles.spinning : ''}
-                />
-                {loading ? 'Generating...' : 'Generate LP Checklist'}
+                <Icon icon={loadingLp ? 'svg-spinners:180-ring' : 'mdi:playlist-plus'} width="14" height="14" />
+                {loadingLp ? 'Generating LP checklist...' : 'Generate LP Checklist'}
               </button>
-            )}
-          </div>
-
-          <button className={clsx(formStyles.btn, formStyles['btn--ghost'])} onClick={onClose} disabled={loading}>
-            Cancel
-          </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
