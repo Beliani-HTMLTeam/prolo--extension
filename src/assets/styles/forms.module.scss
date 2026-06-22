@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use '../../../assets/styles/variables' as *;
+@use './variables' as *;
 
 .messageInputArea {
   display: flex;
@@ -247,8 +247,6 @@
     border-color: $grey-border-light;
   }
 }
-
-/* Modal ────────────────────────────────────────────────────────────────────── */
 
 .modalOverlay {
   position: fixed;

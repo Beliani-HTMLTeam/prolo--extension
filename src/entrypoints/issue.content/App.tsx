@@ -1,12 +1,12 @@
-import { CookiesProvider, useCookies } from 'react-cookie';
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import { Toaster } from 'sonner';
+import AppProviders from '@/components/app/AppProviders';
+import Overlay from '@/components/overlay/Overlay';
+import OverlayToggleButton from '@/components/overlay/OverlayToggleButton';
+import TopBar from '@/components/overlay/TopBar';
+import useOverlayVisibility from '@/hooks/useOverlayVisibility';
 import Header from './components/Header';
-import Overlay from './components/ui/Overlay';
-import TopBar from './components/ui/TopBar';
 
 import styles from './styles/layout.module.scss';
-import formStyles from './styles/forms.module.scss';
 import FamilyTable from './components/FamilyTable';
 import ActionsPanel from './components/ActionsPanel';
 import {
@@ -20,8 +20,6 @@ import type { ChecklistTableData, IssueInfoViewModel, IssueLink } from './lib/ty
 import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
 import { getIssueModePlugin } from './api/issueModePlugins';
 
-const cookieOptions = { maxAge: 7 * 24 * 60 * 60 };
-
 const IssueAppContent = () => {
   const issueId = useMemo(() => {
     let currentUrl = window.location.href;
@@ -32,11 +30,7 @@ const IssueAppContent = () => {
   }, []);
 
   const cookieKey = useMemo(() => `${issueId}.overlayVisible`, [issueId]);
-  const [cookies, setCookie] = useCookies([cookieKey]);
-  const [visible, setVisible] = useState(() => {
-    const cookieValue = cookies[cookieKey];
-    return cookieValue !== 'false' && cookieValue !== false;
-  });
+  const { visible, showOverlay, hideOverlay } = useOverlayVisibility(cookieKey);
   const [tableData, setTableData] = useState<ChecklistTableData | null>(null);
   const [issueLinks, setIssueLinks] = useState<IssueLink[]>([]);
   const [issueInfo, setIssueInfo] = useState<IssueInfoViewModel | null>(null);
@@ -88,30 +82,16 @@ const IssueAppContent = () => {
     void loadIssueData();
   }, [loadIssueData]);
 
-  const handleHide = () => {
-    setVisible(false);
-    setCookie(cookieKey, 'false', cookieOptions);
-  };
-
-  const handleShow = () => {
-    setVisible(true);
-    setCookie(cookieKey, 'true', cookieOptions);
-  };
-
   if (!issueInfo) {
     return null;
   }
 
   return (
     <>
-      {!visible && (
-        <button onClick={handleShow} className={formStyles.showOverlayButton}>
-          Dashboard
-        </button>
-      )}
+      {!visible && <OverlayToggleButton onClick={showOverlay}>Dashboard</OverlayToggleButton>}
 
       <Overlay visible={visible}>
-        <TopBar onHide={handleHide} />
+        <TopBar onHide={hideOverlay} />
 
         <Header
           issueTitle={issueInfo.title}
@@ -145,10 +125,9 @@ const IssueAppContent = () => {
 };
 
 const IssueApp = () => (
-  <CookiesProvider>
-    <Toaster position="top-right" richColors />
+  <AppProviders>
     <IssueAppContent />
-  </CookiesProvider>
+  </AppProviders>
 );
 
 export default IssueApp;
