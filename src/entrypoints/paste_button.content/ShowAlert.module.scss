@@ -1,0 +1,25 @@
+.alertContainer {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #333;
+  color: #fff;
+  width: auto;
+  height: 20px;
+  font-size: 17px;
+  border-radius: 10px;
+  transition: opacity 0.3s ease;
+  padding: 5px 20px;
+  text-align: center;
+}
+
+.danger {
+  border: 2px solid #a41615;
+  background: #520b0a;
+}
+
+.success {
+  border: 2px solid #13ca12;
+  background: #075007;
+}
