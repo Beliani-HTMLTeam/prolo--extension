@@ -27,6 +27,10 @@ export const MenuContent = ({
   onSelectAll,
   onClearAll,
   onCancel,
+   onVerify,
+  verifying = false,
+  hasVerified = false,
+  verifyProgress = { completed: 0, total: 0 },
 }: MenuContentProps) => {
   if (loading) {
     return <MenuSkeleton />;
@@ -64,6 +68,10 @@ export const MenuContent = ({
         onSelectAll={onSelectAll}
         onClearAll={onClearAll}
         onCancel={onCancel}
+        onVerify={onVerify}
+        verifying={verifying}
+        hasVerified={hasVerified}
+        verifyProgress={verifyProgress}
       />
     </>
   )

@@ -724,3 +724,90 @@
   gap: 12px;
   justify-content: center;
 }
+
+.needsUpdate {
+  color: #856404;
+  background-color: rgba(255, 193, 7, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border-left: 3px solid #ff8c00;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.updateIndicator {
+  color: #ff8c00;
+  display: inline-flex;
+  align-items: center;
+  animation: pulse 2s infinite;
+}
+
+.divider {
+  height: 1px;
+  background: #dee2e6;
+  margin: 4px 0;
+}
+
+.verifyProgress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+  
+  .verifyProgressText {
+    min-width: 30px;
+    font-weight: 500;
+  }
+  
+  .verifyProgressBar {
+    flex: 1;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .verifyProgressFill {
+    height: 100%;
+    background: #007bff;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+}
+
+.verifyStatus {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #28a745;
+  
+  .verifyStatusIcon {
+    flex-shrink: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,4 +1,4 @@
-import { UpdaterProps, UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
+import { UpdaterProps, UpdaterSelectedItem, VerificationResult } from '@/entrypoints/newtab/types/Updater';
 import { useEffect } from 'react';
 import clsx from 'clsx';
 import formStyles from '../styles/forms.module.scss';
@@ -21,6 +21,7 @@ import { Icon } from '@iconify/react';
 import { UpdateResults } from './updater/UpdateResults';
 import { getTodayAtMidnight } from '@/entrypoints/newtab/utils/updater/dates';
 import UpdaterButton from './updater/UpdaterButton';
+import {  verifyBatch } from '../api/verifyService';
 
 const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
@@ -29,17 +30,14 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   const [initialSlugDates, setInitialSlugDates] = useState<Record<string, { activate: Date; deactivate: Date }>>({});
   const [initialSlugLPs, setInitialSlugLPs] = useState<Record<string, string>>({});
 
+  const [verificationResults, setVerificationResults] = useState<Record<string, VerificationResult>>({});
+  const [verifying, setVerifying] = useState(false);
+const [verifyProgress, setVerifyProgress] = useState({ completed: 0, total: 0 });
+const [hasVerified, setHasVerified] = useState(false);
+
   const isResettingRef = useRef(false);
 
-  const {
-    translations,
-    loading,
-    error,
-    globalLP: initialGlobalLP,
-    deactivateDate,
-    retry,
-  } = useTranslationsLoader({ issueId, rows });
-
+  
   const {
     subjectLines,
     loading: sundayLoading,
@@ -51,6 +49,15 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     error: sundayError,
     retry: retrySunday,
   } = useSundayTranslations({ issueId, availableSlugs: rows.map(r => r.shop) });
+  
+  const {
+    translations,
+    loading,
+    error,
+    globalLP: initialGlobalLP,
+    deactivateDate,
+    retry,
+  } = useTranslationsLoader({ issueId, rows, isSundayNewsletter: isSundayNewsletter || false });
 
   const { selectedItems, handleToggleSL, handleTogglePT, handleSelectAllReady, handleClearAll } = useSelectionManager();
 
@@ -331,6 +338,72 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   const handleUpdateAllWrapper = () => handleUpdateAll(translations, handleUpdateSelected);
   const handleSelectAllReadyWrapper = () => handleSelectAllReady(translations);
 
+const verifyAllItems = useCallback(async () => {
+  if (!translations?.subjectLine && !translations?.pageTitle) return;
+  
+  setVerifying(true);
+  setVerifyProgress({ completed: 0, total: 0 });
+  setVerificationResults({});
+  setHasVerified(true);
+  
+  const allSlugs = new Set([
+    ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
+    ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
+  ]);
+  
+  // Prepare items for batch verification
+  const itemsToVerify: Array<{
+    nsltId: string;
+    lpId: string;
+    spreadsheetSubject: string | null;
+    spreadsheetPageTitle: string | null;
+    slug: string;
+  }> = [];
+
+  Array.from(allSlugs).forEach(slug => {
+    const subjectLine = translations.subjectLine?.[slug] || null;
+    const pageTitle = translations.pageTitle?.[slug] || null;
+    const nsltId = newsletterIds?.[slug]?.aId || newsletterIds?.[slug]?.bId || null;
+    const lpId = landingPageIds?.[slug] || null;
+    
+    if (nsltId || lpId) {
+      itemsToVerify.push({
+        nsltId: nsltId || '',
+        lpId: lpId || '',
+        spreadsheetSubject: subjectLine,
+        spreadsheetPageTitle: pageTitle,
+        slug,
+      });
+    }
+  });
+
+  if (itemsToVerify.length === 0) {
+    setVerifying(false);
+    return;
+  }
+
+  // Batch verify with progress
+  const results = await verifyBatch(
+    itemsToVerify,
+    (completed, total, result) => {
+      setVerifyProgress({ completed, total });
+      setVerificationResults(prev => ({
+        ...prev,
+        [result.slug]: result,
+      }));
+    }
+  );
+  
+  setVerifying(false);
+  setHasVerified(true);
+}, [translations, newsletterIds, landingPageIds]);
+
+useEffect(() => {
+  if (isComplete && !isUpdating) {
+    setShowResults(true);
+  }
+}, [isComplete, isUpdating]);
+
   const selectedSLCount = selectedItems.filter(item => item.type === 'subjectLine').length;
   const selectedPTCount = selectedItems.filter(item => item.type === 'pageTitle').length;
 
@@ -552,6 +625,10 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               onSelectAll={handleSelectAllReadyWrapper}
               onClearAll={handleClearAll}
               onCancel={onClose}
+              onVerify={verifyAllItems}
+              verifying={verifying}
+              hasVerified={hasVerified}
+              verifyProgress={verifyProgress}
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -607,6 +684,8 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               getInitialActivateDate={getInitialActivateDate}
               getInitialDeactivateDate={getInitialDeactivateDate}
               getInitialLP={getInitialLP}
+              verificationResults={verificationResults}
+              verifying={verifying}
             />
           </div>
         </div>

@@ -37,6 +37,8 @@ export const TableRow = ({
   isError = false,
   errorMessage,
   disableSelections = false,
+  verificationResult,
+  verifying = false
 }: TableRowProps) => {
   const rowClass = clsx(updaterStyles.shopRow, {
     [updaterStyles.rowUpdating]: isUpdating,
@@ -89,10 +91,21 @@ export const TableRow = ({
     return text === 'TRANSLATION NOT FOUND';
   };
 
-  const renderText = (text: string, fallback: string = '-') => {
+
+   const renderText = (text: string, fallback: string = '-', needsUpdate: boolean = false) => {
     const displayText = text || fallback;
-    if (isTranslationNotFound(displayText)) {
+    if (displayText === 'TRANSLATION NOT FOUND') {
       return <span className={updaterStyles.translationNotFound}>{displayText}</span>;
+    }
+    if (needsUpdate) {
+      return (
+        <span className={updaterStyles.needsUpdate}>
+          {displayText}
+          <span className={updaterStyles.updateIndicator} title="Newer version available in spreadsheet">
+            <Icon icon="mdi:arrow-up-circle" width="14" height="14" />
+          </span>
+        </span>
+      );
     }
     return <span>{displayText}</span>;
   };
@@ -133,8 +146,14 @@ export const TableRow = ({
       </div>
 
       {/* Subject Line Column */}
-      <div className={updaterStyles.subjectLine}>
-        {renderText(subjectLine)}
+       <div className={updaterStyles.subjectLine}>
+        {verifying ? (
+          <span className={updaterStyles.verifying}>
+            <Icon icon="svg-spinners:180-ring" width="14" height="14" />
+          </span>
+        ) : (
+          renderText(subjectLine, '-', verificationResult?.subjectNeedsUpdate)
+        )}
         {hasSL && (
           <input
             type="checkbox"
@@ -162,8 +181,14 @@ export const TableRow = ({
       </div>
 
       {/* Page Title Column */}
-      <div className={updaterStyles.pageTitle}>
-        {renderText(pageTitle)}
+     <div className={updaterStyles.pageTitle}>
+        {verifying ? (
+          <span className={updaterStyles.verifying}>
+            <Icon icon="svg-spinners:180-ring" width="14" height="14" />
+          </span>
+        ) : (
+          renderText(pageTitle, '-', verificationResult?.pageTitleNeedsUpdate)
+        )}
         {hasPT && (
           <input
             type="checkbox"

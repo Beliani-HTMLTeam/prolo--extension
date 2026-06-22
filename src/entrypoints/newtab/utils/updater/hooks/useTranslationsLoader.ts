@@ -2,23 +2,28 @@ import { fetchIssueData, fetchSubjectPageTranslations } from '@/entrypoints/issu
 import { fetchLPPaths } from '@/entrypoints/issue.content/api/updater';
 import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { getDefaultDeactivateDate } from '../dates';
+import { refreshSpreadsheetData } from '@/entrypoints/issue.content/api/spreadsheetService';
 
 interface UseTranslationsLoaderProps {
   issueId: number;
   rows: Array<{ shop: string }>;
+  isSundayNewsletter?: boolean;
 }
 
 export const useTranslationsLoader = ({
   issueId,
   rows,
+  isSundayNewsletter = false,
 }: UseTranslationsLoaderProps) => {
   const [translations, setTranslations] = useState<LineTitleTranslations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [globalLP, setGlobalLP] = useState('');
   const [deactivateDate, setDeactivateDate] = useState<Date | null>(null);
+  const [isRefreshed, setIsRefreshed] = useState(false);
+  const refreshInProgressRef = useRef(false);
 
-    const loadIssueData = useCallback(async () => {
+    const loadIssueData = useCallback(async (skipRefresh: boolean = false) => {
       setLoading(true);
         setError(null);
       try {
@@ -28,6 +33,26 @@ export const useTranslationsLoader = ({
           setError('Issue data not found');
           return;
         }
+
+         // Refresh spreadsheet data only for regular newsletters (not Sunday)
+      // and only on first load
+      if (!isSundayNewsletter && !skipRefresh && !refreshInProgressRef.current) {
+        refreshInProgressRef.current = true;
+        try {
+          const refreshed = await refreshSpreadsheetData(issueItem, issueId);
+          if (refreshed) {
+            console.log('✅ Spreadsheet data refreshed successfully');
+          } else {
+            console.warn('⚠️ Spreadsheet refresh failed, using cached data');
+          }
+        } catch (refreshError) {
+          console.warn('⚠️ Spreadsheet refresh error:', refreshError);
+        } finally {
+          refreshInProgressRef.current = false;
+          setIsRefreshed(true);
+        }
+      }
+
 
         const [rawTranslations, lpResult] = await Promise.all([
           fetchSubjectPageTranslations(issueItem),
@@ -90,8 +115,8 @@ export const useTranslationsLoader = ({
   }, [loadIssueData]);
 
   const retry = useCallback(() => {
-    loadIssueData();
+    loadIssueData(true);
   }, [loadIssueData]);
 
-  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate, retry };
+  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate, retry , isRefreshed, refreshSpreadsheet: () => loadIssueData(true)};
 };

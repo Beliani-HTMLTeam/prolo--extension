@@ -29,6 +29,9 @@ const UpdaterTable = ({
   getInitialActivateDate,
   getInitialDeactivateDate,
   getInitialLP,
+  verificationResults = {},
+  verifying = false,
+  hasVerified = false,
 }: UpdaterTableProps) => {
   const isSLSelected = useCallback(
     (slug: string) => selectedItems.some(item => item.slug === slug && item.type === 'subjectLine'),
@@ -97,6 +100,10 @@ const UpdaterTable = ({
     [onSlugFMDModeChange],
   );
 
+  const needsUpdateCount = useMemo(() => {
+    return Object.values(verificationResults).filter(r => r.subjectNeedsUpdate || r.pageTitleNeedsUpdate).length;
+  }, [verificationResults]);
+
   if (loading) {
     return <TableSkeleton useGlobalLP={useGlobalLP} useGlobalDates={useGlobalDates} availableSlugs={availableSlugs} />;
   }
@@ -120,7 +127,6 @@ const UpdaterTable = ({
         const pageTitle = translations?.pageTitle?.[slug];
         const hasSL = !!subjectLine;
         const hasPT = !!pageTitle;
-        const activateDate = getDateForSlug?.(slug, 'activate');
         const deactivateDate = getDateForSlug?.(slug, 'deactivate');
         const lp = getLPForSlug?.(slug) || '';
         const fdMode = slugFMDModes[slug]?.fd || false;
@@ -134,6 +140,8 @@ const UpdaterTable = ({
         const isSuccess = result?.success;
         const isError = result && !result.success;
         const errorMessage = isError ? result.error : undefined;
+
+        const verificationResult = verificationResults[slug];
 
         const handleToggleCountry = (checked: boolean) => {
           if (checked) {
@@ -216,6 +224,8 @@ const UpdaterTable = ({
             onSlugLPChange={onSlugLPChange}
             onSlugFMDModeChange={onSlugFMDModeChange}
             disableSelections={isGlobalLPModified}
+            verificationResult={verificationResult}
+            verifying={verifying}
           />
         );
       })}

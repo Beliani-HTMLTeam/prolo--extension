@@ -1,5 +1,9 @@
 import { ChecklistTableData, ChecklistTableRow, LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 
+export interface VerificationResult {
+   subjectNeedsUpdate: boolean;
+    pageTitleNeedsUpdate: boolean;
+}
 export interface UpdaterProps {
   rows: ChecklistTableRow[];
   issueId: number;
@@ -29,6 +33,10 @@ export interface UpdaterButtonsProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   onCancel: () => void;
+  onVerify: () => void;
+  verifying?: boolean;
+  hasVerified?: boolean;
+  verifyProgress?: { completed: number; total: number };
 }
 
 export interface UpdaterSelectedItem {
@@ -98,6 +106,10 @@ export interface MenuContentProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   onCancel: () => void;
+  onVerify: () => void;
+  verifying?: boolean;
+  hasVerified?: boolean;
+  verifyProgress?: { completed: number; total: number };
 }
 
 export interface SundayButtonsProps {
@@ -108,7 +120,6 @@ export interface SundayButtonsProps {
   isUpdating?: boolean;
 }
 
-
 export interface SundayTableProps {
   subjectLines: Record<number, Record<string, string>> | null;
   selectedIndex: number | null;
@@ -117,7 +128,7 @@ export interface SundayTableProps {
   availableSlugs?: string[];
   updatingSlugs?: Set<string>;
   updateResults?: Array<{ slug: string; success: boolean; error?: string }>;
-  newsletterIds?: Record<string,  { aId?: string; bId?: string }>;
+  newsletterIds?: Record<string, { aId?: string; bId?: string }>;
 }
 
 export interface SundayTableSkeletonProps {
@@ -177,6 +188,8 @@ export interface TableRowProps {
   onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
   disableSelections?: boolean;
+  verificationResult?: VerificationResult;
+  verifying?: boolean;
 }
 
 export interface TableRowSkeletonProps {
@@ -194,7 +207,7 @@ export interface TableSkeletonProps {
 }
 
 export interface UpdateResultsProps {
-  results: UpdateResult[]
+  results: UpdateResult[];
   onClose: () => void;
   onRetry?: () => void;
 }
@@ -224,4 +237,7 @@ export interface UpdaterTableProps {
   getInitialActivateDate?: (slug: string) => Date;
   getInitialDeactivateDate?: (slug: string) => Date;
   getInitialLP?: (slug: string) => string;
+   verificationResults?: Record<string, VerificationResult>;
+  verifying?: boolean;
+  hasVerified?: boolean;
 }

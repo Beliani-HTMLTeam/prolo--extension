@@ -277,6 +277,7 @@ export const useUpdateHandler = ({
         onClearSelections();
       }
 
+      setUpdateProgress({completed: 0, total: 0});
       setIsComplete(true);
     } catch (error) {
       console.error('Failed to update translations: ', error);
