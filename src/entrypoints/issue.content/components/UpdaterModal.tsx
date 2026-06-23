@@ -469,22 +469,22 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
         <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
           <ModalHeader title="Loading..." onClose={onClose} />
           <div className={sundayStyles.container}>
-             {!isSundayNewsletter && (
-            <div
-              className={clsx(updaterStyles.refreshStatusBar, {
-                [updaterStyles.refreshComplete]: isRefreshed && !isRefreshing,
-              })}
-            >
-              {getRefreshIcon()}
-              <span>{getRefreshMessage()}</span>
-              {isRefreshed && !isRefreshing && (
-                <span className={updaterStyles.refreshComplete}>
-                  <Icon icon="mdi:check-circle" width="14" height="14" />
-                  Done
-                </span>
-              )}
-            </div>
-          )}
+            {!isSundayNewsletter && (
+              <div
+                className={clsx(updaterStyles.refreshStatusBar, {
+                  [updaterStyles.refreshComplete]: isRefreshed && !isRefreshing,
+                })}
+              >
+                {getRefreshIcon()}
+                <span>{getRefreshMessage()}</span>
+                {isRefreshed && !isRefreshing && (
+                  <span className={updaterStyles.refreshComplete}>
+                    <Icon icon="mdi:check-circle" width="14" height="14" />
+                    Done
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className={sundayStyles.loading}>
               <Icon icon={'svg-spinners:180-ring'} width="70" height="70" />
@@ -669,8 +669,12 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               verifyProgress={verifyProgress}
             />
           </div>
-          <div style={{ flex: 1 }}>
-            {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
+          <div className={updaterStyles.rightContent}>
+            {showResults && (
+              <div className={updaterStyles.resultsContainer}>
+                <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />
+              </div>
+            )}
             <>
               {isUpdating && updateProgress.total > 0 && (
                 <div className={updaterStyles.progressStats}>
@@ -697,34 +701,36 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
                 </div>
               )}
             </>
-            <UpdaterTable
-              translations={translations}
-              loading={loading || isUpdating}
-              onToggleSL={handleToggleSL}
-              onTogglePT={handleTogglePT}
-              selectedItems={selectedItems}
-              getDateForSlug={getDateForSlug}
-              getLPForSlug={getLPForSlug}
-              onSlugActivateDateChange={handleSlugActivateDateChange}
-              onSlugDeactivateDateChange={handleSlugDeactivateDateChange}
-              onSlugLPChange={handleSlugLPChange}
-              useGlobalDates={useGlobalDate}
-              useGlobalLP={useGlobalLP}
-              globalLP={globalLP}
-              initialGlobalLP={initialGlobalLP}
-              slugFMDModes={slugFMDModes}
-              onSlugFMDModeChange={handleSlugFMDModeChange}
-              availableSlugs={availableSlugs}
-              newsletterIds={newsletterIds}
-              landingPageIds={landingPageIds}
-              updatingSlugs={updatingSlugs}
-              updateResults={updateResults}
-              getInitialActivateDate={getInitialActivateDate}
-              getInitialDeactivateDate={getInitialDeactivateDate}
-              getInitialLP={getInitialLP}
-              verificationResults={verificationResults}
-              verifying={verifying}
-            />
+            <div className={updaterStyles.tableContainer}>
+              <UpdaterTable
+                translations={translations}
+                loading={loading || isUpdating}
+                onToggleSL={handleToggleSL}
+                onTogglePT={handleTogglePT}
+                selectedItems={selectedItems}
+                getDateForSlug={getDateForSlug}
+                getLPForSlug={getLPForSlug}
+                onSlugActivateDateChange={handleSlugActivateDateChange}
+                onSlugDeactivateDateChange={handleSlugDeactivateDateChange}
+                onSlugLPChange={handleSlugLPChange}
+                useGlobalDates={useGlobalDate}
+                useGlobalLP={useGlobalLP}
+                globalLP={globalLP}
+                initialGlobalLP={initialGlobalLP}
+                slugFMDModes={slugFMDModes}
+                onSlugFMDModeChange={handleSlugFMDModeChange}
+                availableSlugs={availableSlugs}
+                newsletterIds={newsletterIds}
+                landingPageIds={landingPageIds}
+                updatingSlugs={updatingSlugs}
+                updateResults={updateResults}
+                getInitialActivateDate={getInitialActivateDate}
+                getInitialDeactivateDate={getInitialDeactivateDate}
+                getInitialLP={getInitialLP}
+                verificationResults={verificationResults}
+                verifying={verifying}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -15,6 +15,30 @@
   @include formStyles.modalContent;
   flex-direction: row;
   width: 100%;
+    height: 100%;
+  overflow: hidden; 
+    position: relative;
+}
+
+.rightContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.resultsContainer {
+  flex-shrink: 0; // Don't shrink, take only as much space as needed
+}
+
+.tableContainer {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .menu {
@@ -23,6 +47,8 @@
   gap: 16px;
   flex-direction: column;
   flex-shrink: 0;
+   height: 100%;
+  overflow-y: auto;
 
   .actionButtons {
     display: flex;
@@ -38,6 +64,8 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+   height: 100%;
+  min-height: 0; 
 
   .tableHeader {
     display: flex;
@@ -50,6 +78,7 @@
     position: sticky;
     top: 0;
     z-index: 10;
+     flex-shrink: 0; 
 
     .shopLabel {
       width: 70px;
