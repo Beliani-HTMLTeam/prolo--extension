@@ -21,7 +21,7 @@ import { Icon } from '@iconify/react';
 import { UpdateResults } from './updater/UpdateResults';
 import { getTodayAtMidnight } from '@/entrypoints/newtab/utils/updater/dates';
 import UpdaterButton from './updater/UpdaterButton';
-import {  verifyBatch } from '../api/verifyService';
+import { verifyBatch } from '../api/verifyService';
 
 const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
@@ -32,12 +32,11 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const [verificationResults, setVerificationResults] = useState<Record<string, VerificationResult>>({});
   const [verifying, setVerifying] = useState(false);
-const [verifyProgress, setVerifyProgress] = useState({ completed: 0, total: 0 });
-const [hasVerified, setHasVerified] = useState(false);
+  const [verifyProgress, setVerifyProgress] = useState({ completed: 0, total: 0 });
+  const [hasVerified, setHasVerified] = useState(false);
 
   const isResettingRef = useRef(false);
 
-  
   const {
     subjectLines,
     loading: sundayLoading,
@@ -49,7 +48,7 @@ const [hasVerified, setHasVerified] = useState(false);
     error: sundayError,
     retry: retrySunday,
   } = useSundayTranslations({ issueId, availableSlugs: rows.map(r => r.shop) });
-  
+
   const {
     translations,
     loading,
@@ -57,6 +56,8 @@ const [hasVerified, setHasVerified] = useState(false);
     globalLP: initialGlobalLP,
     deactivateDate,
     retry,
+    isRefreshed,
+    isRefreshing,
   } = useTranslationsLoader({ issueId, rows, isSundayNewsletter: isSundayNewsletter || false });
 
   const { selectedItems, handleToggleSL, handleTogglePT, handleSelectAllReady, handleClearAll } = useSelectionManager();
@@ -338,74 +339,97 @@ const [hasVerified, setHasVerified] = useState(false);
   const handleUpdateAllWrapper = () => handleUpdateAll(translations, handleUpdateSelected);
   const handleSelectAllReadyWrapper = () => handleSelectAllReady(translations);
 
-const verifyAllItems = useCallback(async () => {
-  if (!translations?.subjectLine && !translations?.pageTitle) return;
-  
-  setVerifying(true);
-  setVerifyProgress({ completed: 0, total: 0 });
-  setVerificationResults({});
-  setHasVerified(true);
-  
-  const allSlugs = new Set([
-    ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
-    ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
-  ]);
-  
-  // Prepare items for batch verification
-  const itemsToVerify: Array<{
-    nsltId: string;
-    lpId: string;
-    spreadsheetSubject: string | null;
-    spreadsheetPageTitle: string | null;
-    slug: string;
-  }> = [];
+  const verifyAllItems = useCallback(async () => {
+    if (!translations?.subjectLine && !translations?.pageTitle) return;
 
-  Array.from(allSlugs).forEach(slug => {
-    const subjectLine = translations.subjectLine?.[slug] || null;
-    const pageTitle = translations.pageTitle?.[slug] || null;
-    const nsltId = newsletterIds?.[slug]?.aId || newsletterIds?.[slug]?.bId || null;
-    const lpId = landingPageIds?.[slug] || null;
-    
-    if (nsltId || lpId) {
-      itemsToVerify.push({
-        nsltId: nsltId || '',
-        lpId: lpId || '',
-        spreadsheetSubject: subjectLine,
-        spreadsheetPageTitle: pageTitle,
-        slug,
-      });
+    setVerifying(true);
+    setVerifyProgress({ completed: 0, total: 0 });
+    setVerificationResults({});
+    setHasVerified(true);
+
+    const allSlugs = new Set([
+      ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
+      ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
+    ]);
+
+    // Prepare items for batch verification
+    const itemsToVerify: Array<{
+      nsltId: string;
+      lpId: string;
+      spreadsheetSubject: string | null;
+      spreadsheetPageTitle: string | null;
+      slug: string;
+    }> = [];
+
+    Array.from(allSlugs).forEach(slug => {
+      const subjectLine = translations.subjectLine?.[slug] || null;
+      const pageTitle = translations.pageTitle?.[slug] || null;
+      const nsltId = newsletterIds?.[slug]?.aId || newsletterIds?.[slug]?.bId || null;
+      const lpId = landingPageIds?.[slug] || null;
+
+      if (nsltId || lpId) {
+        itemsToVerify.push({
+          nsltId: nsltId || '',
+          lpId: lpId || '',
+          spreadsheetSubject: subjectLine,
+          spreadsheetPageTitle: pageTitle,
+          slug,
+        });
+      }
+    });
+
+    if (itemsToVerify.length === 0) {
+      setVerifying(false);
+      return;
     }
-  });
 
-  if (itemsToVerify.length === 0) {
-    setVerifying(false);
-    return;
-  }
-
-  // Batch verify with progress
-  const results = await verifyBatch(
-    itemsToVerify,
-    (completed, total, result) => {
+    // Batch verify with progress
+    const results = await verifyBatch(itemsToVerify, (completed, total, result) => {
       setVerifyProgress({ completed, total });
       setVerificationResults(prev => ({
         ...prev,
         [result.slug]: result,
       }));
-    }
-  );
-  
-  setVerifying(false);
-  setHasVerified(true);
-}, [translations, newsletterIds, landingPageIds]);
+    });
 
-useEffect(() => {
-  if (isComplete && !isUpdating) {
-    setShowResults(true);
-  }
-}, [isComplete, isUpdating]);
+    setVerifying(false);
+    setHasVerified(true);
+  }, [translations, newsletterIds, landingPageIds]);
+
+  useEffect(() => {
+    if (isComplete && !isUpdating) {
+      setShowResults(true);
+    }
+  }, [isComplete, isUpdating]);
 
   const selectedSLCount = selectedItems.filter(item => item.type === 'subjectLine').length;
   const selectedPTCount = selectedItems.filter(item => item.type === 'pageTitle').length;
+
+  const showRefreshStatus = !isSundayNewsletter && !isRefreshed;
+
+  console.log('🔍 Refresh status:', {
+    isSundayNewsletter,
+    isRefreshing,
+    loading,
+    isRefreshed,
+    showRefreshStatus,
+  });
+  const getRefreshMessage = () => {
+    if (isRefreshing) return 'Refreshing spreadsheet data...';
+    if (loading) return 'Loading spreadsheet data...';
+    if (isRefreshed) return 'Spreadsheet data loaded';
+    return 'Loading spreadsheet data...';
+  };
+
+  const getRefreshIcon = () => {
+    if (isRefreshing || loading) {
+      return <Icon icon="svg-spinners:180-ring" width="16" height="16" className={updaterStyles.refreshSpinner} />;
+    }
+    if (isRefreshed) {
+      return <Icon icon="mdi:check-circle" width="16" height="16" className={updaterStyles.refreshComplete} />;
+    }
+    return <Icon icon="svg-spinners:180-ring" width="16" height="16" className={updaterStyles.refreshSpinner} />;
+  };
 
   const isSundayUpdating = isUpdating || updateProgress.total > 0 || updatingSlugs.size > 0;
 
@@ -445,6 +469,23 @@ useEffect(() => {
         <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
           <ModalHeader title="Loading..." onClose={onClose} />
           <div className={sundayStyles.container}>
+             {!isSundayNewsletter && (
+            <div
+              className={clsx(updaterStyles.refreshStatusBar, {
+                [updaterStyles.refreshComplete]: isRefreshed && !isRefreshing,
+              })}
+            >
+              {getRefreshIcon()}
+              <span>{getRefreshMessage()}</span>
+              {isRefreshed && !isRefreshing && (
+                <span className={updaterStyles.refreshComplete}>
+                  <Icon icon="mdi:check-circle" width="14" height="14" />
+                  Done
+                </span>
+              )}
+            </div>
+          )}
+
             <div className={sundayStyles.loading}>
               <Icon icon={'svg-spinners:180-ring'} width="70" height="70" />
             </div>
@@ -468,7 +509,7 @@ useEffect(() => {
                 <h3>No checklists with IDs</h3>
                 <p>No newsletter IDs (NSLT) found for any shop in this Sunday newsletter.</p>
                 <div className={sundayStyles.emptyButtons}>
-                <UpdaterButton isPrimary={false} label="Close" onClick={onClose} icon="mdi:close" />
+                  <UpdaterButton isPrimary={false} label="Close" onClick={onClose} icon="mdi:close" />
                 </div>
               </div>
             </div>
@@ -548,10 +589,7 @@ useEffect(() => {
       <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
         <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
           <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
-          <div
-            className={clsx(updaterStyles.modalContent, updaterStyles.emptyAlignment)}
-            style={{}}
-          >
+          <div className={clsx(updaterStyles.modalContent, updaterStyles.emptyAlignment)} style={{}}>
             <div className={updaterStyles.emptyState}>
               <Icon icon="mdi:file-document-outline" width="48" height="48" className={updaterStyles.emptyIcon} />
               <h3>No checklists with IDs</h3>

@@ -21,6 +21,7 @@ export const useTranslationsLoader = ({
   const [globalLP, setGlobalLP] = useState('');
   const [deactivateDate, setDeactivateDate] = useState<Date | null>(null);
   const [isRefreshed, setIsRefreshed] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const refreshInProgressRef = useRef(false);
 
     const loadIssueData = useCallback(async (skipRefresh: boolean = false) => {
@@ -38,6 +39,8 @@ export const useTranslationsLoader = ({
       // and only on first load
       if (!isSundayNewsletter && !skipRefresh && !refreshInProgressRef.current) {
         refreshInProgressRef.current = true;
+        setIsRefreshing(true);
+        setIsRefreshed(false);
         try {
           const refreshed = await refreshSpreadsheetData(issueItem, issueId);
           if (refreshed) {
@@ -50,9 +53,9 @@ export const useTranslationsLoader = ({
         } finally {
           refreshInProgressRef.current = false;
           setIsRefreshed(true);
+          setIsRefreshing(false);
         }
       }
-
 
         const [rawTranslations, lpResult] = await Promise.all([
           fetchSubjectPageTranslations(issueItem),
@@ -118,5 +121,5 @@ export const useTranslationsLoader = ({
     loadIssueData(true);
   }, [loadIssueData]);
 
-  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate, retry , isRefreshed, refreshSpreadsheet: () => loadIssueData(true)};
+  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate, retry , isRefreshed, isRefreshing, refreshSpreadsheet: () => loadIssueData(true)};
 };

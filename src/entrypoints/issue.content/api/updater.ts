@@ -22,7 +22,7 @@ export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResu
 
   // Try to extract date from the beginning of the string
   // This handles both DD.MM.YY and DD.MM.YYYY formats
-  const dateRegex = /^(\d{2})\.(\d{2})\.(\d{2,4})/;
+  const dateRegex = /(\d{2})\.(\d{2})\.(\d{2,4})/;
   const match = tabName.match(dateRegex);
 
   if (!match) {
