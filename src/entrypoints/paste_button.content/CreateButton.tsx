@@ -56,7 +56,7 @@ export const CreateButton = (elems: Elems, target: string) => {
 
           let content = await navigator.clipboard.readText();
           if (!content.includes('<!DOCTYPE')) {
-            toast.error('Please enable source view.', { duration: 2500 });
+            toast.error('Missing HTML tags.', { duration: 2500 });
             return;
           }
 
