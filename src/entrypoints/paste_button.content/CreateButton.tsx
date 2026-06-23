@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { ShowAlert } from './ShowAlert';
+import { toast, Toaster } from 'sonner';
 
 type Entry = {
   textArea: HTMLTextAreaElement;
@@ -19,20 +19,18 @@ const createBtn = (text: string, parent: HTMLElement, cb: (e: MouseEvent) => voi
   parent.appendChild(btn);
 };
 
-const renderAlert = (type: string, msg: string, duration: number) => {
+const ensureToaster = () => {
+  if (document.getElementById('prolo-toaster')) return;
+
   const container = document.createElement('div');
+  container.id = 'prolo-toaster';
   document.body.appendChild(container);
 
-  const root = createRoot(container);
-  root.render(<ShowAlert type={type as 'success' | 'danger'} msg={msg} duration={duration} />);
-
-  setTimeout(() => {
-    root.unmount();
-    container.remove();
-  }, duration);
+  createRoot(container).render(<Toaster position="top-right" richColors />);
 };
 
 export const CreateButton = (elems: Elems, target: string) => {
+  ensureToaster();
   switch (target) {
     case 'news_email':
       window.addEventListener('load', () => {
@@ -49,9 +47,16 @@ export const CreateButton = (elems: Elems, target: string) => {
       createBtn('Paste and update body', upd.parentElement, async e => {
         e.preventDefault();
         try {
+          let srcBtn = document.querySelector<HTMLAnchorElement>('#cke_19');
+
+          if (srcBtn?.classList.contains('cke_button_off')) {
+            toast.error('Please enable source view.', { duration: 2500 });
+            return;
+          }
+
           let content = await navigator.clipboard.readText();
           if (!content.includes('<!DOCTYPE')) {
-            renderAlert('danger', 'Missing html tags.', 2500);
+            toast.error('Please enable source view.', { duration: 2500 });
             return;
           }
 
@@ -65,22 +70,22 @@ export const CreateButton = (elems: Elems, target: string) => {
           const seller = document.querySelector<HTMLSelectElement>('#seller');
           const selected = seller?.querySelector<HTMLOptionElement>('option[selected="selected"]');
           if (!selected) {
-            renderAlert('danger', 'Failed to get #seller selector.', 2500);
+            toast.error('Failed to get #seller selector.', { duration: 2500 });
             return;
           }
 
           lang = selected.innerText.split(':')[0].toLowerCase();
 
-          if (domain != lang) renderAlert('danger', `Pasting wrong lang '${domain}', expected '${lang}'`, 2500);
+          if (domain != lang) toast.error(`Pasting wrong lang '${domain}', expected '${lang}'`, { duration: 2500 });
 
           const textArea = document.querySelector<HTMLTextAreaElement>(elems.ckeTextArea);
           if (!textArea) {
-            renderAlert('danger', `Failed to get ${elems.ckeTextArea} element.`, 2500);
+            toast.error(`Failed to get ${elems.ckeTextArea} element.`, { duration: 2500 });
             return;
           }
           textArea.value = content;
           upd.click();
-          renderAlert('success', 'Updating...', 2500);
+          toast.success('Updating...', { duration: 2500 });
         } catch (e) {
           console.log(e);
         }
@@ -125,7 +130,7 @@ export const CreateButton = (elems: Elems, target: string) => {
             try {
               let content = await navigator.clipboard.readText();
               if (content.includes('<!DOCTYPE')) {
-                renderAlert('danger', 'Not valid LP content', 2500);
+                toast.error('Not valid LP content', { duration: 2500 });
                 return;
               }
 
@@ -134,14 +139,14 @@ export const CreateButton = (elems: Elems, target: string) => {
 
               const link = doc.querySelector<HTMLAnchorElement>('a[href*="beliani."]');
               if (!link) {
-                renderAlert('danger', `Failed to get link element.`, 2500);
+                toast.error(`Failed to get link element.`, { duration: 2500 });
                 return;
               }
               const domain = new URL(link.href).hostname.split('.').pop();
               const shopSelect = document.querySelector<HTMLSelectElement>('.select2-selection--multiple');
               const slectedShop = shopSelect?.querySelector<HTMLOptionElement>('.select2-selection__choice');
               if (!slectedShop) {
-                renderAlert('danger', `Failed to get link element.`, 2500);
+                toast.error(`Failed to get link element.`, { duration: 2500 });
                 return;
               }
               const shopUrl = slectedShop.title.trim() ?? '';
@@ -149,7 +154,7 @@ export const CreateButton = (elems: Elems, target: string) => {
               const lang = shopUrl.split('.').pop() ?? '';
 
               if (domain != lang) {
-                renderAlert('danger', `Pasting wrong lang '${domain}', expected '${lang}'`, 2500);
+                toast.error(`Pasting wrong lang '${domain}', expected '${lang}'`, { duration: 2500 });
                 return;
               }
 
