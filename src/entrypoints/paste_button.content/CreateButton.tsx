@@ -3,7 +3,7 @@ import { ShowAlert } from './ShowAlert';
 
 type Entry = {
   textArea: HTMLTextAreaElement;
-  updateBtn: HTMLButtonElement;
+  updateBtn: HTMLInputElement;
 };
 
 type Elems = {
@@ -87,50 +87,80 @@ export const CreateButton = (elems: Elems, target: string) => {
       });
       break;
     case 'shop_content':
-      if (!elems.custom) return;
+      window.addEventListener('load', () => {
+        let lngSelect = [];
+        let elems_ = document.querySelectorAll<HTMLInputElement>('input[value="Update"]');
+        for (let elem of elems_) {
+          const fnStr = elem.getAttribute('onclick');
+          if (!fnStr) continue;
 
-      for (let [langKey, entry] of Object.entries(elems.custom)) {
-        const parent = entry.textArea.parentElement;
-        if (!parent) return;
-        createBtn('Paste and update LP', parent, async e => {
-          e.preventDefault();
-          try {
-            let content = await navigator.clipboard.readText();
-            if (content.includes('<!DOCTYPE')) {
-              renderAlert('danger', 'Not valid LP content', 2500);
-              return;
-            }
+          let langPart = fnStr.split(', ')[1];
+          if (!langPart) continue;
 
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(content, 'text/html');
-
-            const link = doc.querySelector<HTMLAnchorElement>('a[href*="beliani."]');
-            if (!link) {
-              renderAlert('danger', `Failed to get link element.`, 2500);
-              return;
-            }
-            const domain = new URL(link.href).hostname.split('.').pop();
-            const shopSelect = document.querySelector<HTMLSelectElement>('.select2-selection--multiple');
-            const slectedShop = document.querySelector<HTMLOptionElement>('.select2-selection__choice');
-            if (!slectedShop) {
-              renderAlert('danger', `Failed to get link element.`, 2500);
-              return;
-            }
-            const shopUrl = slectedShop.title.trim() ?? '';
-
-            const lang = shopUrl.split('.').pop() ?? '';
-
-            if (domain != lang) {
-              renderAlert('danger', `Pasting wrong lang '${domain}', expected '${lang}'`, 2500);
-              return;
-            }
-
-            entry.textArea.value = content;
-            entry.updateBtn.click();
-          } catch (e) {
-            console.log(e);
+          if (langPart.includes("'") && !langPart.includes(';')) {
+            lngSelect.push({ lang: langPart.replace(/'(.*)'/, '$1'), elem: elem });
           }
-        });
-      }
+        }
+
+        elems.custom = {};
+        for (let lng of lngSelect) {
+          const textArea = lng.elem.parentElement?.querySelector('textarea');
+          if (!textArea) continue;
+
+          elems.custom[lng.lang] = {
+            textArea: textArea,
+            updateBtn: lng.elem,
+          };
+
+          elems.custom[lng.lang].textArea?.setAttribute('data-lang', lng.lang);
+        }
+
+        if (!elems.custom) return;
+
+        for (let [langKey, entry] of Object.entries(elems.custom)) {
+          const parent = entry.textArea.parentElement;
+          if (!parent) return;
+          createBtn('Paste and update LP', parent, async e => {
+            e.preventDefault();
+            try {
+              let content = await navigator.clipboard.readText();
+              if (content.includes('<!DOCTYPE')) {
+                renderAlert('danger', 'Not valid LP content', 2500);
+                return;
+              }
+
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(content, 'text/html');
+
+              const link = doc.querySelector<HTMLAnchorElement>('a[href*="beliani."]');
+              if (!link) {
+                renderAlert('danger', `Failed to get link element.`, 2500);
+                return;
+              }
+              const domain = new URL(link.href).hostname.split('.').pop();
+              const shopSelect = document.querySelector<HTMLSelectElement>('.select2-selection--multiple');
+              const slectedShop = shopSelect?.querySelector<HTMLOptionElement>('.select2-selection__choice');
+              if (!slectedShop) {
+                renderAlert('danger', `Failed to get link element.`, 2500);
+                return;
+              }
+              const shopUrl = slectedShop.title.trim() ?? '';
+
+              const lang = shopUrl.split('.').pop() ?? '';
+
+              if (domain != lang) {
+                renderAlert('danger', `Pasting wrong lang '${domain}', expected '${lang}'`, 2500);
+                return;
+              }
+
+              entry.textArea.value = content;
+              entry.updateBtn.click();
+            } catch (e) {
+              console.log(e);
+            }
+          });
+        }
+      });
+      break;
   }
 };
