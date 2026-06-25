@@ -31,6 +31,13 @@ export interface PlanningEntry {
   username: string;
 }
 
+export type NewsletterIdEntry = {
+  type: 'A' | 'B';
+  newsletterId: number;
+};
+
+export type NewsletterIdMap = Map<string, NewsletterIdEntry[]>;
+
 export interface SendToSpamParams {
   usernameReg: string; // e.g., "Beliani FR" or "Beliani PT"
   shopId: number; // e.g., 7 for Beliani.fr
@@ -46,6 +53,7 @@ export type SpamPlanEntry = {
 };
 
 export type PlanningTableProps = {
+  newsletterIdMap: NewsletterIdMap;
   availableSlugs: string[];
   selectedSlugs: Set<string>;
   results: PlanningResult[];

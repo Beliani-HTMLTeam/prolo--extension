@@ -7,6 +7,7 @@ import planningStyles from '../../styles/planning.module.scss';
 import { StatusDisplay } from './StatusDisplay';
 
 export const PlanningTable = ({
+  newsletterIdMap,
   availableSlugs,
   selectedSlugs,
   results,
@@ -25,6 +26,8 @@ export const PlanningTable = ({
       const isSelected = selectedSlugs.has(slug);
       const customerCount = getCustomerCount(result, planningStarted, slug, aggregating, selectedSlugs);
       const subjectLine = getSubjectLine(result, planningStarted, slug, aggregating, selectedSlugs);
+      const ids = newsletterIdMap.get(slug) ?? newsletterIdMap.get(normalizedSlug);
+      const hasAB = (ids?.length ?? 0) > 1;
 
       return (
         <div key={slug} className={planningStyles.shopRow}>
@@ -38,6 +41,7 @@ export const PlanningTable = ({
           </div>
 
           <div className={planningStyles.shopLabel}>
+            {hasAB ? (<b>A/B</b>) : ''}
             {slug}
             {!ready && <Icon icon="mdi:alert-circle" width="14" height="14" />}
           </div>

@@ -1,9 +1,7 @@
 import { Icon } from '@iconify/react';
-import clsx from 'clsx';
 import { useState, useCallback } from 'react';
 import styles from '../styles/layout.module.scss';
 import chatStyles from '../styles/chat.module.scss';
-import formStyles from '../styles/forms.module.scss';
 import { CommentsView } from './CommentsView';
 import GenerateChecklistModal from './GenerateChecklistModal';
 import type { ChecklistMode, ChecklistTableData, IssueLink } from '../lib/types';
@@ -13,25 +11,7 @@ import PlanningModal from './PlanningModal';
 import UpdaterModal from './UpdaterModal';
 import { useTableDataIds } from '@/entrypoints/newtab/utils/updater/hooks/useTableDataIds';
 import { filterSlugsWithNewsletterIds } from '@/entrypoints/newtab/utils/updater/filterSlugs';
-
-type ActionButtonProps = {
-  label: string;
-  icon: string;
-  onClick: () => void;
-  variant?: 'primary' | 'ghost' | 'planning';
-  span?: boolean;
-  copied?: boolean;
-};
-
-const ActionButton = ({ label, icon, onClick, variant, span, copied }: ActionButtonProps) => (
-  <button
-    className={clsx(formStyles.btn, variant && formStyles[`btn--${variant}`], span && formStyles.span2)}
-    onClick={onClick}
-  >
-    <Icon icon={copied ? 'mdi:check' : icon} width="14" height="14" />
-    {copied ? 'Copied!' : label}
-  </button>
-);
+import ActionButton from '@/components/Button';
 
 const LINK_ICON_MAP: [string, string][] = [
   ['figma', 'simple-icons:figma'],
@@ -61,7 +41,7 @@ const getLinkLabel = (name: string): string => {
       .replace(/Newsletter Campaign banners/i, 'Banners')
       .replace(/Campaign dropbox/i, 'Dropbox')
       .replace(/Figma newsletter link/i, 'Figma')
-      .replace(/Newsletter testing issue/i, 'Testing Issue')
+      .replace(/Newsletter testing issue/i, 'Testing')
       .trim() || name
   );
 };

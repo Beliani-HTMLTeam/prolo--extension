@@ -17,7 +17,7 @@ export const PlanningProgress = ({ loading, aggregating, progress }: PlanningPro
         <div className={PlanningStyles.progressText}>
           {aggregating
             ? `Fetching customer data...`
-            : `Sending newsletters... ${progress.current} / ${progress.total} newsletters`}
+            : `Sending newsletters... ${progress.current} / ${progress.total}`}
         </div>
       </div>
     )}

@@ -1,5 +1,5 @@
 import { PlanningButtonProps } from '@/entrypoints/newtab/types/Planning';
-import styles from '../../styles/forms.module.scss';
+import styles from '@/assets/styles/forms.module.scss';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 

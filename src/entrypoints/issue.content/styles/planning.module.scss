@@ -1,6 +1,6 @@
 @use 'sass:color';
-@use '../../../assets/styles/variables' as *;
-@use './forms.module.scss' as formStyles;
+@use '@/assets/styles/variables' as *;
+@use '@/assets/styles/forms.module.scss' as formStyles;
 
 .modal {
   @include formStyles.modal;
@@ -90,6 +90,7 @@
     }
 
     .shopLabel {
+      gap: 2px;
       width: 100px;
       flex-shrink: 0;
       display: flex;

@@ -1,12 +1,12 @@
 import { useMemo, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import clsx from 'clsx';
-import formStyles from '../styles/forms.module.scss';
+import formStyles from '@/assets/styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import planningStyles from '../styles/planning.module.scss';
 import { getShopIdsMap } from '@/entrypoints/newtab/utils/planning/getShopIdsMap';
 import { useNewsletterTitle } from '@/entrypoints/newtab/utils/planning/hooks/useNewsletterTitle';
-import { PlanningModalProps } from '@/entrypoints/newtab/types/Planning';
+import { NewsletterIdMap, PlanningModalProps } from '@/entrypoints/newtab/types/Planning';
 import { usePlanning } from '@/entrypoints/newtab/utils/planning/hooks/usePlanning';
 import { formatResultsForClipboard, getTotalCustomers } from '@/entrypoints/newtab/utils/planning/resultHelpers';
 import { ModalHeader } from './planningmodal/ModalHeader';
@@ -35,16 +35,18 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     return Object.values(NEWSLETTER_SLUGS).filter(slug => originalSlugMap.has(slug)).map(slug => originalSlugMap.get(slug)!)
   }, [tableData]);
 
-  const filteredNewsletterIdMap = useMemo(() => {
-    const fullMap = tableData && chdeId ? getShopIdsMap(tableData, parseInt(chdeId, 10)) : new Map();
+  const fullNewsletterIdMap: NewsletterIdMap = useMemo(() => {
+    return tableData && chdeId ? getShopIdsMap(tableData, parseInt(chdeId, 10)) : new Map();
+  }, [tableData, chdeId]);
 
+  const filteredNewsletterIdMap: NewsletterIdMap = useMemo(() => {
     if (selectedSlugs.size === 0) {
-      return fullMap;
+      return fullNewsletterIdMap;
     }
 
-    const filteredMap = new Map();
+    const filteredMap: NewsletterIdMap = new Map();
 
-    for (const [mapKey, ids] of fullMap.entries()) {
+    for (const [mapKey, ids] of fullNewsletterIdMap.entries()) {
       const isSelected = Array.from(selectedSlugs).some(selected => {
         const normalizedSelected = normalizeSlugForSlug(selected);
         return normalizedSelected === mapKey;
@@ -55,7 +57,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
       }
     }
     return filteredMap;
-  }, [tableData, chdeId, selectedSlugs]);
+  }, [fullNewsletterIdMap, selectedSlugs]);
 
   const {
     loading,
@@ -201,6 +203,8 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     }
   }, [displayError]);
 
+  // console.log(filteredNewsletterIdMap)
+
   useEffect(() => {
     if (tableData?.rows) {
       const existingSlugs = new Set(tableData.rows.map(r => r.shop));
@@ -252,6 +256,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
           </div>
           
           <PlanningTable
+            newsletterIdMap={fullNewsletterIdMap}
             availableSlugs={availableSlugs}
             selectedSlugs={selectedSlugs}
             results={results}

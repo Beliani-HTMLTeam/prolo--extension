@@ -27,6 +27,12 @@ const links = {
     icon: 'solar:code-circle-bold',
     links: [
       {
+        name: 'HTML Docs',
+        url: 'https://tj31c889tzsk.share.zrok.io/',
+        icon: 'oui:documentation',
+      },
+      {},
+      {
         name: 'Projects Board',
         url: 'https://www.figma.com/design/PF7tZr72XquHOSrWwQXtSd/Projects?node-id=1-2&t=fUoMeTQTw1Wpz9Yz-1',
         icon: 'ri:figma-fill'

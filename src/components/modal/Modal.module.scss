@@ -1,0 +1,85 @@
+@use '@/assets/styles/variables' as *;
+@use '@/assets/styles/motion' as _;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2137500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  animation: _.$fadeIn 0.2s ease-out forwards;
+
+  .modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: var(--modal-width, 500px);
+    height: var(--modal-height, auto);
+    max-width: var(--modal-max-width, 94vw);
+    max-height: var(--modal-max-height, 92vh);
+    background: $pure-white;
+    border-radius: 12px;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.12),
+      0 24px 64px rgba(0, 0, 0, 0.18);
+    animation: _.$slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    overflow: hidden;
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid $grey-border;
+      flex-shrink: 0;
+      gap: 12px;
+
+      h2 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: $dawn-grey;
+        font-family: $font-family;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .closeBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        color: $grey-text;
+        transition:
+          background 0.15s ease,
+          color 0.15s ease;
+
+        &:hover {
+          background: $grey-surface;
+          color: $dawn-grey;
+        }
+
+        &:active {
+          background: $grey-border;
+        }
+      }
+    }
+
+    .body {
+      flex: 1;
+      overflow: auto;
+      min-height: 0;
+    }
+  }
+}
