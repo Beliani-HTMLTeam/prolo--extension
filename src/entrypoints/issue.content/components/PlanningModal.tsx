@@ -18,6 +18,7 @@ import { PlanningButtons } from './planningmodal/PlanningButtons';
 import { PlanningProgress } from './planningmodal/PlanningProgress';
 import { PlanningResultsActions } from './planningmodal/PlanningResultsActions';
 import Skeleton from 'react-loading-skeleton';
+import { NEWSLETTER_SLUGS } from '../lib/planningConfig';
 
 const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
@@ -25,7 +26,13 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
   const [planningStarted, setPlanningStarted] = useState(false);
   const availableSlugs = useMemo(() => {
     if (!tableData?.rows) return [];
-    return tableData.rows.map(r => r.shop).filter(Boolean);
+
+    const originalSlugMap = new Map<string, string>();
+    for (const shop of tableData.rows) {
+      originalSlugMap.set(normalizeSlugForSlug(shop.shop), shop.shop);
+    }
+
+    return Object.values(NEWSLETTER_SLUGS).filter(slug => originalSlugMap.has(slug)).map(slug => originalSlugMap.get(slug)!)
   }, [tableData]);
 
   const fullNewsletterIdMap: NewsletterIdMap = useMemo(() => {
@@ -197,6 +204,19 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
   }, [displayError]);
 
   // console.log(filteredNewsletterIdMap)
+
+  useEffect(() => {
+    if (tableData?.rows) {
+      const existingSlugs = new Set(tableData.rows.map(r => r.shop));
+      const normalizeExistingSlugs = new Set(Array.from(existingSlugs).map(slug => normalizeSlugForSlug(slug)));
+      const allSlugs = Object.values(NEWSLETTER_SLUGS);
+      const missingSlugs = allSlugs.filter(slug => !normalizeExistingSlugs.has(slug));
+
+      if (missingSlugs.length > 0) {
+        console.log(`Note: These newsletters are not in the checklist and will be omitted: ${missingSlugs.join(', ')}`);
+      }
+    }
+  }, [tableData]);
 
   return (
     <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={handleClose}>

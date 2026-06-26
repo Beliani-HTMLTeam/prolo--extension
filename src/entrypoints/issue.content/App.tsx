@@ -15,6 +15,7 @@ import {
   getChecklistMode,
   parseIssueInfo,
   extractIssueLinks,
+  fetchSubjectPageTranslations,
 } from './api/issueData';
 import type { ChecklistTableData, IssueInfoViewModel, IssueLink } from './lib/types';
 import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
@@ -76,6 +77,7 @@ const IssueAppContent = () => {
     void fetchSpreadsheetTranslations(issueItem).then(spreadsheet => {
       setTableData(mapChecklistsToTableData(apiData, mode, spreadsheet));
     });
+
   }, [issueId]);
 
   useEffect(() => {
