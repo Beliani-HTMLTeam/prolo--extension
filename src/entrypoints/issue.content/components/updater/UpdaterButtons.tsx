@@ -22,6 +22,8 @@ const UpdaterButtons = ({
   verifyProgress = { completed: 0, total: 0 },
 }: UpdaterButtonsProps) => {
   const isUpdating = updateStarted;
+    const hasAnySelections = selectedSLCount > 0 || selectedPTCount > 0;
+
 
   return (
     <>
@@ -99,7 +101,7 @@ const UpdaterButtons = ({
         <UpdaterButton
           isPrimary={true}
           onClick={onUpdateSelected}
-          disabled={isUpdating}
+          disabled={isUpdating || !hasAnySelections}
           label='Update Selected'
         />
 
@@ -113,7 +115,7 @@ const UpdaterButtons = ({
         <UpdaterButton
           isPrimary={false}
           onClick={onClearAll}
-          disabled={isUpdating || (selectedSLCount === 0 && selectedPTCount === 0)}
+          disabled={isUpdating || !hasAnySelections}
           label='Clear All'
         />
       </div>
