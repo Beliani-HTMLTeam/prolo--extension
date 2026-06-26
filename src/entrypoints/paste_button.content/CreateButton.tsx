@@ -76,7 +76,10 @@ export const CreateButton = (elems: Elems, target: string) => {
 
           lang = selected.innerText.split(':')[0].toLowerCase();
 
-          if (domain != lang) toast.error(`Pasting wrong lang '${domain}', expected '${lang}'`, { duration: 2500 });
+          if (domain != lang) {
+            toast.error(`Pasting wrong lang '${domain}', expected '${lang}'`, { duration: 2500 });
+            return;
+          }
 
           const textArea = document.querySelector<HTMLTextAreaElement>(elems.ckeTextArea);
           if (!textArea) {
