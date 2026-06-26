@@ -8,6 +8,9 @@ import type { ChecklistMode, ChecklistTableData, IssueLink } from '../lib/types'
 import { getShopId } from './familytable/../../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
 import PlanningModal from './PlanningModal';
+import UpdaterModal from './UpdaterModal';
+import { useTableDataIds } from '@/entrypoints/newtab/utils/updater/hooks/useTableDataIds';
+import { filterSlugsWithNewsletterIds } from '@/entrypoints/newtab/utils/updater/filterSlugs';
 import ActionButton from '@/components/Button';
 
 const LINK_ICON_MAP: [string, string][] = [
@@ -73,16 +76,20 @@ const ActionsPanel = ({
   onStartPlanning,
 }: ActionsPanelProps) => {
   const shouldShowActions = showDashboardActions ?? mode !== 'cgb';
+  const shouldShowSLPTUpdater = mode === 'newsletter' || mode === 'sunday';
   const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
   const rows = tableData?.rows ?? [];
   const origin = window.location.origin;
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
+  const [showSLPTUpdaterModal, setShowSLPTUpdaterModal] = useState(false);
 
   const chdeNsltId = !tableData?.hasGroupedNslt
     ? (rows.filter(r => r.shop === 'CHDE')[0]?.nsltId ?? null)
     : (rows.filter(r => r.shop === 'CHDE')[0]?.nsltAId ?? null);
+
+  const { newsletterIds, landingPageIds } = useTableDataIds(rows);
 
   console.log('tableData', tableData);
 
@@ -95,6 +102,16 @@ const ActionsPanel = ({
     }
     return true;
   }, [mode, rows]);
+
+  const filteredRows = useMemo(() => {
+  if (mode === 'sunday') {
+    return rows.filter(row => row.nsltId);
+  }
+  return rows.filter(row => row.nsltId || row.nsltAId || row.nsltBId);
+}, [rows, mode]);
+
+console.log('filteredRows', filteredRows);
+
 
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
@@ -162,6 +179,14 @@ const ActionsPanel = ({
       {shouldShowActions && (
         <div className={styles.actionsContainer}>
           <div className={styles.actionsGrid}>
+            {shouldShowSLPTUpdater && (
+              <ActionButton
+                variant="primary"
+                label={mode === 'newsletter' ? 'Update SL/PT' : 'Update SL'}
+                icon="mdi:format-title"
+                onClick={() => setShowSLPTUpdaterModal(true)}
+              />
+            )}
             <ActionButton
               variant="primary"
               label="Generate Checklists"
@@ -260,6 +285,15 @@ const ActionsPanel = ({
           tableData={tableData}
           isABTesting={hasGroupedNslt}
           allowSelection={true}
+        />
+      )}
+      {showSLPTUpdaterModal && shouldShowActions && (
+        <UpdaterModal
+          rows={filteredRows}
+          issueId={issueId}
+          newsletterIds={newsletterIds}
+          landingPageIds={landingPageIds}
+          onClose={() => setShowSLPTUpdaterModal(false)}
         />
       )}
     </div>

@@ -149,3 +149,8 @@ export type BannersCounts = {
   approved: number;
   total: number;
 }
+
+export type LineTitleTranslations = {
+  subjectLine: Record<string, string> | null;
+  pageTitle: Record<string, string> | null;
+}
