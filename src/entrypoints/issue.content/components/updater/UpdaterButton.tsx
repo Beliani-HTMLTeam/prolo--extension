@@ -1,4 +1,4 @@
-import styles from '../../styles/forms.module.scss';
+import styles from '@/assets/styles/forms.module.scss';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 import { UpdaterButtonProps } from '@/entrypoints/newtab/types/Updater';

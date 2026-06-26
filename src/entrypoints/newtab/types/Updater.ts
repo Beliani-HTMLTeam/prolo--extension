@@ -129,6 +129,7 @@ export interface SundayTableProps {
   updatingSlugs?: Set<string>;
   updateResults?: Array<{ slug: string; success: boolean; error?: string }>;
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
+  onRetry?: () => void;
 }
 
 export interface SundayTableSkeletonProps {

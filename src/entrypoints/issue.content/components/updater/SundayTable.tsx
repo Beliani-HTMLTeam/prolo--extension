@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 import { getFlagUrl } from '@/entrypoints/newtab/utils/updater/flag';
 import { SundayTableUpdateSkeleton } from './SundayTableUpdateSkeleton';
 import { SundayTableProps } from '@/entrypoints/newtab/types/Updater';
+import UpdaterButton from './UpdaterButton';
 
 const SKELETON_ROWS_COUNT = 10;
 
@@ -18,6 +19,7 @@ export const SundayTable = ({
   updatingSlugs = new Set(),
   updateResults = [],
   newsletterIds = {},
+  onRetry
 }: SundayTableProps) => {
   if (loading || updatingSlugs.size > 0) {
     const rowsCount = availableSlugs.length > 0 ? availableSlugs.length : SKELETON_ROWS_COUNT;
@@ -29,7 +31,21 @@ export const SundayTable = ({
 
   // Show empty state if no data
   if (!subjectLines) {
-    return <SundayEmptyState />;
+     return (
+      <div className={sundayStyles.emptyStateContainer}>
+        <SundayEmptyState />
+        {onRetry && (
+          <div className={sundayStyles.emptyStateActions}>
+            <UpdaterButton
+              isPrimary={false}
+              onClick={onRetry}
+              icon="mdi:refresh"
+              label="Reload"
+            />
+          </div>
+        )}
+      </div>
+    );
   }
 
   // Get all unique slugs from the first subject line set (option 0)
@@ -37,7 +53,21 @@ export const SundayTable = ({
   const slugs = firstSet ? Object.keys(firstSet) : [];
 
   if (slugs.length === 0) {
-    return <SundayEmptyState />;
+     return (
+      <div className={sundayStyles.emptyStateContainer}>
+        <SundayEmptyState />
+        {onRetry && (
+          <div className={sundayStyles.emptyStateActions}>
+            <UpdaterButton
+              isPrimary={false}
+              onClick={onRetry}
+              icon="mdi:refresh"
+              label="Reload"
+            />
+          </div>
+        )}
+      </div>
+    );
   }
 
   const getRowStatus = (slug: string) => {

@@ -1,7 +1,7 @@
 import { UpdaterProps, UpdaterSelectedItem, VerificationResult } from '@/entrypoints/newtab/types/Updater';
 import { useEffect } from 'react';
 import clsx from 'clsx';
-import formStyles from '../styles/forms.module.scss';
+import formStyles from '@/assets/styles/forms.module.scss';
 import layoutStyles from '../styles/layout.module.scss';
 import updaterStyles from '../styles/updater.module.scss';
 import sundayStyles from '../styles/sunday.module.scss';
@@ -22,6 +22,7 @@ import { UpdateResults } from './updater/UpdateResults';
 import { getTodayAtMidnight } from '@/entrypoints/newtab/utils/updater/dates';
 import UpdaterButton from './updater/UpdaterButton';
 import { verifyBatch } from '../api/verifyService';
+import Modal from '@/components/modal/Modal';
 
 const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
   const availableSlugs = rows.map(row => row.shop);
@@ -421,6 +422,19 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     return 'Loading spreadsheet data...';
   };
 
+  const handleSundayUpdate = async () => {
+    const selectedTranslations = getSelectedTranslations();
+    if (!selectedTranslations) return;
+
+    const selectedItems: UpdaterSelectedItem[] = Object.entries(selectedTranslations).map(([slug, content]) => ({
+      slug,
+      type: 'subjectLine',
+      content,
+    }));
+
+    await handleUpdateSelected(selectedItems);
+  };
+
   const getRefreshIcon = () => {
     if (isRefreshing || loading) {
       return <Icon icon="svg-spinners:180-ring" width="16" height="16" className={updaterStyles.refreshSpinner} />;
@@ -433,192 +447,207 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const isSundayUpdating = isUpdating || updateProgress.total > 0 || updatingSlugs.size > 0;
 
-  if (isSundayNewsletter === null || loading || sundayLoading) {
-    if (error || sundayError) {
-      return (
-        <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-          <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-            <ModalHeader title="Error Loading Data" onClose={onClose} />
-            <div className={sundayStyles.container}>
-              <div className={sundayStyles.errorContainer}>
-                <Icon icon="mdi:alert-circle" width="48" height="48" className={sundayStyles.errorIcon} />
-                <h3>Failed to load translations</h3>
-                <p>{error || sundayError}</p>
-                <button
-                  className={sundayStyles.retryButton}
-                  onClick={() => {
-                    if (error) retry();
-                    if (sundayError) retrySunday();
-                  }}
-                >
-                  <Icon icon="mdi:refresh" width="18" height="18" />
-                  Retry
-                </button>
-                <button className={sundayStyles.closeButton} onClick={onClose}>
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
+  const getModalTitle = () => {
+    if (isSundayNewsletter) return 'Sunday Newsletter Subject Line Updater';
+    if (error || sundayError) return 'Error Loading Data';
+    if (loading || sundayLoading) return 'Loading...';
+    return 'Subject Line & Page Title Updater';
+  };
 
-    return (
-      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-          <ModalHeader title="Loading..." onClose={onClose} />
-          <div className={sundayStyles.container}>
-            {!isSundayNewsletter && (
-              <div
-                className={clsx(updaterStyles.refreshStatusBar, {
-                  [updaterStyles.refreshComplete]: isRefreshed && !isRefreshing,
-                })}
-              >
-                {getRefreshIcon()}
-                <span>{getRefreshMessage()}</span>
-                {isRefreshed && !isRefreshing && (
-                  <span className={updaterStyles.refreshComplete}>
-                    <Icon icon="mdi:check-circle" width="14" height="14" />
-                    Done
-                  </span>
-                )}
-              </div>
+const modalContent = (
+  <>
+    {/* Loading State */}
+    {(isSundayNewsletter === null || loading || sundayLoading) && (
+      <>
+        {!isSundayNewsletter && (
+          <div
+            className={clsx(updaterStyles.refreshStatusBar, {
+              [updaterStyles.refreshComplete]: isRefreshed && !isRefreshing,
+            })}
+          >
+            {getRefreshIcon()}
+            <span>{getRefreshMessage()}</span>
+            {isRefreshed && !isRefreshing && (
+              <span className={updaterStyles.refreshComplete}>
+                <Icon icon="mdi:check-circle" width="14" height="14" />
+                Done
+              </span>
             )}
+          </div>
+        )}
+        <div className={sundayStyles.loading}>
+          <Icon icon={'svg-spinners:180-ring'} width="70" height="70" />
+        </div>
+      </>
+    )}
 
-            <div className={sundayStyles.loading}>
-              <Icon icon={'svg-spinners:180-ring'} width="70" height="70" />
+    {/* Sunday Newsletter */}
+    {isSundayNewsletter && !loading && !sundayLoading && (
+      <div className={sundayStyles.container}>
+        {/* Progress bar and stats */}
+        {isUpdating && updateProgress.total > 0 && (
+          <div className={sundayStyles.progressStats}>
+            <div className={sundayStyles.progressInfo}>
+              <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.progressSpinner} />
+              <span>Updating subject lines...</span>
+            </div>
+            <div className={sundayStyles.progressCount}>
+              {updateProgress.completed} / {updateProgress.total} completed
             </div>
           </div>
-        </div>
+        )}
+        {isUpdating && updateProgress.total > 0 && (
+          <div className={sundayStyles.tableProgressBar}>
+            <div
+              className={sundayStyles.tableProgressFill}
+              style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
+            />
+          </div>
+        )}
+
+        {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
+
+        <SundayTable
+          subjectLines={subjectLines}
+          selectedIndex={selectedIndex}
+          onSelectOption={selectOption}
+          loading={sundayLoading}
+          availableSlugs={availableSlugs}
+          updateResults={updateResults}
+          updatingSlugs={updatingSlugs}
+          newsletterIds={newsletterIds}
+        />
+        <SundayButtons
+          hasSelection={selectedIndex !== null}
+          onUpdate={handleSundayUpdate}
+          onClear={clearSelection}
+          loading={sundayLoading}
+          isUpdating={isSundayUpdating}
+        />
       </div>
-    );
-  }
+    )}
 
-  if (isSundayNewsletter) {
-    const hasValidSundayRows = rows.some(row => row.nsltId || row.nsltAId || row.nsltBId);
-
-    if (!hasValidSundayRows) {
-      return (
-        <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-          <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-            <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
-            <div className={sundayStyles.modalContent} style={{ height: '100%' }}>
-              <div className={sundayStyles.emptyIds}>
-                <Icon icon="mdi:file-document-outline" width="48" height="48" className={sundayStyles.emptyIcon} />
-                <h3>No checklists with IDs</h3>
-                <p>No newsletter IDs (NSLT) found for any shop in this Sunday newsletter.</p>
-                <div className={sundayStyles.emptyButtons}>
-                  <UpdaterButton isPrimary={false} label="Close" onClick={onClose} icon="mdi:close" />
-                </div>
-              </div>
-            </div>
-          </div>
+    {/* Regular Newsletter - only show if there are valid rows */}
+    {!isSundayNewsletter && !loading && !sundayLoading && (
+      <div className={updaterStyles.bodyInner}>
+        <div className={updaterStyles.menu}>
+          <MenuContent
+            loading={loading}
+            useGlobalDate={useGlobalDate}
+            useGlobalLP={useGlobalLP}
+            globalDateConfig={globalDateConfig}
+            globalLP={globalLP}
+            selectedSLCount={selectedSLCount}
+            selectedPTCount={selectedPTCount}
+            isUpdating={isUpdating}
+            onToggleGlobalDate={checked => setUseGlobalDate(checked)}
+            onActivateDateChange={handleGlobalActivateDateChangeWithAutoSelect}
+            onDeactivateDateChange={handleGlobalDeactivateDateChangeWithAutoSelect}
+            onToggleGlobalLP={handleUseGlobalLPToggle}
+            onGlobalLPChange={handleGlobalLPChangeWithAutoSelect}
+            onUpdateAllSL={handleUpdateAllSL}
+            onUpdateSelectedSL={handleUpdateSelectedSL}
+            onUpdateAllPT={handleUpdateAllPT}
+            onUpdateSelectedPT={handleUpdateSelectedPT}
+            onUpdateAll={handleUpdateAllWrapper}
+            onUpdateSelected={handleUpdateSelectedWrapper}
+            onSelectAll={handleSelectAllReadyWrapper}
+            onClearAll={handleClearAll}
+            onCancel={onClose}
+            onVerify={verifyAllItems}
+            verifying={verifying}
+            hasVerified={hasVerified}
+            verifyProgress={verifyProgress}
+          />
         </div>
-      );
-    }
-
-    const handleSundayUpdate = async () => {
-      const selectedTranslations = getSelectedTranslations();
-      if (!selectedTranslations) return;
-
-      const selectedItems: UpdaterSelectedItem[] = Object.entries(selectedTranslations).map(([slug, content]) => ({
-        slug,
-        type: 'subjectLine',
-        content,
-      }));
-
-      await handleUpdateSelected(selectedItems);
-    };
-
-    return (
-      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-          <ModalHeader title="Sunday Newsletter Subject Line Updater" onClose={onClose} />
-          <div className={sundayStyles.container}>
-            {/* Progress bar and stats - same as regular newsletter */}
-            {isUpdating && updateProgress.total > 0 && (
-              <div className={sundayStyles.progressStats}>
-                <div className={sundayStyles.progressInfo}>
-                  <Icon icon="svg-spinners:180-ring" width="14" height="14" className={sundayStyles.progressSpinner} />
-                  <span>Updating subject lines...</span>
+        <div className={updaterStyles.rightContent}>
+          {showResults && (
+            <div className={updaterStyles.resultsContainer}>
+              <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />
+            </div>
+          )}
+          {isUpdating && updateProgress.total > 0 && (
+            <>
+              <div className={updaterStyles.progressStats}>
+                <div className={updaterStyles.progressInfo}>
+                  <Icon
+                    icon="svg-spinners:180-ring"
+                    width="14"
+                    height="14"
+                    className={updaterStyles.progressSpinner}
+                  />
+                  <span>Updating translations...</span>
                 </div>
-                <div className={sundayStyles.progressCount}>
+                <div className={updaterStyles.progressCount}>
                   {updateProgress.completed} / {updateProgress.total} completed
                 </div>
               </div>
-            )}
-            {isUpdating && updateProgress.total > 0 && (
-              <div className={sundayStyles.tableProgressBar}>
+              <div className={updaterStyles.tableProgressBar}>
                 <div
-                  className={sundayStyles.tableProgressFill}
+                  className={updaterStyles.tableProgressFill}
                   style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
                 />
               </div>
-            )}
-
-            {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
-
-            <SundayTable
-              subjectLines={subjectLines}
-              selectedIndex={selectedIndex}
-              onSelectOption={selectOption}
-              loading={sundayLoading}
+            </>
+          )}
+          <div className={updaterStyles.tableContainer}>
+            <UpdaterTable
+              translations={translations}
+              loading={loading || isUpdating}
+              onToggleSL={handleToggleSL}
+              onTogglePT={handleTogglePT}
+              selectedItems={selectedItems}
+              getDateForSlug={getDateForSlug}
+              getLPForSlug={getLPForSlug}
+              onSlugActivateDateChange={handleSlugActivateDateChange}
+              onSlugDeactivateDateChange={handleSlugDeactivateDateChange}
+              onSlugLPChange={handleSlugLPChange}
+              useGlobalDates={useGlobalDate}
+              useGlobalLP={useGlobalLP}
+              globalLP={globalLP}
+              initialGlobalLP={initialGlobalLP}
+              slugFMDModes={slugFMDModes}
+              onSlugFMDModeChange={handleSlugFMDModeChange}
               availableSlugs={availableSlugs}
-              updateResults={updateResults}
-              updatingSlugs={updatingSlugs}
               newsletterIds={newsletterIds}
-            />
-            <SundayButtons
-              hasSelection={selectedIndex !== null}
-              onUpdate={handleSundayUpdate}
-              onClear={clearSelection}
-              loading={sundayLoading}
-              isUpdating={isSundayUpdating}
+              landingPageIds={landingPageIds}
+              updatingSlugs={updatingSlugs}
+              updateResults={updateResults}
+              getInitialActivateDate={getInitialActivateDate}
+              getInitialDeactivateDate={getInitialDeactivateDate}
+              getInitialLP={getInitialLP}
+              verificationResults={verificationResults}
+              verifying={verifying}
             />
           </div>
         </div>
       </div>
-    );
-  }
+    )}
+  </>
+);
 
-  const hasValidRows = rows.some(row => row.nsltId || row.nsltAId || row.nsltBId || row.lpId);
+// Now in the return, check for valid rows first
+// Check if there are any valid rows with newsletter IDs or landing page IDs
+const hasValidRows = rows.some(row => row.nsltId || row.nsltAId || row.nsltBId || row.lpId);
 
-  if (!hasValidRows) {
-    return (
-      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-          <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
-          <div className={clsx(updaterStyles.modalContent, updaterStyles.emptyAlignment)} style={{}}>
-            <div className={updaterStyles.emptyState}>
-              <Icon icon="mdi:file-document-outline" width="48" height="48" className={updaterStyles.emptyIcon} />
-              <h3>No checklists with IDs</h3>
-              <p>No newsletter IDs (NSLT) or landing page IDs (LP) found for any shop.</p>
-              <div className={updaterStyles.emptyButtons}>
-                <UpdaterButton isPrimary={false} label="Close" onClick={onClose} icon="mdi:close" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const hasNoTranslations =
-    !translations?.subjectLine ||
-    !translations?.pageTitle ||
-    Object.keys(translations.subjectLine).length === 0 ||
-    Object.keys(translations.pageTitle).length === 0;
-
-  if (hasNoTranslations) {
-    return (
-      <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-        <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-          <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
-          <div className={updaterStyles.modalContent} style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <div className={updaterStyles.shopRow} style={{ border: 'none' }}>
-              <span>No translations found</span>
-            </div>
+// If no valid rows and not a Sunday newsletter, show empty state
+if (!hasValidRows && !isSundayNewsletter && !loading && !sundayLoading) {
+  return (
+    <Modal
+      isOpen={true}
+      onClose={handleModalClose}
+      title="Subject Line & Page Title Updater"
+      width="95vw"
+      maxWidth="95vw"
+      height="95vh"
+      maxHeight="95vh"
+    >
+      <div className={clsx(updaterStyles.modalContent, updaterStyles.emptyAlignment)}>
+        <div className={updaterStyles.emptyState}>
+          <Icon icon="mdi:file-document-outline" width="48" height="48" className={updaterStyles.emptyIcon} />
+          <h3>No checklists with IDs</h3>
+          <p>No newsletter IDs (NSLT) or landing page IDs (LP) found for any shop.</p>
+          <div className={updaterStyles.emptyButtons}>
             <button
               className={updaterStyles.reloadButton}
               onClick={() => {
@@ -628,113 +657,27 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               <Icon icon="mdi:refresh" width="16" height="16" />
               Reload
             </button>
+            <UpdaterButton isPrimary={false} label="Close" onClick={handleModalClose} icon="mdi:close" />
           </div>
         </div>
       </div>
-    );
-  }
+    </Modal>
+  );
+}
 
+  // Wrap with Modal component
   return (
-    <div className={clsx(formStyles.modalOverlay, layoutStyles.visible)} onClick={onClose}>
-      <div className={clsx(updaterStyles.modal)} onClick={e => e.stopPropagation()}>
-        <ModalHeader title="Subject Line & Page Title Updater" onClose={onClose} />
-        <div className={updaterStyles.modalContent}>
-          <div className={updaterStyles.menu}>
-            <MenuContent
-              loading={loading}
-              useGlobalDate={useGlobalDate}
-              useGlobalLP={useGlobalLP}
-              globalDateConfig={globalDateConfig}
-              globalLP={globalLP}
-              selectedSLCount={selectedSLCount}
-              selectedPTCount={selectedPTCount}
-              isUpdating={isUpdating}
-              onToggleGlobalDate={checked => setUseGlobalDate(checked)}
-              onActivateDateChange={handleGlobalActivateDateChangeWithAutoSelect}
-              onDeactivateDateChange={handleGlobalDeactivateDateChangeWithAutoSelect}
-              onToggleGlobalLP={handleUseGlobalLPToggle}
-              onGlobalLPChange={handleGlobalLPChangeWithAutoSelect}
-              onUpdateAllSL={handleUpdateAllSL}
-              onUpdateSelectedSL={handleUpdateSelectedSL}
-              onUpdateAllPT={handleUpdateAllPT}
-              onUpdateSelectedPT={handleUpdateSelectedPT}
-              onUpdateAll={handleUpdateAllWrapper}
-              onUpdateSelected={handleUpdateSelectedWrapper}
-              onSelectAll={handleSelectAllReadyWrapper}
-              onClearAll={handleClearAll}
-              onCancel={onClose}
-              onVerify={verifyAllItems}
-              verifying={verifying}
-              hasVerified={hasVerified}
-              verifyProgress={verifyProgress}
-            />
-          </div>
-          <div className={updaterStyles.rightContent}>
-            {showResults && (
-              <div className={updaterStyles.resultsContainer}>
-                <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />
-              </div>
-            )}
-            <>
-              {isUpdating && updateProgress.total > 0 && (
-                <div className={updaterStyles.progressStats}>
-                  <div className={updaterStyles.progressInfo}>
-                    <Icon
-                      icon="svg-spinners:180-ring"
-                      width="14"
-                      height="14"
-                      className={updaterStyles.progressSpinner}
-                    />
-                    <span>Updating translations...</span>
-                  </div>
-                  <div className={updaterStyles.progressCount}>
-                    {updateProgress.completed} / {updateProgress.total} completed
-                  </div>
-                </div>
-              )}
-              {isUpdating && updateProgress.total > 0 && (
-                <div className={updaterStyles.tableProgressBar}>
-                  <div
-                    className={updaterStyles.tableProgressFill}
-                    style={{ width: `${(updateProgress.completed / updateProgress.total) * 100}%` }}
-                  />
-                </div>
-              )}
-            </>
-            <div className={updaterStyles.tableContainer}>
-              <UpdaterTable
-                translations={translations}
-                loading={loading || isUpdating}
-                onToggleSL={handleToggleSL}
-                onTogglePT={handleTogglePT}
-                selectedItems={selectedItems}
-                getDateForSlug={getDateForSlug}
-                getLPForSlug={getLPForSlug}
-                onSlugActivateDateChange={handleSlugActivateDateChange}
-                onSlugDeactivateDateChange={handleSlugDeactivateDateChange}
-                onSlugLPChange={handleSlugLPChange}
-                useGlobalDates={useGlobalDate}
-                useGlobalLP={useGlobalLP}
-                globalLP={globalLP}
-                initialGlobalLP={initialGlobalLP}
-                slugFMDModes={slugFMDModes}
-                onSlugFMDModeChange={handleSlugFMDModeChange}
-                availableSlugs={availableSlugs}
-                newsletterIds={newsletterIds}
-                landingPageIds={landingPageIds}
-                updatingSlugs={updatingSlugs}
-                updateResults={updateResults}
-                getInitialActivateDate={getInitialActivateDate}
-                getInitialDeactivateDate={getInitialDeactivateDate}
-                getInitialLP={getInitialLP}
-                verificationResults={verificationResults}
-                verifying={verifying}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Modal
+      isOpen={true}
+      onClose={handleModalClose}
+      title={getModalTitle()}
+      width="95vw"
+      maxWidth="95vw"
+      height="95vh"
+      maxHeight="95vh"
+    >
+      {modalContent}
+    </Modal>
   );
 };
 

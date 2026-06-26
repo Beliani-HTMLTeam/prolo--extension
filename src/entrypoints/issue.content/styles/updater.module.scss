@@ -1,6 +1,6 @@
 @use 'sass:color';
-@use '../../../assets/styles/variables' as *;
-@use './forms.module.scss' as formStyles;
+@use '@/assets/styles/_variables.scss' as *;
+@use '@/assets/styles/forms.module.scss' as formStyles;
 
 .modal {
   @include formStyles.modal;
@@ -20,6 +20,15 @@
     position: relative;
 }
 
+.bodyInner {
+  display: flex;
+  flex: 1;
+  min-height: 100%;
+  width: 100%;
+  overflow: hidden;
+  padding: 20px;
+}
+
 .rightContent {
   flex: 1;
   display: flex;
@@ -27,10 +36,14 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .resultsContainer {
-  flex-shrink: 0; // Don't shrink, take only as much space as needed
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .tableContainer {
@@ -39,6 +52,15 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  
+  .updaterTable {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: none;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .menu {
@@ -47,8 +69,9 @@
   gap: 16px;
   flex-direction: column;
   flex-shrink: 0;
-   height: 100%;
+  height: 100%;
   overflow-y: auto;
+  padding-right: 8px;
 
   .actionButtons {
     display: flex;
@@ -827,6 +850,10 @@
 
 .refreshStatusBar {
   display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   align-items: center;
   gap: 10px;
   padding: 8px 16px;
