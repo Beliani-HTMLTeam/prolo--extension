@@ -383,7 +383,7 @@ const NewsEmailAppContent = () => {
         </div>
 
         {/* Preview newsletter modal */}
-        <CampaignPreview isOpen={isPreviewOpen} banners={selectedBanners} onClose={() => setIsPreviewOpen(false)} />
+        <CampaignPreview isOpen={isPreviewOpen} banners={selectedBanners} translations={translations} onClose={() => setIsPreviewOpen(false)} />
 
         {/* Preview banners modal */}
         <PreviewBannersModal
