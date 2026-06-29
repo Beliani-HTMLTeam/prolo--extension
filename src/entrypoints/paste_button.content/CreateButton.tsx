@@ -73,14 +73,20 @@ export const CreateButton = (elems: Elems, target: string) => {
             return;
           }
 
-          const nsltFamily = document.querySelectorAll<HTMLFormElement>('form[action="news_email.php"][id]:not(#newsletter_ids_to_family)');
-          let idx = Array.from(nsltFamily).findIndex(elem => elem?.parentElement?.parentElement?.textContent?.includes(`${nsltId}`));
+          const nsltFamily = document.querySelectorAll<HTMLFormElement>(
+            'form[action="news_email.php"][id]:not(#newsletter_ids_to_family)',
+          );
+          let idx = Array.from(nsltFamily).findIndex(elem =>
+            elem?.parentElement?.parentElement?.textContent?.includes(`${nsltId}`),
+          );
 
           const nsltSlug = nsltFamily[idx] as HTMLElement;
           let sellerName = '';
-          
+
           const text = nsltSlug?.parentElement?.parentElement?.children[1]?.textContent?.trim() ?? '';
           sellerName = text.includes(' ') ? text.split(' ')[1] : 'ch';
+
+          if (sellerName === 'sp') sellerName = 'es';
 
           if (!nsltSlug) {
             toast.error('Failed to get nslt family selector.', { duration: 2500 });
