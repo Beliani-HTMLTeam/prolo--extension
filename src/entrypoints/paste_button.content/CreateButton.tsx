@@ -100,7 +100,7 @@ export const CreateButton = (elems: Elems, target: string) => {
             return;
           }
           textArea.value = content;
-          // upd.click();
+          upd.click();
           toast.success('Updating...', { duration: 2500 });
         } catch (e) {
           console.log(e);
