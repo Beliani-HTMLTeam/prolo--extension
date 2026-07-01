@@ -86,7 +86,7 @@ export const CreateButton = (elems: Elems, target: string) => {
           const text = nsltSlug?.parentElement?.parentElement?.children[1]?.textContent?.trim() ?? '';
           sellerName = text.includes(' ') ? text.split(' ')[1] : 'ch';
 
-          if (sellerName === 'sp') sellerName = 'es';
+          if (sellerName.toLowerCase() === 'sp') sellerName = 'es';
 
           if (!nsltSlug) {
             toast.error('Failed to get nslt family selector.', { duration: 2500 });
