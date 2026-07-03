@@ -31,6 +31,16 @@ export const PlanningResultsActions = ({
             }}
             label="Open QA Sheet"
           />
+          <PlanningButton
+            isPrimary={false}
+            onClick={() => {
+              window.open(
+                'https://www.prologistics.info/spam_plan.php',
+                '_blank',
+              );
+            }}
+            label="Open Spam Plan"
+          />
         </>
       )}
 
