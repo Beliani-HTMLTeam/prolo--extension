@@ -67,14 +67,33 @@ export const CreateButton = (elems: Elems, target: string) => {
           const domain = new URL(linkSelector.href).hostname.split('.').pop() ?? '';
           let lang = '';
 
-          const seller = document.querySelector<HTMLSelectElement>('#seller');
-          const selected = seller?.querySelector<HTMLOptionElement>('option[selected="selected"]');
-          if (!selected) {
-            toast.error('Failed to get #seller selector.', { duration: 2500 });
+          let nsltId = new URLSearchParams(window.location.search).get('id');
+          if (!nsltId) {
+            toast.error('Failed to get newsletter id.', { duration: 2500 });
             return;
           }
 
-          lang = selected.innerText.split(':')[0].toLowerCase();
+          const nsltFamily = document.querySelectorAll<HTMLFormElement>(
+            'form[action="news_email.php"][id]:not(#newsletter_ids_to_family)',
+          );
+          let idx = Array.from(nsltFamily).findIndex(elem =>
+            elem?.parentElement?.parentElement?.textContent?.includes(`${nsltId}`),
+          );
+
+          const nsltSlug = nsltFamily[idx] as HTMLElement;
+          let sellerName = '';
+
+          const text = nsltSlug?.parentElement?.parentElement?.children[1]?.textContent?.trim() ?? '';
+          sellerName = text.includes(' ') ? text.split(' ')[1] : 'ch';
+
+          if (sellerName.toLowerCase() === 'sp') sellerName = 'es';
+
+          if (!nsltSlug) {
+            toast.error('Failed to get nslt family selector.', { duration: 2500 });
+            return;
+          }
+
+          lang = sellerName.toLowerCase();
 
           if (domain != lang) {
             toast.error(`Pasting wrong lang '${domain}', expected '${lang}'`, { duration: 2500 });
