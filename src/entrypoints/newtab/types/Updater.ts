@@ -242,3 +242,12 @@ export interface UpdaterTableProps {
   verifying?: boolean;
   hasVerified?: boolean;
 }
+
+export interface ActivationResult {
+  slug: string;
+  lpId: string;
+  shopId: string;
+  wasInactive: boolean;
+  activated: boolean;
+  error?: string;
+}

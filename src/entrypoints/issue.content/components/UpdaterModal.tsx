@@ -142,6 +142,9 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     handleUpdateAll,
     handleRetryFailed,
     reset,
+    isActivating, 
+    activationProgress,
+    activationResults
   } = useUpdateHandler({
     getLPForSlug,
     getDateForSlug,
@@ -590,6 +593,23 @@ const modalContent = (
               </div>
             </>
           )}
+{isActivating && activationProgress.total > 0 && (
+        <div className={updaterStyles.activationStats}>
+          <div className={updaterStyles.activationInfo}>
+            <Icon icon="svg-spinners:180-ring" width="14" height="14" className={updaterStyles.activationSpinner} />
+            <span>Activating shop contents...</span>
+          </div>
+          <div className={updaterStyles.activationProgress}>
+            <span>{activationProgress.completed} / {activationProgress.total}</span>
+            <div className={updaterStyles.activationProgressBar}>
+              <div 
+                className={updaterStyles.activationProgressFill}
+                style={{ width: `${(activationProgress.completed / activationProgress.total) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
           <div className={updaterStyles.tableContainer}>
             <UpdaterTable
               translations={translations}
