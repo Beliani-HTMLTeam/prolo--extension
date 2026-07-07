@@ -1,4 +1,4 @@
-import { UpdaterDateConfig, UpdaterSlugDateConfig } from '@/entrypoints/newtab/types/Updater';
+import { UpdaterDateConfig, UpdaterSlugDateConfig } from '@/entrypoints/issue.content/types/Updater';
 import { getDefaultDeactivateDate, getTodayAtMidnight, setDateToSunday23_59 } from '../dates';
 import { getPairedSlug } from '../shopPairs';
 

@@ -1,4 +1,4 @@
-import { MenuContentProps } from "@/entrypoints/newtab/types/Updater";
+import { MenuContentProps } from "@/entrypoints/issue.content/types/Updater";
 import { DateSection } from "./DateSection";
 import { LPSection } from "./LPSection";
 import { MenuSkeleton } from "./MenuSkeleton";

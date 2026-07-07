@@ -1,5 +1,5 @@
 import styles from '../../styles/updater.module.scss';
-import { UpdaterButtonsProps } from '@/entrypoints/newtab/types/Updater';
+import { UpdaterButtonsProps } from '@/entrypoints/issue.content/types/Updater';
 import UpdaterButton from './UpdaterButton';
 import { Icon } from '@iconify/react';
 

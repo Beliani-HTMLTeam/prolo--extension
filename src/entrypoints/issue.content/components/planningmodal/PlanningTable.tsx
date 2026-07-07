@@ -1,6 +1,6 @@
-import { PlanningTableProps } from '@/entrypoints/newtab/types/Planning';
-import { getCustomerCount, getSubjectLine } from '@/entrypoints/newtab/utils/planning/resultHelpers';
-import { normalizeSlugForSlug } from '@/entrypoints/newtab/utils/planning/slugNormalization';
+import { PlanningTableProps } from '@/entrypoints/issue.content/types/Planning';
+import { getCustomerCount, getSubjectLine } from '@/entrypoints/issue.content/utils/planning/resultHelpers';
+import { normalizeSlugForSlug } from '@/entrypoints/issue.content/utils/planning/slugNormalization';
 import { Icon } from '@iconify/react';
 import Skeleton from 'react-loading-skeleton';
 import planningStyles from '../../styles/planning.module.scss';

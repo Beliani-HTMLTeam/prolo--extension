@@ -1,6 +1,6 @@
 import Skeleton from 'react-loading-skeleton';
 import sundayStyles from '../../styles/sunday.module.scss';
-import { SundayTableSkeletonProps } from '@/entrypoints/newtab/types/Updater';
+import { SundayTableSkeletonProps } from '@/entrypoints/issue.content/types/Updater';
 
 export const SundayTableSkeleton = ({ rowsCount = 10 }: SundayTableSkeletonProps) => {
   const skeletonRows = Array(rowsCount).fill(null);

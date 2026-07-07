@@ -1,7 +1,7 @@
 import styles from '@/assets/styles/forms.module.scss';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
-import { UpdaterButtonProps } from '@/entrypoints/newtab/types/Updater';
+import { UpdaterButtonProps } from '@/entrypoints/issue.content/types/Updater';
 
 const UpdaterButton = ({ isPrimary, onClick, disabled, icon, label }: UpdaterButtonProps) => {
   const buttonClass = isPrimary ? styles['btn--primary'] : styles['btn--ghost'];

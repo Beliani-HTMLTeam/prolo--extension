@@ -9,8 +9,7 @@ import { getShopId } from './familytable/../../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
 import PlanningModal from './PlanningModal';
 import UpdaterModal from './UpdaterModal';
-import { useTableDataIds } from '@/entrypoints/newtab/utils/updater/hooks/useTableDataIds';
-import { filterSlugsWithNewsletterIds } from '@/entrypoints/newtab/utils/updater/filterSlugs';
+import { useTableDataIds } from '@/entrypoints/issue.content/utils/updater/hooks/useTableDataIds';
 import ActionButton from '@/components/Button';
 
 const LINK_ICON_MAP: [string, string][] = [

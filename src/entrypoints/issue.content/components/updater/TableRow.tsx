@@ -2,11 +2,11 @@ import DatePicker from 'react-datepicker';
 import updaterStyles from '../../styles/updater.module.scss';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
-import { getFlagUrl } from '@/entrypoints/newtab/utils/updater/flag';
+import { getFlagUrl } from '@/entrypoints/issue.content/utils/updater/flag';
 import { JSX } from 'react';
 import React from 'react';
 import { SHOP_ID_MAP } from '../../lib/shopConfig';
-import { TableRowProps } from '@/entrypoints/newtab/types/Updater';
+import { TableRowProps } from '@/entrypoints/issue.content/types/Updater';
 
 export const TableRow = ({
   slug,

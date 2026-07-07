@@ -1,4 +1,4 @@
-import { StatusDisplayProps } from '@/entrypoints/newtab/types/Planning';
+import { StatusDisplayProps } from '@/entrypoints/issue.content/types/Planning';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
 import formStyles from '@/assets/styles/forms.module.scss';

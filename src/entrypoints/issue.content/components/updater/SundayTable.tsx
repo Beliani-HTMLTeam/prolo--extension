@@ -3,9 +3,9 @@ import { SundayTableSkeleton } from './SundayTableSkeleton';
 import sundayStyles from '../../styles/sunday.module.scss';
 import clsx from 'clsx';
 import { Icon } from '@iconify/react';
-import { getFlagUrl } from '@/entrypoints/newtab/utils/updater/flag';
+import { getFlagUrl } from '@/entrypoints/issue.content/utils/updater/flag';
 import { SundayTableUpdateSkeleton } from './SundayTableUpdateSkeleton';
-import { SundayTableProps } from '@/entrypoints/newtab/types/Updater';
+import { SundayTableProps } from '@/entrypoints/issue.content/types/Updater';
 import UpdaterButton from './UpdaterButton';
 
 const SKELETON_ROWS_COUNT = 10;

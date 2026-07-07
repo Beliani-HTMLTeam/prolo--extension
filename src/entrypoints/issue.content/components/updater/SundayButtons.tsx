@@ -1,4 +1,4 @@
-import { SundayButtonsProps } from '@/entrypoints/newtab/types/Updater';
+import { SundayButtonsProps } from '@/entrypoints/issue.content/types/Updater';
 import styles from '../../styles/sunday.module.scss';
 import UpdaterButton from './UpdaterButton';
 

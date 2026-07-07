@@ -1,4 +1,4 @@
-import { UpdateResult, UpdaterSelectedItem } from '@/entrypoints/newtab/types/Updater';
+import { UpdateResult, UpdaterSelectedItem } from '@/entrypoints/issue.content/types/Updater';
 import { formatDateForAPI } from '../dates';
 import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../constants';

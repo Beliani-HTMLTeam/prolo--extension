@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GifPicker as GifPickerKlipy, type GifImage } from 'gif-picker-react-klipy';
 import styles from './Picker.module.scss';
 
 const STORAGE_KEY = 'prolo_klipy_api_key';
-const getSavedKey = () => localStorage.getItem(STORAGE_KEY) ?? '';
-const saveKey = (key: string) => localStorage.setItem(STORAGE_KEY, key.trim());
+const saveKey = (key: string) => storage.setItem(`local:${STORAGE_KEY}`, key.trim());
 
 type GifPickerProps = {
   onSelect: (gifUrl: string) => void;
@@ -39,8 +38,16 @@ const ApiKeySetup = ({ onSave }: { onSave: (key: string) => void }) => {
 };
 
 export const GifPicker = ({ onSelect, onClose }: GifPickerProps) => {
-  const [apiKey, setApiKey] = useState<string>(getSavedKey);
+  const [apiKey, setApiKey] = useState<string>('');
   const [showKeyEdit, setShowKeyEdit] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    storage.getItem(`local:${STORAGE_KEY}`).then(res => {
+      if (res) setApiKey(res as string);
+      setIsLoaded(true);
+    });
+  }, []);
 
   const handleSaveKey = (key: string) => {
     saveKey(key);
@@ -52,6 +59,14 @@ export const GifPicker = ({ onSelect, onClose }: GifPickerProps) => {
     onSelect(gif.url);
     onClose();
   };
+
+  if (!isLoaded) {
+    return (
+      <div className={styles.pickerPanel} style={{ width: 320, padding: 16 }}>
+        Loading...
+      </div>
+    );
+  }
 
   if (!apiKey || showKeyEdit) {
     return (

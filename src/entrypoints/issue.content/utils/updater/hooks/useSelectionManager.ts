@@ -1,5 +1,5 @@
 import { LineTitleTranslations } from "@/entrypoints/issue.content/lib/types";
-import { UpdaterSelectedItem } from "@/entrypoints/newtab/types/Updater";
+import { UpdaterSelectedItem } from "@/entrypoints/issue.content/types/Updater";
 
 export const useSelectionManager = () => {
     const [selectedItems, setSelectedItems] = useState<UpdaterSelectedItem[]>([]);

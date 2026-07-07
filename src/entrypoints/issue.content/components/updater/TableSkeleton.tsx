@@ -1,7 +1,7 @@
 import { TableHeader } from './TableHeader';
 import { TableRowSkeleton } from './TableRowSkeleton';
 import updaterStyles from '../../styles/updater.module.scss';
-import { TableSkeletonProps } from '@/entrypoints/newtab/types/Updater';
+import { TableSkeletonProps } from '@/entrypoints/issue.content/types/Updater';
 
 const DEFAULT_SKELETON_ROWS = 10;
 

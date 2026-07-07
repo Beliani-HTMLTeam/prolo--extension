@@ -1,7 +1,7 @@
 import Skeleton from 'react-loading-skeleton';
 import updaterStyles from '../../styles/updater.module.scss';
-import { getFlagUrl } from '@/entrypoints/newtab/utils/updater/flag';
-import { TableRowSkeletonProps } from '@/entrypoints/newtab/types/Updater';
+import { getFlagUrl } from '@/entrypoints/issue.content/utils/updater/flag';
+import { TableRowSkeletonProps } from '@/entrypoints/issue.content/types/Updater';
 
 export const TableRowSkeleton = ({ useGlobalLP, useGlobalDates, slug }: TableRowSkeletonProps) => {
   const isRealSlug = slug && slug !== 'loading';

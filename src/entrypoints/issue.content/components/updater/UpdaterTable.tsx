@@ -1,4 +1,4 @@
-import { UpdaterTableProps } from '@/entrypoints/newtab/types/Updater';
+import { UpdaterTableProps } from '@/entrypoints/issue.content/types/Updater';
 import updaterStyles from '../../styles/updater.module.scss';
 import { TableSkeleton } from './TableSkeleton';
 import { TableHeader } from './TableHeader';

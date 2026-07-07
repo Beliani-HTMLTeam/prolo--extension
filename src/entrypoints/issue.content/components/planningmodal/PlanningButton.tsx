@@ -1,4 +1,4 @@
-import { PlanningButtonProps } from '@/entrypoints/newtab/types/Planning';
+import { PlanningButtonProps } from '@/entrypoints/issue.content/types/Planning';
 import styles from '@/assets/styles/forms.module.scss';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';

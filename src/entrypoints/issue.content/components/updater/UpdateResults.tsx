@@ -1,4 +1,4 @@
-import { UpdateResult, UpdateResultsProps } from "@/entrypoints/newtab/types/Updater"
+import { UpdateResult, UpdateResultsProps } from "@/entrypoints/issue.content/types/Updater"
 import { Icon } from "@iconify/react";
 import updaterStyles from '../../styles/updater.module.scss';
 

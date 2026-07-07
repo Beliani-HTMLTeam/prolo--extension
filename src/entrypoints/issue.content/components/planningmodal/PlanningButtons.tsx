@@ -1,5 +1,5 @@
 import styles from '../../styles/planning.module.scss';
-import { PlanningButtonsProps } from '@/entrypoints/newtab/types/Planning';
+import { PlanningButtonsProps } from '@/entrypoints/issue.content/types/Planning';
 import PlanningButton from './PlanningButton';
 
 export const PlanningButtons = ({

@@ -1,4 +1,4 @@
-import { SendToSpamParams, SpamPlanEntry } from '@/entrypoints/newtab/types/Planning';
+import { SendToSpamParams, SpamPlanEntry } from '@/entrypoints/issue.content/types/Planning';
 import { NEWSLETTER_SLUGS } from '../lib/planningConfig';
 import { SpamFormBuilder } from '@/entrypoints/newtab/utils/planning/classes/SpamFormBuilder';
 import { parseSpamPlanHtml } from '@/entrypoints/newtab/utils/planning/parseSpamPlan';

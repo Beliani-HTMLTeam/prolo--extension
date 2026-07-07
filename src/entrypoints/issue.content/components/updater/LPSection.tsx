@@ -1,6 +1,6 @@
 import Skeleton from 'react-loading-skeleton';
 import updaterStyles from '../../styles/updater.module.scss';
-import { LPSectionProps } from '@/entrypoints/newtab/types/Updater';
+import { LPSectionProps } from '@/entrypoints/issue.content/types/Updater';
 
 
 

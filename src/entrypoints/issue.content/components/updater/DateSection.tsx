@@ -1,7 +1,7 @@
 import Skeleton from "react-loading-skeleton";
 import updaterStyles from '../../styles/updater.module.scss';
 import { DatePicker } from "react-datepicker";
-import { DateSectionProps } from "@/entrypoints/newtab/types/Updater";
+import { DateSectionProps } from "@/entrypoints/issue.content/types/Updater";
 
 export const DateSection = ({
   loading,
