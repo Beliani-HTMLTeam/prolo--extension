@@ -1,0 +1,48 @@
+@use '@/assets/styles/_variables' as *;
+
+.viewContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 24px;
+  background-color: var(--theme-background-color);
+
+  .logo {
+    width: 80px;
+  }
+
+  .title {
+    color: var(--theme-text-color);
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .buttonContainer {
+    display: flex;
+    gap: 16px;
+
+    .teamButton {
+      padding: 16px 32px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 8px;
+      border: 1px solid var(--theme-border-color);
+      background-color: var(--theme-background-color);
+      color: var(--theme-text-color);
+      transition:
+        background-color 0.2s,
+        transform 0.1s;
+      font-weight: 500;
+
+      &:hover {
+        background-color: var(--theme-hover-bg);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+}
