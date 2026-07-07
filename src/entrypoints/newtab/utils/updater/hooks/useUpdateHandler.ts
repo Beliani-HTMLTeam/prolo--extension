@@ -71,9 +71,6 @@ const [isActivating, setIsActivating] = useState(false);
     setUpdatingSlugs(slugsToUpdate);
 
     try {
-      console.log('🔍 newsletterIds:', newsletterIds);
-      console.log('🔍 landingPageIds:', landingPageIds);
-
       const formattedUpdates: FormattedUpdateRecord[] = [];
 
       const updatesBySlug: Record<
@@ -90,7 +87,6 @@ const [isActivating, setIsActivating] = useState(false);
       > = {};
 
       selectedItems.forEach(item => {
-        console.log('🔍 Processing item:', item);
 
         if (!updatesBySlug[item.slug]) {
           updatesBySlug[item.slug] = {
@@ -100,7 +96,6 @@ const [isActivating, setIsActivating] = useState(false);
             deactivateDate: getDateForSlug(item.slug, 'deactivate'),
             lpId: landingPageIds?.[item.slug],
           };
-          console.log(`🔍 Created update for slug ${item.slug}:`, updatesBySlug[item.slug]);
         }
 
         if (item.type === 'subjectLine') {
@@ -110,11 +105,8 @@ const [isActivating, setIsActivating] = useState(false);
         }
       });
 
-      console.log('🔍 updatesBySlug:', updatesBySlug);
-
       Object.values(updatesBySlug).forEach(update => {
         const nsltData = newsletterIds?.[update.slug];
-        console.log(`🔍 nsltData for ${update.slug}:`, nsltData);
 
         const slug = update.slug;
         const seller = SELLER_TO_SLUG[slug as keyof typeof SELLER_TO_SLUG];
@@ -128,7 +120,6 @@ const [isActivating, setIsActivating] = useState(false);
         }
 
         if (nsltData?.aId && nsltData?.bId) {
-          console.log(`🔍 Both A and B exist for ${update.slug}`);
           // Both A and B exist - create two records
           const recordA: FormattedUpdateRecord = {
             slug: update.slug,
@@ -161,7 +152,6 @@ const [isActivating, setIsActivating] = useState(false);
           if (update.pageTitle !== undefined) recordB.pageTitle = trimAllLineBreaks(update.pageTitle);
           formattedUpdates.push(recordB);
         } else if (nsltData?.aId) {
-          console.log(`🔍 Only A exists for ${update.slug}`);
           const record: FormattedUpdateRecord = {
             slug: update.slug,
             nsltId: nsltData.aId,
@@ -180,14 +170,11 @@ const [isActivating, setIsActivating] = useState(false);
         }
       });
 
-      console.log('🔍 Final formattedUpdates:', formattedUpdates);
 
       if (formattedUpdates.length === 0) {
         console.warn('No formatted updates to send');
         return;
       }
-
-      console.log('Updating with dates: ', formattedUpdates);
 
       const updatesToSend: Array<{ type: 'newsletter' | 'landing-page'; data: any; slug: string }> = [];
 
@@ -264,9 +251,6 @@ const [isActivating, setIsActivating] = useState(false);
       setUpdatingSlugs(slugsToUpdate);
 
       const results = await sendBatchUpdates(updatesToSend, (completed, total, result) => {
-        console.log(
-          `Progress: ${completed}/${total} - ${result.slug} (${result.type}): ${result.success ? '✅' : '❌'}`,
-        );
         setUpdateProgress({ completed, total });
         setUpdateResults(prev => [...prev, result]);
       });
@@ -325,7 +309,6 @@ const [isActivating, setIsActivating] = useState(false);
   } => item !== null);
 
   if (itemsToActivate.length > 0) {
-    console.log(`🔄 Checking/activating ${itemsToActivate.length} shop contents...`);
     setActivationProgress({ completed: 0, total: itemsToActivate.length });
 
         setIsActivating(true);
@@ -337,7 +320,6 @@ const [isActivating, setIsActivating] = useState(false);
       newsletterIds,
       (completed, total, result) => {
         setActivationProgress({ completed, total });
-        console.log(`Activation progress: ${completed}/${total} - ${result.slug}: ${result.activated ? '✅' : '❌'}`);
       }
     );
       setActivationResults(activationResults);

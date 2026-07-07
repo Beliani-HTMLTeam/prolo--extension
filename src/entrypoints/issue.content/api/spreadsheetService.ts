@@ -17,7 +17,7 @@ export const purgeDynamicSpreadsheetData = async (
   const url = `${ZROK_BASE}dynamic/${year}/${tabName}/force-refresh`;
 
   try {
-    console.log(`🔄 Purging dynamic spreadsheet...\nYear: ${year}\nTab: ${tabName}`);
+    console.log(`Purging dynamic spreadsheet...\nYear: ${year}\nTab: ${tabName}`);
 
     const headers = {
       Accept: 'application/json',
@@ -33,7 +33,7 @@ export const purgeDynamicSpreadsheetData = async (
 
     if (response.ok) {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log(`✅ Successfully purged dynamic spreadsheet!\nYear: ${year}\nTab: ${tabName}`);
+      console.log(`Successfully purged dynamic spreadsheet!\nYear: ${year}\nTab: ${tabName}`);
       return { success: true, year, tabName };
     } else {
       console.error(`Failed to purge (${response.status}):\nYear: ${year}\nTab: ${tabName}`);
@@ -66,7 +66,7 @@ export const refreshSpreadsheetData = async (
     const cached = refreshCache.get(cacheKey);
     
     if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
-      console.log('✅ Using cached spreadsheet data (refreshed recently)');
+      console.log('Using cached spreadsheet data (refreshed recently)');
       if (onDataLoaded && cached.data) {
         onDataLoaded(cached.data);
       }

@@ -12,7 +12,7 @@ interface ActivationItem {
   activateDate: { date: string; time: string };
   deactivateDate: { date: string; time: string };
   newsletterTemplateId: string;
-  pairedNewsletterMap?: Record<string, string>; // Add this for paired mapping
+  pairedNewsletterMap?: Record<string, string>;
 }
 
 // Helper to get the correct newsletter template ID for paired shops
@@ -78,57 +78,44 @@ export const checkAndActivateShopContent = async (
 
     result.wasInactive = isInactive;
 
-    // If already active, no need to activate
     if (isActive) {
-      console.log(`✅ Shop content ${lpId} (${slug}) is already active`);
       result.activated = true;
       return result;
     }
 
     if (!isInactive) {
-      console.log(`⚠️ Could not determine status for ${lpId} (${slug}). Status text: "${statusText}"`);
       const fallbackInactive = html.includes('banner_status_inactive');
       const fallbackActive = html.includes('banner_status_active');
       
       if (fallbackActive && !fallbackInactive) {
-        console.log(`✅ Shop content ${lpId} (${slug}) is active (fallback check)`);
         result.activated = true;
         return result;
       }
       
       if (!fallbackInactive) {
-        console.log(`⚠️ Could not determine status for ${lpId} (${slug})`);
         return result;
       }
     }
 
     // Get the correct newsletter template ID for paired shops
     const finalNewsletterTemplateId = getNewsletterTemplateId(slug, newsletterTemplateId, newsletterIds);
-
-    // If inactive, activate it with all fields
-    console.log(`🔄 Activating shop content ${lpId} (${slug})...`);
-    console.log(`📝 Using newsletter_template_id: ${finalNewsletterTemplateId}`);
-
     const formData = new FormData();
     
-    // Add all required fields for activation
     formData.append('shops[]', shopId);
     formData.append('id', lpId);
     formData.append('shop_id', shopId);
     formData.append('inactive', '0');
     formData.append('update', 'Activate and update');
     
-    // Add date fields
     formData.append('activate_from_date', activateDate.date);
     formData.append('activate_from_time', activateDate.time);
     formData.append('deactivate_from_date', deactivateDate.date);
     formData.append('deactivate_from_time', deactivateDate.time);
     
-    // Add name and newsletter template
     formData.append('name', landingPage);
     formData.append('newsletter_template_id', finalNewsletterTemplateId);
 
-    const activateResponse = await axios.post(
+     await axios.post(
       'https://www.prologistics.info/shop_content.php',
       formData,
       {
@@ -140,7 +127,6 @@ export const checkAndActivateShopContent = async (
     );
 
     result.activated = true;
-    console.log(`✅ Activated shop content ${lpId} (${slug})`);
     return result;
   } catch (error: any) {
     console.error(`Failed to check/activate shop content ${lpId} (${slug}):`, error);
