@@ -1,0 +1,62 @@
+@use '@/assets/styles/_variables' as *;
+
+.swatchCard {
+  background-color: $white;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  .colorBlock {
+    width: 120px;
+    height: 120px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+
+    .copyOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: $white;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+      gap: 8px;
+
+      .copyIcon {
+        font-size: 1.5rem;
+      }
+
+      span {
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+    }
+
+    &:hover .copyOverlay {
+      opacity: 1;
+    }
+  }
+
+  .colorName {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: $dawn-grey;
+  }
+
+  .colorHex {
+    font-size: 0.75rem;
+    color: $grey-text;
+  }
+}

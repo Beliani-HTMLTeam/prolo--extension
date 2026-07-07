@@ -1,0 +1,45 @@
+@use '@/assets/styles/_variables' as *;
+
+.dashboardWrapper {
+  background-color: $subtle-peach;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.dashboardContainer {
+  max-width: 1440px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 16px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding-top: 24px;
+
+  .quickLinksRow {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .colorSwatches {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    justify-content: center;
+  }
+}
