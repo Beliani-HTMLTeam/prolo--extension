@@ -1,0 +1,503 @@
+{
+  "html": {
+    "0": {
+      "name": "Prologistics",
+      "icon": "mingcute:heart-fill",
+      "links": [
+        { "name": "Start.php", "url": "https://www.prologistics.info/start.php", "icon": "mingcute:heart-fill" },
+        {
+          "name": "Mailing Templates",
+          "url": "https://www.prologistics.info/news_emails.php",
+          "icon": "mingcute:heart-fill"
+        },
+        {
+          "name": "Newsletter Sending",
+          "url": "https://www.prologistics.info/spam_plan.php",
+          "icon": "mingcute:heart-fill"
+        },
+        {
+          "name": "Issue Logs",
+          "url": "https://www.prologistics.info/react/logs/issue_logs/",
+          "icon": "mingcute:heart-fill"
+        },
+        { "name": "Employees", "url": "https://www.prologistics.info/employees.php", "icon": "mingcute:heart-fill" },
+        {
+          "name": "CGB",
+          "url": "https://www.prologistics.info/shop_banners.php?shop_id=1",
+          "icon": "mingcute:heart-fill"
+        },
+        {
+          "name": "Push Notifications",
+          "url": "https://www.prologistics.info/push_notifications.php",
+          "icon": "mingcute:heart-fill"
+        },
+        { "name": "Purge", "url": "https://www.prologistics.info/purge.php", "icon": "mingcute:heart-fill" }
+      ]
+    },
+    "1": {
+      "name": "Development",
+      "icon": "solar:code-circle-bold",
+      "links": [
+        { "name": "HTML Docs", "url": "https://tj31c889tzsk.share.zrok.io/", "icon": "oui:documentation" },
+        {},
+        {
+          "name": "Projects Board",
+          "url": "https://www.figma.com/design/PF7tZr72XquHOSrWwQXtSd/Projects?node-id=1-2&t=fUoMeTQTw1Wpz9Yz-1",
+          "icon": "ri:figma-fill"
+        },
+        {},
+        {
+          "name": "HTML Repositories",
+          "url": "https://github.com/orgs/Beliani-HTMLTeam/repositories",
+          "icon": "simple-icons:github"
+        },
+        {},
+        { "name": "WXT.dev", "url": "https://wxt.dev/guide/essentials/entrypoints.html", "icon": "oui:documentation" },
+        { "name": "Can I email...", "url": "https://www.caniemail.com/", "icon": "fontisto:if-question-circle" },
+        { "name": "JSON Editor", "url": "https://jsoneditoronline.org/", "icon": "tabler:json" },
+        {
+          "name": "Charcodes",
+          "url": "https://www.web2generators.com/html-based-tools/online-html-entities-encoder-and-decoder",
+          "icon": "carbon:character-sentence-case"
+        },
+        { "name": "Emoji to HTML", "url": "https://emojiguide.org/", "icon": "streamline:desktop-emoji-remix" },
+        { "name": "NSLT preview - testi.at", "url": "https://testi.at/firstproj", "icon": "material-symbols:preview" }
+      ]
+    },
+    "2": {
+      "name": "Graphics",
+      "icon": "streamline-plump:paint-palette-solid",
+      "links": [
+        {
+          "name": "Brand Guide",
+          "url": "https://www.figma.com/design/cXq0y5RJspsLyIOKXvQ0Qe/",
+          "icon": "ri:figma-fill"
+        },
+        {
+          "name": "HTML SOP/Guide",
+          "url": "https://www.figma.com/board/P1cobx2XzyYPV2wb9iuHpV",
+          "icon": "ri:figma-fill"
+        },
+        {
+          "name": "Brand Book",
+          "url": "https://docs.google.com/presentation/d/1-Er3GqWKAzAhZ2nrJdBXOnDQr10LoMm5_vqX33a3MFs",
+          "icon": "simple-icons:googleslides"
+        },
+        {
+          "name": "Brand Assets",
+          "url": "https://drive.google.com/drive/folders/1K3QwQ4NjQvjSUnnQryLw-XWeA9UQZRdT",
+          "icon": "simple-icons:googledrive"
+        },
+        {
+          "name": "Graphic Guide",
+          "url": "https://www.figma.com/design/hQhDnri4p9mNvGC4ta9NJP",
+          "icon": "ri:figma-fill"
+        },
+        {
+          "name": "NSLT Templates",
+          "url": "https://www.figma.com/design/3oNaYfuXymWDKS2kYtY2Hi",
+          "icon": "ri:figma-fill"
+        }
+      ]
+    },
+    "3": {
+      "name": "Google Sheets",
+      "icon": "simple-icons:googlesheets",
+      "links": [
+        {
+          "name": "Global Translations",
+          "url": "https://docs.google.com/spreadsheets/d/1Y9blxN4paEV05s6AvdWmH5fBELTUvDz3ax5skmgVrsQ/",
+          "icon": "simple-icons:googlesheets"
+        },
+        {
+          "name": "For Extensnion",
+          "url": "https://docs.google.com/spreadsheets/d/1-PuU7XVrwNJhbHmaAFML9n2XwWgpLLb3FKfXdnaoHc0",
+          "icon": "simple-icons:googlesheets"
+        },
+        {},
+        {
+          "name": "NSLT Timeline (updated)",
+          "url": "https://docs.google.com/spreadsheets/d/1zoZOh1pWgguM5--8hbU3uslv06zzdoTc8Z0nBXewrLQ/",
+          "icon": "simple-icons:googlesheets"
+        },
+        {
+          "name": "NSLT Translations 2026",
+          "url": "https://docs.google.com/spreadsheets/d/1RcsQspit0B3b3xX1NwZ9RWnUzZrkoVDULu2cnPMZ04U/",
+          "icon": "simple-icons:googlesheets"
+        },
+        {
+          "name": "NSLT Translations 2025",
+          "url": "https://docs.google.com/spreadsheets/d/1djnjfhsFX4-Fghv5cQU_UNYaEhVL9Ban4VUqIfHsWdc/",
+          "icon": "simple-icons:googlesheets"
+        },
+        {
+          "name": "NSLT List",
+          "url": "https://docs.google.com/spreadsheets/d/1mXRItWs-dAk4bssBIUb4pr1QtSmg15DiMGQWDoYojZQ",
+          "icon": "simple-icons:googlesheets"
+        },
+        {
+          "name": "NSLT QA",
+          "url": "https://docs.google.com/spreadsheets/d/1prLX1zu8-5NPN49gcdcRSSNluiYELaAYC7YjLTfXYC0",
+          "icon": "simple-icons:googlesheets"
+        },
+        {},
+        {
+          "name": "Days off",
+          "url": "https://docs.google.com/spreadsheets/d/1Kywf_gL4kCOw1kiTbKM7H2DW1qpWCm0yabjmH8wX5iw/",
+          "icon": "simple-icons:googlesheets"
+        },
+        {
+          "name": "Handover Checklist",
+          "url": "https://docs.google.com/spreadsheets/d/1ntXgDzV_JiYyl2kkEwM4bmIRccPnhD8PpaaSwtl1QnE",
+          "icon": "simple-icons:googlesheets"
+        },
+        {
+          "name": "Weekly Minutes",
+          "url": "https://docs.google.com/spreadsheets/d/1MqUl-WFCZVZGCoA6z9cuSTQVbQvD6O6JobpDrschGpg",
+          "icon": "simple-icons:googlesheets"
+        }
+      ]
+    }
+  },
+  "graphics": {
+    "belianiShops": [
+      {
+        "domain": "Beliani.be",
+        "flag": "https://beliani.info/flags/flag_be.svg",
+        "alt": "Belgium Flag",
+        "links": [
+          { "name": "Belgium", "url": "https://www.beliani.be/nl/" },
+          { "name": "FR", "url": "https://www.beliani.be/fr/" },
+          { "name": "EN", "url": "https://www.beliani.be/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.cz",
+        "flag": "https://beliani.info/flags/flag_cz.svg",
+        "alt": "Czech Republic Flag",
+        "links": [
+          { "name": "Czech Republic", "url": "https://www.beliani.cz/cs/" },
+          { "name": "EN", "url": "https://www.beliani.cz/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.dk",
+        "flag": "https://beliani.info/flags/flag_dk.svg",
+        "alt": "Denmark Flag",
+        "links": [
+          { "name": "Denmark", "url": "https://www.beliani.dk/da/" },
+          { "name": "EN", "url": "https://www.beliani.dk/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.de",
+        "flag": "https://beliani.info/flags/flag_de.svg",
+        "alt": "Germany Flag",
+        "links": [
+          { "name": "Germany", "url": "https://www.beliani.de/dede/" },
+          { "name": "EN", "url": "https://www.beliani.de/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.es",
+        "flag": "https://beliani.info/flags/flag_es.svg",
+        "alt": "Spain Flag",
+        "links": [
+          { "name": "Spain", "url": "https://www.beliani.es/es/" },
+          { "name": "EN", "url": "https://www.beliani.es/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.fr",
+        "flag": "https://beliani.info/flags/flag_fr.svg",
+        "alt": "France Flag",
+        "links": [
+          { "name": "France", "url": "https://www.beliani.fr/fr/" },
+          { "name": "EN", "url": "https://www.beliani.fr/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.it",
+        "flag": "https://beliani.info/flags/flag_it.svg",
+        "alt": "Italy Flag",
+        "links": [
+          { "name": "Italy", "url": "https://www.beliani.it/it/" },
+          { "name": "EN", "url": "https://www.beliani.it/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.hu",
+        "flag": "https://beliani.info/flags/flag_hu.svg",
+        "alt": "Hungary Flag",
+        "links": [
+          { "name": "Hungary", "url": "https://www.beliani.hu/hu/" },
+          { "name": "EN", "url": "https://www.beliani.hu/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.nl",
+        "flag": "https://beliani.info/flags/flag_nl.svg",
+        "alt": "Netherlands Flag",
+        "links": [
+          { "name": "Netherlands", "url": "https://www.beliani.nl/nl/" },
+          { "name": "EN", "url": "https://www.beliani.nl/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.no",
+        "flag": "https://beliani.info/flags/flag_no.svg",
+        "alt": "Norway Flag",
+        "links": [
+          { "name": "Norway", "url": "https://www.beliani.no/no/" },
+          { "name": "EN", "url": "https://www.beliani.no/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.at",
+        "flag": "https://beliani.info/flags/flag_at.svg",
+        "alt": "Austria Flag",
+        "links": [
+          { "name": "Austria", "url": "https://www.beliani.at/dede/" },
+          { "name": "EN", "url": "https://www.beliani.at/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.pl",
+        "flag": "https://beliani.info/flags/flag_pl.svg",
+        "alt": "Poland Flag",
+        "links": [
+          { "name": "Poland", "url": "https://www.beliani.pl/pl/" },
+          { "name": "EN", "url": "https://www.beliani.pl/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.pt",
+        "flag": "https://beliani.info/flags/flag_pt.svg",
+        "alt": "Portugal Flag",
+        "links": [
+          { "name": "Portugal", "url": "https://www.beliani.pt/pt/" },
+          { "name": "EN", "url": "https://www.beliani.pt/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.ro",
+        "flag": "https://beliani.info/flags/flag_ro.svg",
+        "alt": "Romania Flag",
+        "links": [
+          { "name": "Romania", "url": "https://www.beliani.ro/ro/" },
+          { "name": "EN", "url": "https://www.beliani.ro/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.ch",
+        "flag": "https://beliani.info/flags/flag_ch.svg",
+        "alt": "Switzerland Flag",
+        "links": [
+          { "name": "Switzerland", "url": "https://www.beliani.ch/de/" },
+          { "name": "FR", "url": "https://www.beliani.ch/fr/" },
+          { "name": "IT", "url": "https://www.beliani.ch/it/" },
+          { "name": "EN", "url": "https://www.beliani.ch/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.sk",
+        "flag": "https://beliani.info/flags/flag_sk.svg",
+        "alt": "Slovakia Flag",
+        "links": [
+          { "name": "Slovakia", "url": "https://www.beliani.sk/sk/" },
+          { "name": "EN", "url": "https://www.beliani.sk/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.fi",
+        "flag": "https://beliani.info/flags/flag_fi.svg",
+        "alt": "Finland Flag",
+        "links": [
+          { "name": "Finland", "url": "https://www.beliani.fi/fi/" },
+          { "name": "EN", "url": "https://www.beliani.fi/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.se",
+        "flag": "https://beliani.info/flags/flag_se.svg",
+        "alt": "Sweden Flag",
+        "links": [
+          { "name": "Sweden", "url": "https://www.beliani.se/sv/" },
+          { "name": "EN", "url": "https://www.beliani.se/en/" }
+        ]
+      },
+      {
+        "domain": "Beliani.co.uk",
+        "flag": "https://beliani.info/flags/flag_uk.svg",
+        "alt": "United Kingdom Flag",
+        "links": [{ "name": "United Kingdom", "url": "https://www.beliani.co.uk" }]
+      }
+    ],
+    "topNav": [
+      { "name": "beliani.com", "url": "https://beliani.com", "hasDropdown": true },
+      { "name": "prologistics.info", "url": "https://prologistics.info" },
+      { "name": "prolodev.prologistics.info", "url": "https://prolodev.prologistics.info" },
+      { "name": "dev.beliani.net", "url": "https://dev.beliani.net" }
+    ],
+    "googleApps": [
+      {
+        "name": "Account",
+        "url": "https://myaccount.google.com",
+        "icon": "mdi:account-circle",
+        "iconColor": "#4285F4"
+      },
+      { "name": "Gmail", "url": "https://mail.google.com", "image": "gmail" },
+      { "name": "Drive", "url": "https://drive.google.com", "image": "drive" },
+      { "name": "Docs", "url": "https://docs.google.com/document", "image": "docs" },
+      { "name": "Sheets", "url": "https://docs.google.com/spreadsheets", "image": "sheets" },
+      { "name": "Slides", "url": "https://docs.google.com/presentation", "image": "slides" },
+      { "name": "Translate", "url": "https://translate.google.com", "image": "translate" },
+      { "name": "Keep", "url": "https://keep.google.com", "image": "keep" },
+      { "name": "Calendar", "url": "https://calendar.google.com/calendar", "image": "calendar" }
+    ],
+    "quickLinks": [
+      { "name": "Google", "url": "https://google.com", "icon": "logos:google-icon" },
+      { "name": "Gmail", "url": "https://mail.google.com", "image": "gmail" },
+      { "name": "Calendar", "url": "https://calendar.google.com/calendar", "image": "calendar" },
+      {
+        "name": "Prologistic",
+        "url": "https://www.prologistics.info/",
+        "image": "prologistics"
+      }
+    ],
+    "aiLinks": [
+      { "name": "ChatGPT", "url": "https://chatgpt.com", "icon": "arcticons:openai-chatgpt" },
+      { "name": "Gemini", "url": "https://gemini.google.com", "image": "gemini" },
+      { "name": "Flow", "url": "https://labs.google/fx/tools/flow", "image": "flow" }
+    ],
+    "sidebarLeft": [
+      {
+        "category": "Design Guide",
+        "links": [
+          {
+            "name": "Brand Book",
+            "url": "https://docs.google.com/presentation/d/1-Er3GqWKAzAhZ2nrJdBXOnDQr10LoMm5_vqX33a3MFs/edit?usp=sharing"
+          },
+          {
+            "name": "Graphic Guidelines",
+            "url": "https://www.figma.com/design/hQhDnri4p9mNvGC4ta9NJP/Graphic-Guidelines---Technology-Graphics?node-id=0-1&t=owrz5aOazK9j56Di-1"
+          }
+        ]
+      },
+      {
+        "category": "Templates",
+        "links": [
+          {
+            "name": "Newsletter",
+            "url": "https://www.figma.com/design/3oNaYfuXymWDKS2kYtY2Hi/Newsletter-template?node-id=0-1&t=AnSooTNdwSbd18UW-1"
+          },
+          {
+            "name": "Top Banner Static",
+            "url": "https://www.figma.com/design/3oNaYfuXymWDKS2kYtY2Hi/Newsletter-template?node-id=8348-15984&t=AnSooTNdwSbd18UW-1"
+          },
+          {
+            "name": "CGB % Deal",
+            "url": "https://www.figma.com/design/RyaeFo3o3eLsosl2awo7E7/CGB-----template?node-id=0-1&t=JyM0ohroYUrLaFRt-1"
+          },
+          {
+            "name": "CGB Wide Image",
+            "url": "https://www.figma.com/design/PneK0B44ECUEai6xOuJT7M/CGB-wide-image---template?node-id=0-1&t=hzzr7nsOFnFLfrsw-1"
+          },
+          {
+            "name": "Cashback Central Banners",
+            "url": "https://www.figma.com/design/EiWnMQX6PwsOkLO652sU2B/04-Cashback-Central---Top-Banners?node-id=0-1&t=JjUKfO3pUFJ56ebP-1"
+          },
+          {
+            "name": "Cashback Top Banner Static",
+            "url": "https://www.figma.com/design/EiWnMQX6PwsOkLO652sU2B/04-Cashback-Central---Top-Banners?node-id=98-285&t=JjUKfO3pUFJ56ebP-1"
+          }
+        ]
+      },
+      {
+        "category": "Social",
+        "links": [
+          {
+            "name": "SM Paid (Facebook, Pinterest)",
+            "url": "https://www.figma.com/design/cu8mch7BgjFQ4AfdNzqNgM/05-Social-Media-Paid-Templates?node-id=0-1&t=LRaUE1uyt6CeJSaV-1"
+          },
+          {
+            "name": "Google Banner",
+            "url": "https://www.figma.com/design/7JKWMm9Vls12MTAAHFU8mC/06-Google-Banner-Template?node-id=0-1&t=ULsbX3hQcvJZzZGH-1"
+          },
+          {
+            "name": "Google Banner B-Shape",
+            "url": "https://www.figma.com/design/7JKWMm9Vls12MTAAHFU8mC/06-Google-Banner-Template?node-id=1-360&t=ULsbX3hQcvJZzZGH-1"
+          },
+          {
+            "name": "Google Banner B-Outline",
+            "url": "https://www.figma.com/design/7JKWMm9Vls12MTAAHFU8mC/06-Google-Banner-Template?node-id=1-10291&t=ULsbX3hQcvJZzZGH-1"
+          }
+        ]
+      }
+    ],
+    "sidebarRight": [
+      {
+        "category": "Useful links",
+        "links": [
+          { "name": "Purge", "url": "https://www.prologistics.info/purge.php" },
+          {
+            "name": "SA Details",
+            "url": "https://www.prologistics.info/saved_details.php?filter_id=3e712b96414a5a7bf42cf4d0cd3782da"
+          },
+          {
+            "name": "Graphics Planning",
+            "url": "https://docs.google.com/spreadsheets/d/1WQqpDD_4jymGHiXGhzl31jd1xvz2547vEZE1LdZi88s/edit?pli=1&gid=1261245004#gid=1261245004"
+          },
+          {
+            "name": "Dropbox Graphics_Technology",
+            "url": "https://www.dropbox.com/scl/fo/bsl1tg1045h9szyc8prwu/h?rlkey=y4vlw3xp8bs0oq8owxfwyrfg2&st=6ydljadv&dl=0"
+          },
+          {
+            "name": "Newsletter Translations 2026",
+            "url": "https://docs.google.com/spreadsheets/d/1RcsQspit0B3b3xX1NwZ9RWnUzZrkoVDULu2cnPMZ04U/edit?gid=1506586151#gid=1506586151"
+          },
+          {
+            "name": "Banners link spreadsheet",
+            "url": "https://docs.google.com/spreadsheets/d/1CGZqm79YkOaplggyOZCxDn5fFmCldgXDdHCJgpOVHNI/edit?usp=sharing"
+          },
+          {
+            "name": "Top timer banner - extension",
+            "url": "https://docs.google.com/spreadsheets/d/14QBVWwIuAm81CYr-FUaCUshdBnyKi9NlNj_0kmHctN8/edit?usp=sharing"
+          },
+          {
+            "name": "SOP - Technology Graphics",
+            "url": "https://docs.google.com/document/d/1eAqjmZ-pX2PzIcQHEdO2OuWmd3_ALzdLPlyryBvuVtc/edit?usp=sharing",
+            "isSop": true
+          },
+          {
+            "name": "SOP - Banners Uploading",
+            "url": "https://docs.google.com/document/d/1tT6wroz1QnJxbFqsbloMac_f0zh1AqPUz0ZdFNNqIx4/edit?usp=sharing",
+            "isSop": true
+          }
+        ]
+      },
+      {
+        "category": "Team Planning",
+        "links": [
+          { "name": "Time stamp filter", "url": "https://www.prologistics.info/timestamp_filter.php" },
+          { "name": "Vacation and Sickness", "url": "https://www.prologistics.info/emp_vacation_sickness.php" },
+          {
+            "name": "Designers Vacation Sheet",
+            "url": "https://docs.google.com/spreadsheets/d/1ns9ZXcBYOijGOWMxqJ2Kt7fPXYENh_vNhaW-jSTupsY/edit?usp=sharing"
+          },
+          {
+            "name": "Handover Sheet",
+            "url": "https://docs.google.com/spreadsheets/d/1ntXgDzV_JiYyl2kkEwM4bmIRccPnhD8PpaaSwtl1QnE/edit?usp=sharing"
+          }
+        ]
+      }
+    ],
+    "colors": [
+      { "name": "Cozy Brown", "hex": "#750000" },
+      { "name": "Happy Red", "hex": "#FF2F00" },
+      { "name": "Warm Yellow", "hex": "#FD9000" },
+      { "name": "Soft Peach", "hex": "#FFCCB7" },
+      { "name": "Subtle peach", "hex": "#F6E7E6" }
+    ]
+  }
+}
