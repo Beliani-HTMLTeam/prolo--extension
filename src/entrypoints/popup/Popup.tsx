@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import styles from './Popup.module.scss';
 import pkgText from '../../../package.json?raw';
 import { getTableData } from './fetchProducts';
+import useTeam from '@/hooks/useTeam';
 const pkg = JSON.parse(pkgText) as {
   name?: string;
   version?: string;
@@ -11,6 +12,7 @@ const pkg = JSON.parse(pkgText) as {
 
 export default function Popup() {
   const [isOnSavedDetailsPage, setIsOnSavedDetailsPage] = useState(false);
+  const { team, changeTeam } = useTeam();
 
   useEffect(() => {
     browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -56,6 +58,24 @@ export default function Popup() {
           <button onClick={getTableData}>Fetch products</button>
         </div>
       )}
+
+      <div className={styles.teamToggle}>
+        <p>Select Team:</p>
+        <div className={styles.toggleContainer}>
+          <button
+            className={`${styles.toggleButton} ${team === 'HTML' ? styles.active : ''}`}
+            onClick={() => changeTeam('HTML')}
+          >
+            HTML
+          </button>
+          <button
+            className={`${styles.toggleButton} ${team === 'GRAPHICS' ? styles.active : ''}`}
+            onClick={() => changeTeam('GRAPHICS')}
+          >
+            GRAPHICS
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
