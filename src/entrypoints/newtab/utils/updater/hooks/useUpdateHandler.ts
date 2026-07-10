@@ -4,7 +4,7 @@ import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../constants';
 import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
 import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';
-import { trimAllLineBreaks } from '../stringUtils';
+import {  encodeEmojiToHtmlEntities, trimAllLineBreaks } from '../stringUtils';
 import { normalizeSlugForSlug } from '../../planning/slugNormalization';
 import { checkAndActivateMultipleShopContents } from '@/entrypoints/issue.content/api/shopContentService';
 
@@ -45,9 +45,8 @@ export const useUpdateHandler = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [activationResults, setActivationResults] = useState<ActivationResult[]>([]);
-const [isActivating, setIsActivating] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
   const [activationProgress, setActivationProgress] = useState({ completed: 0, total: 0 });
-
 
   const getServersForSlug = (slug: string): number[] => {
     return slug === 'NL' ? NL_SERVERS : DEFAULT_SERVERS;
@@ -87,7 +86,6 @@ const [isActivating, setIsActivating] = useState(false);
       > = {};
 
       selectedItems.forEach(item => {
-
         if (!updatesBySlug[item.slug]) {
           updatesBySlug[item.slug] = {
             slug: item.slug,
@@ -170,7 +168,6 @@ const [isActivating, setIsActivating] = useState(false);
         }
       });
 
-
       if (formattedUpdates.length === 0) {
         console.warn('No formatted updates to send');
         return;
@@ -204,6 +201,8 @@ const [isActivating, setIsActivating] = useState(false);
         if (hasPageTitle && update.lpId && update.shopId) {
           let newsletterTemplateId = update.nsltId;
 
+  const pageTitleForProLogistics = encodeEmojiToHtmlEntities(update.pageTitle || '');
+
           // if it is CHFR, use CHDE's nslt
           if (update.slug === 'CHFR' || update.slug === 'CHDE') {
             // Use CHDE's newsletter ID (which is the primary one)
@@ -233,7 +232,7 @@ const [isActivating, setIsActivating] = useState(false);
               title_menu: { [update.lang || '']: update.landingPage },
               alias: { [update.lang || '']: update.landingPage },
               description: { [update.lang || '']: update.landingPage },
-              title: { [update.lang || '']: update.pageTitle },
+              title: { [update.lang || '']: pageTitleForProLogistics },
             },
           });
         }
@@ -261,82 +260,85 @@ const [isActivating, setIsActivating] = useState(false);
       setUpdatingSlugs(new Set());
 
       console.log(`Update complete! Success: ${successCount}, Failed: ${failureCount}`);
-        const successfullyUpdated = results.filter(r => r.success && r.type === 'landing-page');
-    
-    if (successfullyUpdated.length > 0) {
-  // Get shop IDs for each updated item
-  const itemsToActivate = successfullyUpdated
-  .map(result => {
-    const update = updatesBySlug[result.slug];
-    if (!update || !update.lpId) return null;
-    
-  const normalizedSlug = normalizeSlugForSlug(result.slug);
-      let shopId = SLUG_ID_MAP[result.slug as keyof typeof SLUG_ID_MAP];
-      
-      // If not found with original slug, try normalized slug
-      if (!shopId) {
-        shopId = SLUG_ID_MAP[normalizedSlug as keyof typeof SLUG_ID_MAP];
+      const successfullyUpdated = results.filter(r => r.success && r.type === 'landing-page');
+
+      if (successfullyUpdated.length > 0) {
+        // Get shop IDs for each updated item
+        const itemsToActivate = successfullyUpdated
+          .map(result => {
+            const update = updatesBySlug[result.slug];
+            if (!update || !update.lpId) return null;
+
+            const normalizedSlug = normalizeSlugForSlug(result.slug);
+            let shopId = SLUG_ID_MAP[result.slug as keyof typeof SLUG_ID_MAP];
+
+            // If not found with original slug, try normalized slug
+            if (!shopId) {
+              shopId = SLUG_ID_MAP[normalizedSlug as keyof typeof SLUG_ID_MAP];
+            }
+
+            // Get the newsletter template ID (nsltId) from the update
+            const nsltData = newsletterIds?.[result.slug];
+            const newsletterTemplateId = nsltData?.aId || nsltData?.bId || '';
+
+            return {
+              lpId: update.lpId,
+              shopId: String(shopId),
+              slug: result.slug,
+              landingPage: update.landingPage || '',
+              activateDate: {
+                date: update.activateDate ? formatDateForAPI(update.activateDate).date : '',
+                time: update.activateDate ? formatDateForAPI(update.activateDate).time : '',
+              },
+              deactivateDate: {
+                date: update.deactivateDate ? formatDateForAPI(update.deactivateDate).date : '',
+                time: update.deactivateDate ? formatDateForAPI(update.deactivateDate).time : '',
+              },
+              newsletterTemplateId: newsletterTemplateId,
+            };
+          })
+          .filter(
+            (
+              item,
+            ): item is {
+              lpId: string;
+              shopId: string;
+              slug: string;
+              landingPage: string;
+              activateDate: { date: string; time: string };
+              deactivateDate: { date: string; time: string };
+              newsletterTemplateId: string;
+            } => item !== null,
+          );
+
+        if (itemsToActivate.length > 0) {
+          setActivationProgress({ completed: 0, total: itemsToActivate.length });
+
+          setIsActivating(true);
+
+          try {
+            const activationResults = await checkAndActivateMultipleShopContents(
+              itemsToActivate,
+              newsletterIds,
+              (completed, total, result) => {
+                setActivationProgress({ completed, total });
+              },
+            );
+            setActivationResults(activationResults);
+          } catch (error) {
+            console.error('Activation error:', error);
+          } finally {
+            setIsActivating(false);
+          }
+        }
       }
-    
-    // Get the newsletter template ID (nsltId) from the update
-    const nsltData = newsletterIds?.[result.slug];
-    const newsletterTemplateId = nsltData?.aId || nsltData?.bId || '';
-    
-    return {
-      lpId: update.lpId,
-      shopId: String(shopId),
-      slug: result.slug,
-      landingPage: update.landingPage || '',
-      activateDate: {
-        date: update.activateDate ? formatDateForAPI(update.activateDate).date : '',
-        time: update.activateDate ? formatDateForAPI(update.activateDate).time : '',
-      },
-      deactivateDate: {
-        date: update.deactivateDate ? formatDateForAPI(update.deactivateDate).date : '',
-        time: update.deactivateDate ? formatDateForAPI(update.deactivateDate).time : '',
-      },
-      newsletterTemplateId: newsletterTemplateId,
-    };
-  })
-  .filter((item): item is {
-    lpId: string;
-    shopId: string;
-    slug: string;
-    landingPage: string;
-    activateDate: { date: string; time: string };
-    deactivateDate: { date: string; time: string };
-    newsletterTemplateId: string;
-  } => item !== null);
 
-  if (itemsToActivate.length > 0) {
-    setActivationProgress({ completed: 0, total: itemsToActivate.length });
-
-        setIsActivating(true);
-
-    
-  try {
-       const activationResults = await checkAndActivateMultipleShopContents(
-      itemsToActivate,
-      newsletterIds,
-      (completed, total, result) => {
-        setActivationProgress({ completed, total });
+      if (onClearSelections) {
+        onClearSelections();
       }
-    );
-      setActivationResults(activationResults);
-    } catch (error) {
-      console.error('Activation error:', error);
-    } finally {
-      setIsActivating(false);
-    }
-  }
-}
 
-if (onClearSelections) {
-  onClearSelections();
-}
-
-setUpdateProgress({completed: 0, total: 0});
-setIsComplete(true);
+      setUpdateProgress({ completed: 0, total: 0 });
+      setIsComplete(true);
     } catch (error) {
       console.error('Failed to update translations: ', error);
       throw error;
@@ -401,9 +403,9 @@ setIsComplete(true);
     updateResults,
     updatingSlugs,
     isComplete,
-     isActivating,
-  activationResults,
-  activationProgress,
+    isActivating,
+    activationResults,
+    activationProgress,
     handleUpdateSelected,
     handleRetryFailed,
     handleUpdateAll,
@@ -413,9 +415,9 @@ setIsComplete(true);
       setIsComplete(false);
       setUpdateProgress({ completed: 0, total: 0 });
       setUpdateResults([]);
-       setIsActivating(false);
-    setActivationResults([]);
-    setActivationProgress({ completed: 0, total: 0 });
+      setIsActivating(false);
+      setActivationResults([]);
+      setActivationProgress({ completed: 0, total: 0 });
     },
   };
 };
