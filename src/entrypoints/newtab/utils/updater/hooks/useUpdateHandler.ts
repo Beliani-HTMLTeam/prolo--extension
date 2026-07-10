@@ -4,7 +4,7 @@ import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../constants';
 import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
 import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';
-import {  encodeEmojiToHtmlEntities, trimAllLineBreaks } from '../stringUtils';
+import { encodeEmojiToHtmlEntities, trimAllLineBreaks } from '../stringUtils';
 import { normalizeSlugForSlug } from '../../planning/slugNormalization';
 import { checkAndActivateMultipleShopContents } from '@/entrypoints/issue.content/api/shopContentService';
 
@@ -201,7 +201,7 @@ export const useUpdateHandler = ({
         if (hasPageTitle && update.lpId && update.shopId) {
           let newsletterTemplateId = update.nsltId;
 
-  const pageTitleForProLogistics = encodeEmojiToHtmlEntities(update.pageTitle || '');
+          const pageTitleForProLogistics = encodeEmojiToHtmlEntities(update.pageTitle || '');
 
           // if it is CHFR, use CHDE's nslt
           if (update.slug === 'CHFR' || update.slug === 'CHDE') {
@@ -216,6 +216,12 @@ export const useUpdateHandler = ({
             const benlNsltData = newsletterIds?.['BENL'];
             newsletterTemplateId = benlNsltData?.aId || update.nsltId;
           }
+
+          if (update.slug === 'CHIT') {
+            const chdeNsltData = newsletterIds?.['CHDE'];
+            newsletterTemplateId = chdeNsltData?.aId || chdeNsltData?.bId || update.nsltId;
+          }
+
           updatesToSend.push({
             type: 'landing-page',
             slug: update.slug,

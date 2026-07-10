@@ -15,6 +15,7 @@ export const useTranslationsLoader = ({
   rows,
   isSundayNewsletter = false,
 }: UseTranslationsLoaderProps) => {
+  console.log("rows", rows)
   const [translations, setTranslations] = useState<LineTitleTranslations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +103,7 @@ export const useTranslationsLoader = ({
         };
 
         setTranslations(filteredTranslations);
+        console.log("filtered translations", filteredTranslations);
       } catch (e) {
         console.error('Failed to load SL/PT translations: ', e);
         setError(e instanceof Error ? e.message : 'Failed to load translations');

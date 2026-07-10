@@ -5,6 +5,7 @@ export const FLAG_URLS: Record<string, string> = {
   AT: 'https://pictureserver.net/static/flags/flag_at.svg',
   CHDE: 'https://pictureserver.net/static/flags/flag_ch.svg',
   CHFR: 'https://pictureserver.net/static/flags/flag_ch.svg',
+  CHIT: 'https://pictureserver.net/static/flags/flag_ch.svg',
   NL: 'https://pictureserver.net/static/flags/flag_nl.svg',
   FR: 'https://pictureserver.net/static/flags/flag_fr.svg',
   ES: 'https://pictureserver.net/static/flags/flag_es.svg',
