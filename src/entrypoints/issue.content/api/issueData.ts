@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { IssueListItem, IssueListResponse, LineTitleTranslations, SpreadsheetTranslations } from '../lib/types';
 import { SHOP_ALIASES } from '../lib/shopConfig';
-import { trimAllLineBreaks } from '@/entrypoints/newtab/utils/updater/stringUtils';
+import { trimAllLineBreaks } from '../utils/updater/stringUtils';
 export { extractIssueLinks } from './issueLinks';
 export { parseIssueInfo, getChecklistMode } from './issueParsing';
 export { fetchMentionableUsers } from './mentions';

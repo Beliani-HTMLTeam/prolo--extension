@@ -1,7 +1,7 @@
 import pLimit from 'p-limit';
 import { IssueListItem } from '../lib/types';
 import { fetchSpreadsheetTranslationsTab } from './issueData';
-import { NEWSLETTER_ENDPOINT, SHOP_ENDPOINT } from '@/entrypoints/newtab/utils/updater/constants';
+import { NEWSLETTER_ENDPOINT, SHOP_ENDPOINT } from '../utils/updater/constants';
 import axios from 'axios';
 
 interface LPPathResult {
