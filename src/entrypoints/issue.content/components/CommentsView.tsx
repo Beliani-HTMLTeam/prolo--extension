@@ -11,6 +11,7 @@ import { EmojiPicker } from './pickers/EmojiPicker';
 import { GifPicker } from './pickers/GifPicker';
 import { MentionPicker } from './pickers/MentionPicker';
 import { RichTextarea, type RichTextareaHandle, applyTwemoji } from './RichTextarea';
+import { FormatToolbar } from './FormatToolbar';
 import type { ChecklistMode } from '../lib/types';
 
 const TwemojiContent = memo(({ html, className }: { html: string; className: string }) => {
@@ -75,6 +76,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'edit' | 'preview' | 'source'>('edit');
   const [emojiAnchorStyle, setEmojiAnchorStyle] = useState<CSSProperties>({});
   const [mentionAnchorStyle, setMentionAnchorStyle] = useState<CSSProperties>({});
   const [gifAnchorStyle, setGifAnchorStyle] = useState<CSSProperties>({});
@@ -323,6 +325,20 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
       e.preventDefault();
       void handleSend();
     }
+
+    // ctrl + b/i/u 
+    if (e.ctrlKey) {
+      if (e.key === 'b' || e.key === 'B') {
+        e.preventDefault();
+        richInputRef.current?.wrapSelection('<b>', '</b>');
+      } else if (e.key === 'i' || e.key === 'I') {
+        e.preventDefault();
+        richInputRef.current?.wrapSelection('<i>', '</i>');
+      } else if (e.key === 'u' || e.key === 'U') {
+        e.preventDefault();
+        richInputRef.current?.wrapSelection('<u>', '</u>');
+      }
+    }
   };
 
   const handleMentionSelect = (userId: string, value: string) => {
@@ -444,6 +460,8 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
               ref={emojiBtnRef}
               className={clsx(formStyles.toolButton, showEmojiPicker && formStyles.toolButtonActive)}
               title="Emoji"
+              disabled={previewMode !== 'edit'}
+              onMouseDown={() => richInputRef.current?.saveSelection()}
               onClick={() => {
                 const next = !showEmojiPicker;
                 setShowEmojiPicker(next);
@@ -461,6 +479,8 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
                 (showMentionPicker || mentionQuery !== null) && formStyles.toolButtonActive,
               )}
               title="Mention (@)"
+              disabled={previewMode !== 'edit'}
+              onMouseDown={() => richInputRef.current?.saveSelection()}
               onClick={() => {
                 const next = !showMentionPicker;
                 setShowMentionPicker(next);
@@ -476,6 +496,8 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
               ref={gifBtnRef}
               className={clsx(formStyles.toolButton, showGifPicker && formStyles.toolButtonActive)}
               title="GIF"
+              disabled={previewMode !== 'edit'}
+              onMouseDown={() => richInputRef.current?.saveSelection()}
               onClick={() => {
                 const next = !showGifPicker;
                 setShowGifPicker(next);
@@ -492,10 +514,35 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
                 title="Add CGB header"
                 onClick={handleAddCgbHeader}
                 type="button"
+                disabled={previewMode !== 'edit'}
               >
                 Add CGB Header
               </button>
             )}
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FormatToolbar
+                disabled={isSending || previewMode !== 'edit'}
+                onInsert={text => insertAtCursor(text)}
+                getSelectedText={() => richInputRef.current?.getSelectedText() ?? { text: '', hasSelection: false }}
+                wrapSelection={(open, close) => richInputRef.current?.wrapSelection(open, close)}
+              />
+              <div className={formStyles.previewToggle}>
+                <button
+                  className={clsx(formStyles.previewTab, previewMode === 'edit' && formStyles.previewTabActive)}
+                  onClick={() => setPreviewMode('edit')}
+                  title="Edit mode"
+                >
+                  HTML
+                </button>
+                <button
+                  className={clsx(formStyles.previewTab, previewMode === 'preview' && formStyles.previewTabActive)}
+                  onClick={() => setPreviewMode('preview')}
+                  title="Rendered preview"
+                >
+                  Podgląd
+                </button>
+              </div>
+            </div>
           </div>
           {/* Picker portals - rendered at document.body to escape overflow:hidden */}
           {showEmojiPicker &&
@@ -539,13 +586,19 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
           <div className={formStyles.inputRow}>
             <RichTextarea
               ref={richInputRef}
-              className={formStyles.messageInput}
+              className={clsx(formStyles.messageInput, previewMode !== 'edit' && formStyles.messageInputHidden)}
               placeholder="Write a message... (Ctrl+Enter to send)"
               onChange={setMessageText}
               onKeyDown={handleKeyDown}
               onMentionSearch={handleMentionSearch}
               disabled={isSending}
             />
+            {previewMode === 'preview' && (
+              <TwemojiContent
+                html={parseCommentHtml(messageText)}
+                className={clsx(formStyles.messageInput, formStyles.messagePreview)}
+              />
+            )}
             <button
               className={formStyles.sendButton}
               title="Send (Ctrl+Enter)"

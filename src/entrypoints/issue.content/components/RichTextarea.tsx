@@ -33,9 +33,14 @@ export const applyTwemoji = (container: HTMLElement) => {
 export interface RichTextareaHandle {
   insertText: (text: string, useTwemoji?: boolean) => void;
   getText: () => string;
+  getHtml: () => string;
   clear: () => void;
   focus: () => void;
   replaceMentionQuery: (query: string, replacement: string) => void;
+  wrapSelection: (openTag: string, closeTag: string) => void;
+  getSelectedText: () => { text: string; hasSelection: boolean };
+  saveSelection: () => void;
+  restoreSelection: () => void;
 }
 
 interface RichTextareaProps {
@@ -51,6 +56,7 @@ export const RichTextarea = forwardRef<RichTextareaHandle, RichTextareaProps>(
   ({ placeholder, disabled, className, onChange, onKeyDown, onMentionSearch }, ref) => {
     const divRef = useRef<HTMLDivElement>(null);
     const lastMentionQueryRef = useRef<string | null>(null);
+    const savedRangeRef = useRef<Range | null>(null);
 
     const getTextBeforeCursor = (): string => {
       const div = divRef.current;
@@ -66,10 +72,53 @@ export const RichTextarea = forwardRef<RichTextareaHandle, RichTextareaProps>(
     };
 
     useImperativeHandle(ref, () => ({
+      saveSelection() {
+        const sel = window.getSelection();
+        const div = divRef.current;
+
+        if (!sel || sel.rangeCount === 0 || !div) return;
+
+        const range = sel.getRangeAt(0);
+
+        if (div.contains(range.commonAncestorContainer)) {
+          savedRangeRef.current = range.cloneRange();
+        }
+      },
+
+      restoreSelection() {
+        const div = divRef.current;
+
+        if (!div) return;
+
+        div.focus();
+
+        const saved = savedRangeRef.current;
+
+        if (saved) {
+          const sel = window.getSelection();
+
+          if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(saved);
+          }
+
+          savedRangeRef.current = null;
+        }
+      },
+
       insertText(text: string, useTwemojiFlag = false) {
         const div = divRef.current;
         if (!div) return;
         div.focus();
+
+        if (savedRangeRef.current) {
+          const sel = window.getSelection();
+          if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(savedRangeRef.current);
+          }
+          savedRangeRef.current = null;
+        }
 
         const sel = window.getSelection();
         const textNode = document.createTextNode(text);
@@ -78,22 +127,39 @@ export const RichTextarea = forwardRef<RichTextareaHandle, RichTextareaProps>(
           const range = sel.getRangeAt(0);
           range.deleteContents();
           range.insertNode(textNode);
-          range.setStartAfter(textNode);
-          range.collapse(true);
+
+          const afterRange = document.createRange();
+
+          afterRange.setStartAfter(textNode);
+          afterRange.collapse(true);
+
           sel.removeAllRanges();
-          sel.addRange(range);
+          sel.addRange(afterRange);
         } else {
           div.appendChild(textNode);
         }
 
         if (useTwemojiFlag) {
+          const countBefore = div.querySelectorAll('img.emoji').length;
+
           applyTwemoji(div);
-          const newRange = document.createRange();
-          newRange.selectNodeContents(div);
-          newRange.collapse(false);
+
+          const emojiImgs = div.querySelectorAll('img.emoji');
+          const newEmoji = emojiImgs[countBefore];
+          const cursorRange = document.createRange();
+
+          if (newEmoji) {
+            cursorRange.setStartAfter(newEmoji);
+          } else {
+            cursorRange.selectNodeContents(div);
+            cursorRange.collapse(false);
+          }
+
+          cursorRange.collapse(true);
+
           const newSel = window.getSelection();
           newSel?.removeAllRanges();
-          newSel?.addRange(newRange);
+          newSel?.addRange(cursorRange);
         }
 
         onChange(extractPlainText(div));
@@ -103,10 +169,15 @@ export const RichTextarea = forwardRef<RichTextareaHandle, RichTextareaProps>(
         return divRef.current ? extractPlainText(divRef.current) : '';
       },
 
+      getHtml() {
+        return divRef.current ? divRef.current.innerHTML : '';
+      },
+
       clear() {
         if (divRef.current) {
           divRef.current.innerHTML = '';
           onChange('');
+          savedRangeRef.current = null;
           // clear any active mention query
           if (lastMentionQueryRef.current !== null) {
             lastMentionQueryRef.current = null;
@@ -152,6 +223,84 @@ export const RichTextarea = forwardRef<RichTextareaHandle, RichTextareaProps>(
             onChange(extractPlainText(div));
           }
         }
+      },
+
+      getSelectedText() {
+        const sel = window.getSelection();
+
+        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return { text: '', hasSelection: false };
+
+        const range = sel.getRangeAt(0);
+        const div = divRef.current;
+
+        if (!div || !div.contains(range.commonAncestorContainer)) return { text: '', hasSelection: false };
+
+        return { text: sel.toString(), hasSelection: !sel.isCollapsed };
+      },
+
+      wrapSelection(openTag: string, closeTag: string) {
+        const div = divRef.current;
+
+        if (!div) return;
+
+        div.focus();
+
+        const sel = window.getSelection();
+
+        if (!sel || sel.rangeCount === 0) {
+          const textNode = document.createTextNode(openTag + closeTag);
+          const range = document.createRange();
+
+          range.selectNodeContents(div);
+          range.collapse(false);
+          range.insertNode(textNode);
+          
+          const newRange = document.createRange();
+
+          newRange.setStart(textNode, openTag.length);
+          newRange.collapse(true);
+
+          sel?.removeAllRanges();
+          sel?.addRange(newRange);
+
+          onChange(extractPlainText(div));
+
+          return;
+        }
+
+        const range = sel.getRangeAt(0);
+        if (!div.contains(range.commonAncestorContainer)) return;
+
+        if (sel.isCollapsed) {
+          const textNode = document.createTextNode(openTag + closeTag);
+          range.insertNode(textNode);
+
+          const newRange = document.createRange();
+
+          newRange.setStart(textNode, openTag.length);
+          newRange.collapse(true);
+
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+        } else {
+          const selectedText = sel.toString();
+
+          range.deleteContents();
+
+          const wrapped = document.createTextNode(openTag + selectedText + closeTag);
+          
+          range.insertNode(wrapped);
+
+          const newRange = document.createRange();
+
+          newRange.setStartAfter(wrapped);
+          newRange.collapse(true);
+          
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+        }
+
+        onChange(extractPlainText(div));
       },
     }));
 
