@@ -2,9 +2,10 @@ import clsx from 'clsx';
 import styles from '../../styles/FamilyTable.module.scss';
 import { StatusIcon } from './StatusIcon';
 import { getShopId } from '../../lib/shopIdMap';
-import type { ChecklistColumn, ChecklistStatus, ChecklistTableRow } from '../../lib/types';
+import type { ChecklistColumn, ChecklistOwner, ChecklistStatus, ChecklistTableRow } from '../../lib/types';
 import { COLUMN_IDS } from '../../api/checklistShared';
 import { useChecklistState } from './useChecklistState';
+import useTeam from '@/hooks/useTeam';
 
 type TableRowsProps = {
   columns: ChecklistColumn[];
@@ -12,6 +13,7 @@ type TableRowsProps = {
   setRows: React.Dispatch<React.SetStateAction<ChecklistTableRow[]>>;
   hoveredShop: string | null;
   setHoveredShop: React.Dispatch<React.SetStateAction<string | null>>;
+  checklistOwner: ChecklistOwner | null;
 };
 
 const STATUS_FIELD_BY_COLUMN_ID: Record<string, keyof ChecklistTableRow> = {
@@ -109,9 +111,10 @@ const renderLink = (row: ChecklistTableRow, columnId: string) => {
   );
 };
 
-export const TableRows = ({ columns, rows, setRows, hoveredShop, setHoveredShop }: TableRowsProps) => {
+export const TableRows = ({ columns, rows, setRows, hoveredShop, setHoveredShop, checklistOwner }: TableRowsProps) => {
   const { toggleMentionColumn, toggleCheckpointColumn } = useChecklistState(rows, setRows);
   const isCgbView = columns.some(column => column.id.startsWith('cgb:'));
+  const { team, changeTeam } = useTeam();
 
   return rows.map(row =>
     columns.map(column => {
@@ -143,7 +146,12 @@ export const TableRows = ({ columns, rows, setRows, hoveredShop, setHoveredShop 
                 const translationLabel = value === 2 ? 'Cancel' : value === 1 ? '' : 'Request';
                 return (
                   <button
-                    onClick={() => toggleMentionColumn(column.id, row.shop, value)}
+                    onClick={() => {
+                      if (checklistOwner !== team && checklistOwner !== null) {
+                        return;
+                      }
+                      toggleMentionColumn(column.id, row.shop, value);
+                    }}
                     className={clsx(styles.iconButton, {
                       [styles.missing]: value === 0,
                       [styles.pending]: value === 2,
@@ -159,7 +167,12 @@ export const TableRows = ({ columns, rows, setRows, hoveredShop, setHoveredShop 
               const title = value === 2 ? 'Cancel' : 'Request';
               return (
                 <button
-                  onClick={() => toggleMentionColumn(column.id, row.shop, value)}
+                  onClick={() => {
+                    if (checklistOwner !== team && checklistOwner !== null) {
+                      return;
+                    }
+                    toggleMentionColumn(column.id, row.shop, value);
+                  }}
                   className={value === 2 ? styles.cancelButton : styles.requestButton}
                   title={title}
                 >
@@ -179,7 +192,12 @@ export const TableRows = ({ columns, rows, setRows, hoveredShop, setHoveredShop 
 
             return (
               <button
-                onClick={() => toggleCheckpointColumn(column.id, row.shop)}
+                onClick={() => {
+                  if (checklistOwner !== team && checklistOwner !== null) {
+                    return;
+                  }
+                  toggleCheckpointColumn(column.id, row.shop);
+                }}
                 className={clsx(styles.iconButton, {
                   [styles.done]: value === 1,
                   [styles.missing]: !value,

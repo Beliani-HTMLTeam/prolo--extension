@@ -1,4 +1,4 @@
-import type { ChecklistMode, IssueListItem, IssueTypeInfo, ParsedIssueInfo } from '../lib/types';
+import type { ChecklistMode, ChecklistOwner, IssueListItem, IssueTypeInfo, ParsedIssueInfo } from '../lib/types';
 
 const ISSUE_TEXT_LIMIT = 160;
 
@@ -42,6 +42,20 @@ export const getChecklistMode = (issueTypes: IssueTypeInfo[]): ChecklistMode => 
 
   if (names.includes('CGB') || names.includes('Newsletter campaign banners')) {
     return 'cgb';
+  }
+
+  return null;
+};
+
+export const getChecklistOwner = (issueTypes: IssueTypeInfo[]): ChecklistOwner => {
+  const names = issueTypes.map(type => type.name);
+
+  if (names.includes('Sunday newsletter') || names.includes('Newsletter production')) {
+    return 'HTML';
+  }
+
+  if (names.includes('Newsletter campaign banners')) {
+    return 'GRAPHICS';
   }
 
   return null;

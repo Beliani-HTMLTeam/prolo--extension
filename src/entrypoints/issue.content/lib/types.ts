@@ -2,6 +2,8 @@ export type ChecklistStatus = 0 | 1 | 2;
 
 export type ChecklistMode = 'newsletter' | 'sunday' | 'cgb' | null;
 
+export type ChecklistOwner = 'HTML' | 'GRAPHICS' | null;
+
 export type ChecklistColumnKind = 'shop' | 'status' | 'request' | 'link';
 
 export type ChecklistColumn = {
