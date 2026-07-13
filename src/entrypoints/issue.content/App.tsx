@@ -17,9 +17,10 @@ import {
   extractIssueLinks,
   fetchSubjectPageTranslations,
 } from './api/issueData';
-import type { ChecklistTableData, IssueInfoViewModel, IssueLink } from './lib/types';
+import { ChecklistOwner, type ChecklistTableData, type IssueInfoViewModel, type IssueLink } from './lib/types';
 import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
 import { getIssueModePlugin } from './api/issueModePlugins';
+import { getChecklistOwner } from './api/issueParsing';
 
 const IssueAppContent = () => {
   const issueId = useMemo(() => {
@@ -35,6 +36,7 @@ const IssueAppContent = () => {
   const [tableData, setTableData] = useState<ChecklistTableData | null>(null);
   const [issueLinks, setIssueLinks] = useState<IssueLink[]>([]);
   const [issueInfo, setIssueInfo] = useState<IssueInfoViewModel | null>(null);
+  const [checklistOwner, setChecklistOwner] = useState<ChecklistOwner | null>(null);
 
   const loadIssueData = useCallback(async () => {
     const issueData = await fetchIssueData(issueId);
@@ -50,6 +52,9 @@ const IssueAppContent = () => {
 
     const parsed = parseIssueInfo(issueItem);
     const mode = getChecklistMode(parsed.issueTypes);
+    setChecklistOwner(getChecklistOwner(parsed.issueTypes));
+    console.log("checklist mode", mode);
+    
     if (!mode) {
       setIssueInfo(null);
       setTableData(null);
@@ -109,7 +114,7 @@ const IssueAppContent = () => {
         />
 
         <div className={styles.dashboard}>
-          <div className={styles.leftPanel}>{tableData && <FamilyTable data={tableData} />}</div>
+          <div className={styles.leftPanel}>{tableData && <FamilyTable data={tableData} owner={checklistOwner} />}</div>
           <ActionsPanel
             tableData={tableData}
             issueId={issueId}

@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react';
 import styles from '../styles/FamilyTable.module.scss';
 import { shopToMentionTagMap } from '../lib/shopMaps';
 import { COLUMN_IDS } from '../api/checklistShared';
-import type { ChecklistTableData, ChecklistTableRow } from '../lib/types';
+import type { ChecklistOwner, ChecklistTableData, ChecklistTableRow } from '../lib/types';
 import { TableHeaders } from './familytable/TableHeaders';
 import { TableRows } from './familytable/TableRows';
 
 type FamilyTableProps = {
   data: ChecklistTableData;
+  owner: ChecklistOwner | null;
 };
 
-const FamilyTable = ({ data }: FamilyTableProps) => {
+//     const owner = getChecklistOwner(parsed.issueTypes);
+
+const FamilyTable = ({ data, owner }: FamilyTableProps) => {
   const [rows, setRows] = useState<ChecklistTableRow[]>(data.rows);
-  const [hoveredShop, setHoveredShop] = useState<string | null>(null);
+  const [hoveredShop, setHoveredShop] = useState<string | null>(null);    
 
   useEffect(() => {
     setRows(data.rows);
@@ -68,6 +71,7 @@ const FamilyTable = ({ data }: FamilyTableProps) => {
         setRows={setRows}
         hoveredShop={hoveredShop}
         setHoveredShop={setHoveredShop}
+        checklistOwner={owner}
       />
     </div>
   );
