@@ -54,7 +54,7 @@ const UpdaterTable = ({
     }
 
     return Array.from(slugs).sort();
-  }, [translations]);
+  }, [translations]);  
 
   const allSLSlugs = useMemo(
     () => (translations?.subjectLine ? Object.keys(translations.subjectLine) : []),

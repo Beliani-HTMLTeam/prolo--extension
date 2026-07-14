@@ -875,6 +875,49 @@
   }
 }
 
+.activationStats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #f0f7ff;
+  border-bottom: 1px solid #b8d4f0;
+  font-size: 12px;
+  color: #0056b3;
+  gap: 16px;
+  
+  .activationInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .activationSpinner {
+      animation: spin 1s linear infinite;
+    }
+  }
+  
+  .activationProgress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .activationProgressBar {
+      width: 100px;
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .activationProgressFill {
+      height: 100%;
+      background: #007bff;
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 0.6;

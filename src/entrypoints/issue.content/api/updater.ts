@@ -170,7 +170,7 @@ const sendLandingPageUpdate = async (data: LandingPageUpdateData, slug: string):
 
   try {
     const response = await axios.post(SHOP_ENDPOINT, formData, {
-      withCredentials: true,
+      withCredentials: true
     });
 
     return {

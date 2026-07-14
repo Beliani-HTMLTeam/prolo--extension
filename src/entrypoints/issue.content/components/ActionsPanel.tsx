@@ -106,7 +106,11 @@ const ActionsPanel = ({
   if (mode === 'sunday') {
     return rows.filter(row => row.nsltId);
   }
-  return rows.filter(row => row.nsltId || row.nsltAId || row.nsltBId);
+ return rows.filter(row => {
+    const hasNewsletterId = !!(row.nsltId || row.nsltAId || row.nsltBId);
+    const hasLandingPageOnly = !!(row.lpId && !row.nsltId && !row.nsltAId && !row.nsltBId);
+    return hasNewsletterId || hasLandingPageOnly;
+  });
 }, [rows, mode]);
 
 console.log('filteredRows', filteredRows);

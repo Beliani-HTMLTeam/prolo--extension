@@ -5,6 +5,7 @@ export const FLAG_URLS: Record<string, string> = {
   AT: 'https://pictureserver.net/static/flags/flag_at.svg',
   CHDE: 'https://pictureserver.net/static/flags/flag_ch.svg',
   CHFR: 'https://pictureserver.net/static/flags/flag_ch.svg',
+  CHIT: 'https://pictureserver.net/static/flags/flag_ch.svg',
   NL: 'https://pictureserver.net/static/flags/flag_nl.svg',
   FR: 'https://pictureserver.net/static/flags/flag_fr.svg',
   ES: 'https://pictureserver.net/static/flags/flag_es.svg',
@@ -20,6 +21,8 @@ export const FLAG_URLS: Record<string, string> = {
   BEFR: 'https://pictureserver.net/static/flags/flag_be.svg',
   BENL: 'https://pictureserver.net/static/flags/flag_be.svg',
   RO: 'https://pictureserver.net/static/flags/flag_ro.svg',
+  HR: 'https://pictureserver.net/static/flags/flag_hr.svg',
+  SI: 'https://pictureserver.net/static/flags/flag_si.svg',
 };
 
 export const getFlagUrl = (slug: string): string | null => {

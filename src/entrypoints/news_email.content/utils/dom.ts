@@ -29,6 +29,8 @@ const SLUG_MAP: Record<string, string> = {
   'Beliani RO-romanian': 'ro',
   'Beliani BE-dutch': 'benl',
   'Beliani BE-french': 'befr',
+  'Beliani HR-croatian': 'hr',
+  'Beliani SI-slovene': 'si',
 };
 
 export const getNewsletterIdsMap = (): Record<string, NewsletterDomData> => {
