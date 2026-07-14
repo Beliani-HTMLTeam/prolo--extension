@@ -13,6 +13,8 @@ export const mentionToShopsMap: Record<string, string[]> = {
   '@PT translation(4492)': ['PT'],
   '@RO translation(4688)': ['RO'],
   '@SE translation(4494)': ['SE'],
+  '@SI translation()': ['SI'],
+  '@HR translation()': ['HR'],
   '@SK translation(4498)': ['SK'],
 };
 

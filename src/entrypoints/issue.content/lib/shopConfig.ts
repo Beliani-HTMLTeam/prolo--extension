@@ -21,6 +21,8 @@ export const TABLE_SHOP_ORDER = [
   'BENL',
   'RO',
   'CHIT',
+  'SI',
+  'HR',
 ] as const;
 
 export const NEWSLETTER_SHOP_ORDER = [
@@ -34,6 +36,7 @@ export const NEWSLETTER_SHOP_ORDER = [
   'DK',
   'FI',
   'FR',
+  'HR',
   'HU',
   'IT',
   'NL',
@@ -42,6 +45,7 @@ export const NEWSLETTER_SHOP_ORDER = [
   'PT',
   'RO',
   'SE',
+  'SI',
   'SK',
   'SP',
   'UK',
@@ -72,6 +76,8 @@ export const SHOP_ID_MAP: Record<string, number> = {
   NO: 28,
   SK: 29,
   RO: 30,
+  HR: 33,
+  SI: 34
 };
 
 export const SHOP_DOMAIN_MAP: Record<string, string> = {
@@ -97,6 +103,8 @@ export const SHOP_DOMAIN_MAP: Record<string, string> = {
   NO: 'https://beliani.no',
   SK: 'https://beliani.sk',
   RO: 'https://beliani.ro',
+  HR: 'https://beliani.hr',
+  SI: 'https://beliani.si',
 };
 
 export const LP_CHECKPOINT_TEMPLATES: Array<{ slug: string; shopId: number }> = LP_SHOPS_ORDER.map(slug => ({
@@ -115,6 +123,7 @@ export const LP_ID_GROUP_BY_SLUG: Record<string, string> = {
   DK: 'DK',
   FI: 'FI',
   FR: 'FR',
+  HR: 'HR',
   HU: 'HU',
   IT: 'IT',
   NL: 'NL',
@@ -123,6 +132,7 @@ export const LP_ID_GROUP_BY_SLUG: Record<string, string> = {
   PT: 'PT',
   RO: 'RO',
   SE: 'SE',
+  SI: 'SI',
   SK: 'SK',
   SP: 'SP',
   ES: 'SP',
@@ -149,6 +159,8 @@ export const LP_ID_ALLOCATION_ORDER = [
   'NO',
   'SK',
   'RO',
+  'HR',
+  'SI',
 ] as const;
 
 export const SHOP_ALIASES: Record<string, string> = {
