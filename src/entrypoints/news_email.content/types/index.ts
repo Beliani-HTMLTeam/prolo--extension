@@ -2,6 +2,7 @@ export type TimerConfig = {
   timerUrls: string[];
   freebieSrc?: string;
   backgroundColor?: string;
+  insertSlugInFreebie?: boolean;
 };
 
 export type BannerType = {

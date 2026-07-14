@@ -15,29 +15,7 @@ export type UpdateNewslettersBatchOptions = {
   currentSlug?: string | null;
 };
 
-const SHOP_SLUGS = [
-  'uk',
-  'pl',
-  'de',
-  'at',
-  'chde',
-  'nl',
-  'fr',
-  'chfr',
-  'es',
-  'pt',
-  'it',
-  'dk',
-  'no',
-  'fi',
-  'se',
-  'cz',
-  'sk',
-  'hu',
-  'ro',
-  'benl',
-  'befr',
-];
+import { SHOP_SLUGS } from '../constants/shops';
 
 type Translations = { header: Record<string, any>; footer: Record<string, any>; templates: Record<string, any> } | null;
 

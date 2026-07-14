@@ -1,0 +1,25 @@
+export const SHOP_SLUGS = [
+  'uk',
+  'pl',
+  'de',
+  'at',
+  'chde',
+  'nl',
+  'fr',
+  'chfr',
+  'es',
+  'pt',
+  'it',
+  'dk',
+  'no',
+  'fi',
+  'se',
+  'cz',
+  'sk',
+  'hu',
+  'ro',
+  'benl',
+  'befr',
+];
+
+export const TOTAL_SHOPS = SHOP_SLUGS.length;

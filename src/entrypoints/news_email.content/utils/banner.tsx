@@ -127,29 +127,7 @@ export const matchesBannerSearchTerm = (date: string, query: string) => {
   return searchVariants.some(variant => normalizeBannerSearchValue(variant).includes(normalizedQuery));
 };
 
-const SHOP_SLUGS = [
-  'uk',
-  'pl',
-  'de',
-  'at',
-  'chde',
-  'nl',
-  'fr',
-  'chfr',
-  'es',
-  'pt',
-  'it',
-  'dk',
-  'no',
-  'fi',
-  'se',
-  'cz',
-  'sk',
-  'hu',
-  'ro',
-  'benl',
-  'befr',
-];
+import { SHOP_SLUGS } from '../constants/shops';
 
 type Translations = {
   header: Record<string, any>;
@@ -230,12 +208,14 @@ const buildRenderContext = (
     const hasFreebie = !!freebieRaw;
     const freebieYear = freebieRaw.slice(0, 4);
 
+    const finalFreebie = hasFreebie && banner.timerConfig?.insertSlugInFreebie ? `${slug}${freebieRaw}` : freebieRaw;
+
     return {
       banner_href: bannerHref,
       banner_img_src: bannerImgSrc,
       timer_url: timerUrl,
       timer_bg: timerBg,
-      freebie: hasFreebie ? freebieRaw : '',
+      freebie: hasFreebie ? finalFreebie : '',
       freebie_year: freebieYear,
       freebie_href: hasFreebie ? bannerHref : '',
       last: isLast,

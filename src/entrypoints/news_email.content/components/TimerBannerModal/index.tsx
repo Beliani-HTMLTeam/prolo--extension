@@ -3,16 +3,8 @@ import Modal from '@/components/modal/Modal';
 import styles from './TimerBannerModal.module.scss';
 import clsx from 'clsx';
 import { TimerConfig } from '../../types';
-
-/** Ordered list of shop slugs matching timer URL positions */
-const SHOP_SLUGS = [
-  'uk', 'pl', 'de', 'at', 'chde',
-  'nl', 'fr', 'chfr', 'es', 'pt',
-  'it', 'dk', 'no', 'fi', 'se',
-  'cz', 'sk', 'hu', 'ro', 'benl', 'befr',
-];
-
-const TOTAL_SHOPS = SHOP_SLUGS.length;
+import { SHOP_SLUGS, TOTAL_SHOPS } from '../../constants/shops';
+import { generateProloUrls } from './prolo';
 
 export type TimerBannerModalProps = {
   isOpen: boolean;
@@ -25,22 +17,71 @@ export type TimerBannerModalProps = {
 };
 
 const DEFAULT_BG = '#ff2f00';
+const DEFAULT_COLOR = '#ffffff';
 
 const TimerBannerModal = ({ isOpen, initialConfig, onClose, onConfirm, onRemove }: TimerBannerModalProps) => {
   const [timerUrlsText, setTimerUrlsText] = useState('');
   const [freebieSrc, setFreebieSrc] = useState('');
+  const [insertSlugInFreebie, setInsertSlugInFreebie] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(DEFAULT_BG);
   const [bgText, setBgText] = useState(DEFAULT_BG);
+
+  const [isProloTimer, setIsProloTimer] = useState(false);
+  const [proloDeadline, setProloDeadline] = useState('');
+  const [proloColor, setProloColor] = useState(DEFAULT_COLOR);
+  const [proloColorText, setProloColorText] = useState(DEFAULT_COLOR);
+  const [proloUnitBg, setProloUnitBg] = useState(DEFAULT_BG);
+  const [proloUnitBgText, setProloUnitBgText] = useState(DEFAULT_BG);
 
   useEffect(() => {
     if (isOpen) {
       setTimerUrlsText(initialConfig?.timerUrls.join('\n') ?? '');
       setFreebieSrc(initialConfig?.freebieSrc ?? '');
+      setInsertSlugInFreebie(initialConfig?.insertSlugInFreebie ?? false);
       const bg = initialConfig?.backgroundColor ?? DEFAULT_BG;
       setBackgroundColor(bg);
       setBgText(bg);
+
+      const firstUrl = initialConfig?.timerUrls[0] ?? '';
+      if (firstUrl.includes('prologistics.info/timer.gif')) {
+        setIsProloTimer(true);
+        try {
+          const urlObj = new URL(firstUrl);
+          const dl = urlObj.searchParams.get('deadline')?.split('T')[0] ?? '';
+          setProloDeadline(dl);
+          const col = urlObj.searchParams.get('color');
+          if (col) {
+            setProloColor('#' + col);
+            setProloColorText('#' + col);
+          }
+          const unitBg = urlObj.searchParams.get('bg');
+          if (unitBg) {
+            setProloUnitBg('#' + unitBg);
+            setProloUnitBgText('#' + unitBg);
+          } else {
+            setProloUnitBg(bg);
+            setProloUnitBgText(bg);
+          }
+        } catch (e) {
+          // ignore parsing error
+        }
+      } else {
+        setIsProloTimer(false);
+        setProloDeadline('');
+        setProloColor(DEFAULT_COLOR);
+        setProloColorText(DEFAULT_COLOR);
+        setProloUnitBg(bg);
+        setProloUnitBgText(bg);
+      }
     }
   }, [isOpen, initialConfig]);
+
+  useEffect(() => {
+    if (isProloTimer && proloDeadline) {
+      const urls = generateProloUrls(proloDeadline, proloUnitBg, proloColor, backgroundColor);
+      setTimerUrlsText(urls.join('\n'));
+    }
+  }, [isProloTimer, proloDeadline, proloUnitBg, proloColor, backgroundColor]);
 
   const parsedUrls = timerUrlsText
     .split('\n')
@@ -63,6 +104,30 @@ const TimerBannerModal = ({ isOpen, initialConfig, onClose, onConfirm, onRemove 
     setBgText(value);
   };
 
+  const handleProloColorTextChange = (value: string) => {
+    setProloColorText(value);
+    if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+      setProloColor(value);
+    }
+  };
+
+  const handleProloColorPickerChange = (value: string) => {
+    setProloColor(value);
+    setProloColorText(value);
+  };
+
+  const handleProloUnitBgTextChange = (value: string) => {
+    setProloUnitBgText(value);
+    if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+      setProloUnitBg(value);
+    }
+  };
+
+  const handleProloUnitBgPickerChange = (value: string) => {
+    setProloUnitBg(value);
+    setProloUnitBgText(value);
+  };
+
   const handleConfirm = () => {
     if (isConfirmDisabled) return;
     const resolvedBg = /^#[0-9a-fA-F]{3,8}$/.test(bgText) ? bgText : DEFAULT_BG;
@@ -70,41 +135,96 @@ const TimerBannerModal = ({ isOpen, initialConfig, onClose, onConfirm, onRemove 
       timerUrls: parsedUrls,
       freebieSrc: freebieSrc.trim() || undefined,
       backgroundColor: resolvedBg,
+      insertSlugInFreebie,
     });
   };
 
   const urlCountClass =
-    urlCount === 0 ? undefined
-      : urlCount === TOTAL_SHOPS ? styles.urlCountOk
-        : styles.urlCountError;
+    urlCount === 0 ? undefined : urlCount === TOTAL_SHOPS ? styles.urlCountOk : styles.urlCountError;
 
   const title = initialConfig ? 'Edit timer' : 'Add timer';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} width="520px" maxHeight="90vh">
       <div className={styles.body}>
+        <div className={styles.checkboxGroup}>
+          <label>
+            <input type="checkbox" checked={isProloTimer} onChange={e => setIsProloTimer(e.target.checked)} />
+            Use new Prolo Timer
+          </label>
+        </div>
+
+        {isProloTimer && (
+          <div className={styles.proloGroup}>
+            <div className={styles.formGroup}>
+              <label htmlFor="prolo-deadline">Deadline</label>
+              <input
+                id="prolo-deadline"
+                type="date"
+                value={proloDeadline}
+                onChange={e => setProloDeadline(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Timer Background</label>
+              <div className={styles.colorRow}>
+                <input
+                  type="color"
+                  value={proloUnitBg}
+                  onChange={e => handleProloUnitBgPickerChange(e.target.value)}
+                  title="Pick timer background"
+                />
+                <input
+                  type="text"
+                  value={proloUnitBgText}
+                  onChange={e => handleProloUnitBgTextChange(e.target.value)}
+                  placeholder="#ff2f00"
+                />
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Text Color</label>
+              <div className={styles.colorRow}>
+                <input
+                  type="color"
+                  value={proloColor}
+                  onChange={e => handleProloColorPickerChange(e.target.value)}
+                  title="Pick text color"
+                />
+                <input
+                  type="text"
+                  value={proloColorText}
+                  onChange={e => handleProloColorTextChange(e.target.value)}
+                  placeholder="#ffffff"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Timer URLs */}
-        <div className={styles.formGroup}>
-          <label htmlFor="timer-urls">Timer URLs (one per shop)</label>
-          <textarea
-            id="timer-urls"
-            placeholder={`https://gen.sendtric.com/countdown/abc123\nhttps://gen.sendtric.com/countdown/def456\n...`}
-            value={timerUrlsText}
-            onChange={e => setTimerUrlsText(e.target.value)}
-            autoFocus
-          />
-          <span className={clsx(styles.urlCount, urlCountClass)}>
-            {urlCount === 0
-              ? 'Paste timer URLs — one per line'
-              : urlCount === TOTAL_SHOPS
-                ? `✓ ${urlCount} URLs — all ${TOTAL_SHOPS} shops covered`
-                : `${urlCount} / ${TOTAL_SHOPS} URLs (order: ${SHOP_SLUGS.slice(0, urlCount).join(', ')}${urlCount < TOTAL_SHOPS ? ', ...' : ''})`}
-          </span>
-          <span className={styles.hint}>
-            Shop order: {SHOP_SLUGS.join(', ')}
-          </span>
-        </div>
+        {!isProloTimer && (
+          <div className={styles.formGroup}>
+            <label htmlFor="timer-urls">Timer URLs (one per shop)</label>
+            <textarea
+              id="timer-urls"
+              placeholder={`https://gen.sendtric.com/countdown/abc123\nhttps://gen.sendtric.com/countdown/def456\n...`}
+              value={timerUrlsText}
+              onChange={e => setTimerUrlsText(e.target.value)}
+              autoFocus
+            />
+            <span className={clsx(styles.urlCount, urlCountClass)}>
+              {urlCount === 0
+                ? 'Paste timer URLs - one per line'
+                : urlCount === TOTAL_SHOPS
+                  ? `✓ ${urlCount} URLs - all ${TOTAL_SHOPS} shops covered`
+                  : `${urlCount} / ${TOTAL_SHOPS} URLs (order: ${SHOP_SLUGS.slice(0, urlCount).join(', ')}${urlCount < TOTAL_SHOPS ? ', ...' : ''})`}
+            </span>
+            <span className={styles.hint}>Shop order: {SHOP_SLUGS.join(', ')}</span>
+          </div>
+        )}
 
         {/* Freebie src */}
         <div className={styles.formGroup}>
@@ -116,8 +236,19 @@ const TimerBannerModal = ({ isOpen, initialConfig, onClose, onConfirm, onRemove 
             value={freebieSrc}
             onChange={e => setFreebieSrc(e.target.value)}
           />
+          <div className={styles.checkboxGroup} style={{ marginTop: '4px' }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={insertSlugInFreebie}
+                onChange={e => setInsertSlugInFreebie(e.target.checked)}
+              />
+              Insert slug before date
+            </label>
+          </div>
           <span className={styles.hint}>
-            Campaign date like <strong>20260626</strong> → pictureserver.net/static/2026/20260626free.png
+            Campaign date like <strong>20260626</strong> → pictureserver.net/static/2026/
+            {insertSlugInFreebie ? `chde` : ``}20260626free.png
           </span>
         </div>
 

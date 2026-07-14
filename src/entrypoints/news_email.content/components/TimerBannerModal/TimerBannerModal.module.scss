@@ -7,6 +7,38 @@
   gap: 20px;
   padding: 20px;
 
+  .checkboxGroup {
+    display: flex;
+    align-items: center;
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: $dawn-grey;
+      cursor: pointer;
+
+      input[type='checkbox'] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: $happy-red;
+      }
+    }
+  }
+
+  .proloGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    background: $grey-surface;
+    border-radius: 8px;
+    border: 1px solid $grey-border;
+  }
+
   .formGroup {
     display: flex;
     flex-direction: column;
