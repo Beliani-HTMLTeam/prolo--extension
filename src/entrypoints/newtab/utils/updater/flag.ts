@@ -21,6 +21,8 @@ export const FLAG_URLS: Record<string, string> = {
   BEFR: 'https://pictureserver.net/static/flags/flag_be.svg',
   BENL: 'https://pictureserver.net/static/flags/flag_be.svg',
   RO: 'https://pictureserver.net/static/flags/flag_ro.svg',
+  HR: 'https://pictureserver.net/static/flags/flag_hr.svg',
+  SI: 'https://pictureserver.net/static/flags/flag_si.svg',
 };
 
 export const getFlagUrl = (slug: string): string | null => {

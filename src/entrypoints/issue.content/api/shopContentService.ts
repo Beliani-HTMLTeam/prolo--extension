@@ -127,6 +127,7 @@ export const checkAndActivateShopContent = async (
     );
 
     result.activated = true;
+    console.log("activated", result.slug)
     return result;
   } catch (error: any) {
     console.error(`Failed to check/activate shop content ${lpId} (${slug}):`, error);

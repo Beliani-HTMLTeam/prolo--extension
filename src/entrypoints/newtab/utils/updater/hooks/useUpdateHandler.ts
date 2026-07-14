@@ -175,9 +175,16 @@ export const useUpdateHandler = ({
 
       const updatesToSend: Array<{ type: 'newsletter' | 'landing-page'; data: any; slug: string }> = [];
 
+            const slugsWithSubjectLineUpdates = new Set<string>();
+
+
       for (const update of formattedUpdates) {
         const hasSubjectLine = !!update.subjectLine;
         const hasPageTitle = !!update.pageTitle;
+
+         if (hasSubjectLine && update.nsltId) {
+          slugsWithSubjectLineUpdates.add(update.slug);
+        }
 
         if (hasSubjectLine && update.nsltId) {
           updatesToSend.push({
@@ -266,11 +273,12 @@ export const useUpdateHandler = ({
       setUpdatingSlugs(new Set());
 
       console.log(`Update complete! Success: ${successCount}, Failed: ${failureCount}`);
-      const successfullyUpdated = results.filter(r => r.success && r.type === 'landing-page');
-
-      if (successfullyUpdated.length > 0) {
+      const successfullyUpdatedNewsletters = results.filter(
+        r => r.success && r.type === 'newsletter' && slugsWithSubjectLineUpdates.has(r.slug)
+      );
+      if (successfullyUpdatedNewsletters.length > 0) {
         // Get shop IDs for each updated item
-        const itemsToActivate = successfullyUpdated
+        const itemsToActivate = successfullyUpdatedNewsletters
           .map(result => {
             const update = updatesBySlug[result.slug];
             if (!update || !update.lpId) return null;
