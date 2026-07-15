@@ -11,15 +11,86 @@ import { Icon } from '@iconify/react';
 import LinksHub from './components/LinksHub';
 import SearchBar from './components/SearchBar';
 import Projects from './components/Projects.tsx';
+import axios from 'axios';
+import { Comment } from '../issue.content/api/comments.ts';
+import RecentComments from './components/RecentComments.tsx';
+
+interface IssueWithComments {
+  link: string;
+  issue: string;
+  id: string;
+  comments: Comment[];
+  totalComments: number;
+  recentCommentsCount: number;
+}
+
+const filterCommentsByTime = (comments: Comment[], hours: number = 24): Comment[] => {
+  const cutoffTime = new Date();
+  cutoffTime.setHours(cutoffTime.getHours() - hours);
+
+  return comments.filter(comment => {
+    const commentDate = new Date(comment.create_date);
+    return commentDate >= cutoffTime;
+  });
+};
 
 export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [issues, setIssues] = useState<IssueWithComments[]>([]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
     if (savedTheme) {
       setTheme(savedTheme);
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const issues = await axios.get(
+          'https://www.prologistics.info/api/issueLog/list/?status=open&view_type=list&board_sort=col_time_old_top&solving_resp_username%5B%5D=DmyKrapyvianskyi',
+        );
+
+        const issueList = issues.data.issue_list;
+        const issueIds = issueList.map((issue: any) => issue.id);
+
+        const commentsPromises = issueIds.map(async (id: number) => {
+          const commentsResponse = await axios.get(
+            `https://www.prologistics.info/api/issueLog/comments/?comment_type=issuelog&page_id=${id}`,
+          );
+          return { id, comments: commentsResponse.data.comments || [] };
+        });
+
+        const commentsData = await Promise.all(commentsPromises);
+
+        const commentsMap = new Map(commentsData.map((item: any) => [item.id, item.comments]));
+
+        const issuesWithComments: IssueWithComments[] = issueList.map((issue: any) => {
+          const allComments: Comment[] = commentsMap.get(issue.id) || [];
+          const recentComments = filterCommentsByTime(allComments, 24);
+
+          return {
+            link: `https://www.prologistics.info/react/logs/issue_logs/${issue.id}/`,
+            issue: issue.issue,
+            id: issue.id,
+            comments: recentComments,
+            totalComments: allComments.length,
+            recentCommentsCount: recentComments.length,
+          };
+        });
+
+        setIssues(issuesWithComments);
+        console.log('issuesWithComments (filtered)', issuesWithComments);
+
+        // Store in state
+        // setIssues(issuesWithComments);
+      } catch (error) {
+        console.error('Error fetching issues:', error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -62,14 +133,7 @@ export default function Home() {
         </div>
       </div>
 
-      <aside className={styles.description}>
-        <p>Welcome to the dashboard!</p>
-        <p>Here you can find quick links to your favorite tools and resources.</p>
-        <br />
-        <p>
-          Click <kbd style={{ marginLeft: 4 }}>/</kbd> to open the search bar.
-        </p>
-      </aside>
+      <RecentComments issues={issues} />
 
       <LinksHub />
 
