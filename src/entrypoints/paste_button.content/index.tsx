@@ -15,6 +15,6 @@ export default defineContentScript({
       shopURL: '.select2-selection--multiple .select2-selection__choice',
     };
 
-    // CreateButton(elems, target);
+    CreateButton(elems, target);
   },
 });
