@@ -152,11 +152,31 @@ console.log('filteredRows', filteredRows);
     return { copied, onClick };
   };
 
+  const useOpenButton = (getLinks: () => string[]) => {
+    const onClick = useCallback(() => {
+      const links = getLinks();
+      if (!links.length) return;
+      links.forEach(link => {
+        const url = link.split('\t')[1];
+        if (url) {
+          window.open(url, '_blank');
+        }
+      });
+    }, [getLinks]);
+    return { onClick };
+  };
+
   const nslt = useCopyButton(useCallback(() => buildNsltLinks('nsltId'), [rows, origin]));
   const nsltA = useCopyButton(useCallback(() => buildNsltLinks('nsltAId'), [rows, origin]));
   const nsltB = useCopyButton(useCallback(() => buildNsltLinks('nsltBId'), [rows, origin]));
   const lp = useCopyButton(useCallback(() => buildLpLinks(), [rows, origin]));
   const lpShops = useCopyButton(useCallback(() => buildLpShopsLinks(), [issueDate]));
+
+  const openNslt = useOpenButton(useCallback(() => buildNsltLinks('nsltId'), [rows, origin]));
+  const openNsltA = useOpenButton(useCallback(() => buildNsltLinks('nsltAId'), [rows, origin]));
+  const openNsltB = useOpenButton(useCallback(() => buildNsltLinks('nsltBId'), [rows, origin]));
+  const openLp = useOpenButton(useCallback(() => buildLpLinks(), [rows, origin]));
+  const openLpShops = useOpenButton(useCallback(() => buildLpShopsLinks(), [issueDate]));
 
   return (
     <div className={styles.rightPanel}>
@@ -197,52 +217,113 @@ console.log('filteredRows', filteredRows);
               onClick={() => setShowGenerateModal(true)}
             />
 
-            {hasGroupedNslt ? (
-              <>
-                <ActionButton
-                  variant="ghost"
-                  label="Copy NSLT A Prolo"
-                  icon="mdi:link-variant"
-                  copied={nsltA.copied}
-                  onClick={nsltA.onClick}
-                />
-                <ActionButton
-                  variant="ghost"
-                  label="Copy NSLT B Prolo"
-                  icon="mdi:link-variant"
-                  copied={nsltB.copied}
-                  onClick={nsltB.onClick}
-                />
-              </>
-            ) : (
+            <div className={styles.dropdownWrapper}>
               <ActionButton
                 variant="ghost"
-                label="Copy NSLT Prolo"
-                icon="mdi:link-variant"
-                copied={nslt.copied}
-                onClick={nslt.onClick}
+                label="Copy..."
+                icon="mdi:content-copy"
+                onClick={() => {}}
+								
               />
-            )}
+              <div className={styles.dropdownMenu}>
+                {hasGroupedNslt ? (
+                  <>
+                    <ActionButton
+                      variant="ghost"
+                      label="Copy NSLT A Prolo"
+                      icon="mdi:link-variant"
+                      copied={nsltA.copied}
+                      onClick={nsltA.onClick}
+                    />
+                    <ActionButton
+                      variant="ghost"
+                      label="Copy NSLT B Prolo"
+                      icon="mdi:link-variant"
+                      copied={nsltB.copied}
+                      onClick={nsltB.onClick}
+                    />
+                  </>
+                ) : (
+                  <ActionButton
+                    variant="ghost"
+                    label="Copy NSLT Prolo"
+                    icon="mdi:link-variant"
+                    copied={nslt.copied}
+                    onClick={nslt.onClick}
+                  />
+                )}
 
-            {hasLpActions && (
-              <>
-                <ActionButton
-                  variant="ghost"
-                  label="Copy LP Prolo"
-                  icon="mdi:link-variant"
-                  copied={lp.copied}
-                  onClick={lp.onClick}
-                />
+                {hasLpActions && (
+                  <>
+                    <ActionButton
+                      variant="ghost"
+                      label="Copy LP Prolo"
+                      icon="mdi:link-variant"
+                      copied={lp.copied}
+                      onClick={lp.onClick}
+                    />
+                    <ActionButton
+                      variant="ghost"
+                      label="Copy LP Shops"
+                      icon="mdi:web"
+                      copied={lpShops.copied}
+                      onClick={lpShops.onClick}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
 
-                <ActionButton
-                  variant="ghost"
-                  label="Copy LP Shops"
-                  icon="mdi:web"
-                  copied={lpShops.copied}
-                  onClick={lpShops.onClick}
-                />
-              </>
-            )}
+            <div className={styles.dropdownWrapper}>
+              <ActionButton
+                variant="ghost"
+                label="Open..."
+                icon="mdi:open-in-new"
+                onClick={() => {}}
+              />
+              <div className={styles.dropdownMenu}>
+                {hasGroupedNslt ? (
+                  <>
+                    <ActionButton
+                      variant="ghost"
+                      label="Open NSLT A Prolo"
+                      icon="mdi:link-variant"
+                      onClick={openNsltA.onClick}
+                    />
+                    <ActionButton
+                      variant="ghost"
+                      label="Open NSLT B Prolo"
+                      icon="mdi:link-variant"
+                      onClick={openNsltB.onClick}
+                    />
+                  </>
+                ) : (
+                  <ActionButton
+                    variant="ghost"
+                    label="Open NSLT Prolo"
+                    icon="mdi:link-variant"
+                    onClick={openNslt.onClick}
+                  />
+                )}
+
+                {hasLpActions && (
+                  <>
+                    <ActionButton
+                      variant="ghost"
+                      label="Open LP Prolo"
+                      icon="mdi:link-variant"
+                      onClick={openLp.onClick}
+                    />
+                    <ActionButton
+                      variant="ghost"
+                      label="Open LP Shops"
+                      icon="mdi:web"
+                      onClick={openLpShops.onClick}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
           {isPlanningAllowed && (
