@@ -82,9 +82,9 @@ const Header = ({
             </span>
           )}
           {checkpointsTotal > 0 && (
-            <span className={styles.metaBadge}>
+            <span title={`${checkpointsTotal - checkpointsDone} missing banners`} className={styles.metaBadge}>
               <Icon icon="mdi:checkbox-marked-outline" width="13" />
-              {checkpointsDone}/{checkpointsTotal}
+              Campaign Banners: {checkpointsDone}/{checkpointsTotal}
             </span>
           )}
           {status && <span className={`${styles.metaBadge} ${styles[`status--${status}`]}`}>{status}</span>}
