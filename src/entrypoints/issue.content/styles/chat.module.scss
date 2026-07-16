@@ -206,9 +206,30 @@
 }
 
 .messageAuthor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 600;
   color: $dawn-grey;
   font-size: 12px;
+}
+
+.btnMention {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background-color: $light-grey;
+  border: 1px solid $grey-border-dark;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: $grey-surface;
+    border-color: $grey-border;
+    color: $link-color-hover;
+  }
 }
 
 .messageText {

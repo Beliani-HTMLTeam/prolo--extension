@@ -266,6 +266,11 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
     richInputRef.current?.focus();
   };
 
+  const handleMention = (username: string) => {
+    const mention = `@${username} `;
+    insertAtCursor(mention, false);
+  };
+
   const handleSend = async () => {
     const trimmed = (richInputRef.current?.getText() ?? messageText).trim();
     if (!trimmed || isSending) return;
@@ -426,7 +431,18 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
                   })}
                 >
                   <div className={styles.messageContent}>
-                    <div className={styles.messageAuthor}>{comment.full_username}</div>
+                    <div className={styles.messageAuthor}>
+                      {!isOwnMessage && (
+                        <button
+                          className={styles.btnMention}
+                          title={`Mention ${comment.full_username}`}
+                          onClick={() => handleMention(`${comment.full_username}(${comment.user_id})`)}
+                        >
+                          <Icon icon="mdi:at" width="12" height="12" />
+                        </button>
+                      )}
+                      {comment.full_username}
+                    </div>
                     <div className={styles.messageText}>
                       <TwemojiContent html={parseCommentHtml(comment.comment)} className={styles.commentHtmlContent} />
                     </div>
