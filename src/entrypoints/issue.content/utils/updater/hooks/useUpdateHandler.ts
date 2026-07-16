@@ -6,7 +6,7 @@ import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
 import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';
 import { encodeEmojiToHtmlEntities, trimAllLineBreaks } from '../stringUtils';
 import { normalizeSlugForSlug } from '../../planning/slugNormalization';
-import { checkAndActivateMultipleShopContents } from '@/entrypoints/issue.content/api/shopContentService';
+import { checkAndActivateMultipleShopContents, fetchNsltIdFromLandingPage } from '@/entrypoints/issue.content/api/shopContentService';
 
 interface FormattedUpdateRecord {
   slug: string;
@@ -30,6 +30,49 @@ interface UseUpdateHandlerProps {
   landingPageIds?: Record<string, string>;
   onClearSelections?: () => void;
 }
+
+const enrichMissingNsltIds = async (
+  updatesBySlug: Record<string, {
+    slug: string;
+    subjectLine?: string;
+    pageTitle?: string;
+    landingPage?: string;
+    activateDate: Date;
+    deactivateDate: Date;
+    lpId?: string;
+  }>,
+  existingNewsletterIds: Record<string, { aId?: string; bId?: string }> = {}
+): Promise<Record<string, { aId?: string; bId?: string }>> => {
+  const enrichedIds: Record<string, { aId?: string; bId?: string }> = { ...existingNewsletterIds };
+  
+  for (const [slug, update] of Object.entries(updatesBySlug)) {
+    // Check if we already have nsltData
+    const existingNsltData = existingNewsletterIds?.[slug];
+    
+    // If NSLT ID already exists, use it
+    if (existingNsltData?.aId || existingNsltData?.bId) {
+      continue;
+    }
+    
+    // If no NSLT ID but we have page title and lpId, try to fetch
+    if (update.pageTitle && update.lpId) {
+      const shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
+      if (shopId) {
+        const nsltId = await fetchNsltIdFromLandingPage(update.lpId, String(shopId));
+        if (nsltId) {
+          enrichedIds[slug] = { aId: nsltId };
+          console.log(`✅ Enriched NSLT ID for ${slug}: ${nsltId}`);
+        } else {
+          // No NSLT ID found, still allow page title update
+          console.log(`ℹ️ No NSLT ID found for ${slug}, will update page title without NSLT ID`);
+          enrichedIds[slug] = {};
+        }
+      }
+    }
+  }
+  
+  return enrichedIds;
+};
 
 export const useUpdateHandler = ({
   getLPForSlug,
@@ -69,22 +112,23 @@ export const useUpdateHandler = ({
     const slugsToUpdate = new Set(selectedItems.map(item => item.slug));
     setUpdatingSlugs(slugsToUpdate);
 
+    
     try {
       const formattedUpdates: FormattedUpdateRecord[] = [];
-
+      
       const updatesBySlug: Record<
-        string,
-        {
-          slug: string;
-          subjectLine?: string;
-          pageTitle?: string;
-          landingPage?: string;
-          activateDate: Date;
-          deactivateDate: Date;
-          lpId?: string;
-        }
+      string,
+      {
+        slug: string;
+        subjectLine?: string;
+        pageTitle?: string;
+        landingPage?: string;
+        activateDate: Date;
+        deactivateDate: Date;
+        lpId?: string;
+      }
       > = {};
-
+      
       selectedItems.forEach(item => {
         if (!updatesBySlug[item.slug]) {
           updatesBySlug[item.slug] = {
@@ -102,9 +146,11 @@ export const useUpdateHandler = ({
           updatesBySlug[item.slug].pageTitle = item.content;
         }
       });
-
+      
+      const enrichedNewsletterIds = await enrichMissingNsltIds(updatesBySlug, newsletterIds);
+      
       Object.values(updatesBySlug).forEach(update => {
-        const nsltData = newsletterIds?.[update.slug];
+        const nsltData = enrichedNewsletterIds?.[update.slug] || newsletterIds?.[update.slug];
 
         const slug = update.slug;
         const seller = SELLER_TO_SLUG[slug as keyof typeof SELLER_TO_SLUG];
@@ -166,6 +212,24 @@ export const useUpdateHandler = ({
           if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
           formattedUpdates.push(record);
         }
+        else {
+        // No NSLT ID exists - still allow page title update
+        const record: FormattedUpdateRecord = {
+          slug: update.slug,
+          nsltId: '', // Empty string for missing NSLT ID
+          lpId: update.lpId,
+          ...(update.landingPage && update.landingPage !== 'lp00-00-00' && { landingPage: update.landingPage }),
+          activateDate: formatDateForAPI(update.activateDate),
+          deactivateDate: formatDateForAPI(update.deactivateDate),
+          seller,
+          lang,
+          servers,
+          shopId,
+        };
+        if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
+        if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
+        formattedUpdates.push(record);
+      }
       });
 
       if (formattedUpdates.length === 0) {
@@ -252,6 +316,8 @@ export const useUpdateHandler = ({
       }
 
       if (updatesToSend.length === 0) {
+        console.log("formatterLog", formattedUpdates);
+        
         console.warn('No updates to send');
         return;
       }
