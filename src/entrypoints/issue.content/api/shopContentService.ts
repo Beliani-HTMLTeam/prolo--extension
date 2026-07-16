@@ -181,3 +181,75 @@ export const checkAndActivateMultipleShopContents = async (
   await Promise.all(promises);
   return results;
 };
+
+export const fetchNsltIdFromLandingPage = async (lpId: string, shopId: string): Promise<string | null> => {
+  try {
+    const url = `https://www.prologistics.info/shop_content.php?id=${lpId}&shop_id=${shopId}`;
+    const response = await axios.get(url, {
+      withCredentials: true,
+    });
+    const html = response.data;
+    
+    // Log a snippet of the HTML to debug
+    console.log(`🔍 Checking landing page ${lpId} (shop ${shopId})`);
+    console.log(`📄 HTML length: ${html.length}`);
+    
+    // Try multiple patterns
+    let nsltId: string | null = null;
+    let match: RegExpMatchArray | null = null;
+    
+    // Pattern 1: Look for the newsletter link with id
+    match = html.match(/news_email\.php\?id=(\d+)/);
+    if (match && match[1]) {
+      nsltId = match[1];
+      console.log(`✅ Found NSLT ID ${nsltId} using pattern 1`);
+      return nsltId;
+    }
+    
+    // Pattern 2: Look for the newsletter link in the specific td
+    match = html.match(/<td[^>]*id="newsletter_link"[^>]*>.*?<a[^>]*href="news_email\.php\?id=(\d+)"[^>]*>/i);
+    if (match && match[1]) {
+      nsltId = match[1];
+      console.log(`✅ Found NSLT ID ${nsltId} using pattern 2`);
+      return nsltId;
+    }
+    
+    // Pattern 3: Look for any link containing "news_email.php?id="
+    match = html.match(/href="news_email\.php\?id=(\d+)"/i);
+    if (match && match[1]) {
+      nsltId = match[1];
+      console.log(`✅ Found NSLT ID ${nsltId} using pattern 3`);
+      return nsltId;
+    }
+    
+    // Pattern 4: Look for the specific table structure
+    const newsletterLinkRegex = /<a[^>]*href=["']news_email\.php\?id=(\d+)["'][^>]*>.*?<\/a>/gi;
+    let allMatches = [];
+    let tempMatch;
+    while ((tempMatch = newsletterLinkRegex.exec(html)) !== null) {
+      allMatches.push(tempMatch[1]);
+    }
+    
+    if (allMatches.length > 0) {
+      // If there are multiple, take the first one (or the one in the newsletter_link td)
+      nsltId = allMatches[0];
+      console.log(`✅ Found NSLT ID ${nsltId} using pattern 4 (found ${allMatches.length} links)`);
+      return nsltId;
+    }
+    
+    console.log(`❌ No NSLT ID found on landing page ${lpId} (shop ${shopId})`);
+    
+    // Log a snippet around where the newsletter link should be
+    const newsletterSection = html.match(/newsletter_link/i);
+    if (newsletterSection) {
+      const start = Math.max(0, newsletterSection.index - 500);
+      const end = Math.min(html.length, newsletterSection.index + 1000);
+      console.log(`📄 Snippet around newsletter_link:\n${html.substring(start, end)}`);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Failed to fetch NSLT ID from landing page ${lpId}:`, error);
+    return null;
+  }
+};

@@ -70,6 +70,8 @@ export const SLUG_ID_MAP: Record<string, string> = {
   NO: '28',
   SK: '29',
   RO: '30', // 19 shops
+  HR: '33',
+  SI: '34',
   // "Beliani HR": "33",
   // "Beliani SI": "34"
 };
