@@ -6,6 +6,8 @@ import logo_dark from '@/entrypoints/newtab/img/Beliani_Icon_Color_RGB.svg';
 import LinksHub from '@/entrypoints/newtab/views/html/components/LinksHub.tsx';
 import SearchBar from '@/entrypoints/newtab/views/html/components/SearchBar.tsx';
 import Projects from '@/entrypoints/newtab/views/html/components/Projects.tsx';
+import RecentComments from './RecentComments';
+import { useIssuesWithComments } from './hooks/useIssueWithComments';
 
 interface HtmlDashboardProps {
   theme: 'light' | 'dark';
@@ -14,6 +16,7 @@ interface HtmlDashboardProps {
 
 export default function HtmlDashboard({ theme, setTheme }: HtmlDashboardProps) {
   const [sbModalState, setSbModalState] = useState(false);
+ const { issues, loading, error } = useIssuesWithComments();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -46,14 +49,7 @@ export default function HtmlDashboard({ theme, setTheme }: HtmlDashboardProps) {
         </div>
       </div>
 
-      <aside className={styles.description}>
-        <p>Welcome to the dashboard!</p>
-        <p>Here you can find quick links to your favorite tools and resources.</p>
-        <br />
-        <p>
-          Click <kbd style={{ marginLeft: 4 }}>/</kbd> to open the search bar.
-        </p>
-      </aside>
+      <RecentComments issues={issues} loading={loading} error={error} />
 
       <LinksHub />
 

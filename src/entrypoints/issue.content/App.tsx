@@ -15,7 +15,6 @@ import {
   getChecklistMode,
   parseIssueInfo,
   extractIssueLinks,
-  fetchSubjectPageTranslations,
 } from './api/issueData';
 import { ChecklistOwner, type ChecklistTableData, type IssueInfoViewModel, type IssueLink } from './lib/types';
 import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
