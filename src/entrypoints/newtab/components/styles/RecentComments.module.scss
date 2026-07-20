@@ -24,7 +24,7 @@
   width: 100%;
   max-height: 400px;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
   padding: 4px 4px 12px 4px; // padding to prevent box-shadow clipping during hover scales
 
   // Custom styling for horizontal scrollbar
@@ -154,4 +154,48 @@
     font-family: inherit;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
+}
+
+.recentComments {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 180px; // Ensures a balanced height footprint so the page layout doesn't completely collapse
+}
+
+// Base shared layout style for fallback state cards
+.loading, .error, .noComments {
+  width: 100%;
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--theme-surface-color);
+  border-radius: 12px;
+  border: 2px solid var(--theme-border-color);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 600px; // Keeps the messaging tightly bound and clean rather than stretching full-width
+}
+
+// Loading state with a subtle, modern pulsing animation
+.loading {
+  color: var(--theme-text-color-secondary);
+  animation: pulseFade 1.8s infinite ease-in-out;
+}
+
+// Error state styling, accented using a clean red schema matched to your system colors
+.error {
+  color: #cc0000;
+  background: var(--theme-background-color);
+  border-color: rgba(204, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(204, 0, 0, 0.05);
+}
+
+// Empty state layout styling
+.noComments {
+  color: var(--theme-text-color-secondary);
 }
