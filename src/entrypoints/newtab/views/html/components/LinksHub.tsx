@@ -8,6 +8,8 @@ const links = linksData.html;
 export default function LinksHub() {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  // @ts-ignore fu ts
+  const lastCategoryName = links[Object.keys(links).at(-1) ?? '']?.name;
 
   const toggleCategory = (categoryName: string) => {
     setOpenCategory(openCategory === categoryName ? null : categoryName);
@@ -19,9 +21,10 @@ export default function LinksHub() {
         const isOpen = openCategory === category.name;
         const isHovered = hoveredCategory === category.name;
         const showLabel = isOpen || isHovered;
+        const opensUpward = category.name === lastCategoryName;
 
         return (
-          <div key={category.name} className={styles.category}>
+          <div key={category.name} className={`${styles.category} ${opensUpward ? styles.categoryUpward : ''}`}>
             <button
               className={`${styles.categoryHeader} ${isOpen ? styles.open : ''}`}
               onClick={() => toggleCategory(category.name)}

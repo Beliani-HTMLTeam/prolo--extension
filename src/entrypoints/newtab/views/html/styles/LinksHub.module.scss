@@ -2,10 +2,12 @@
 
 .linksHub {
   display: flex;
-  flex-direction: row;
-  gap: 24px;
+  flex-direction: column;
+  gap: 12px;
   position: absolute;
-  top: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 24px;
 
   .category {
     position: relative;
@@ -79,7 +81,7 @@
       min-width: 220px;
 
       &.open {
-        max-height: 500px;
+        max-height: 350px;
         overflow-y: auto;
         opacity: 1;
       }
@@ -134,6 +136,15 @@
             }
           }
         }
+      }
+    }
+
+    &.categoryUpward {
+      .dropdown {
+        top: auto;
+        bottom: 100%;
+        margin-top: 0;
+        margin-bottom: 8px;
       }
     }
   }

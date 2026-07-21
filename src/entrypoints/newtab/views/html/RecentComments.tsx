@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { Icon } from '@iconify/react';
 import styles from './styles/RecentComments.module.scss';
 import { Comment } from '@/entrypoints/issue.content/api/comments';
@@ -18,6 +19,28 @@ interface RecentCommentsProps {
   loading?: boolean;
   error?: string | null;
 }
+
+const formatRelativeTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  const diffMs = Date.now() - date.getTime();
+
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffSecs < 60) return `${diffSecs}s ago`;
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+
+const getMarqueeDuration = (title: string): string => {
+  const lengthBasedDuration = Math.max(12, Math.min(48, title.length * 0.45));
+  return `${lengthBasedDuration}s`;
+};
 
 export default function RecentComments({ issues, loading = false, error = null }: RecentCommentsProps) {
   const recentIssues = issues.filter(issue => issue.recentCommentsCount > 0);
@@ -67,12 +90,21 @@ export default function RecentComments({ issues, loading = false, error = null }
             const sortedComments = [...issue.comments].sort(
               (a, b) => new Date(b.create_date).getTime() - new Date(a.create_date).getTime(),
             );
+            const marqueeStyle = { '--marquee-duration': getMarqueeDuration(issue.issue) } as CSSProperties & {
+              '--marquee-duration': string;
+            };
 
             return (
               <div className={styles.issueCard} key={issue.id}>
                 {/* Issue Title Link */}
                 <a href={issue.link} target="_blank" rel="noopener noreferrer" className={styles.issueLink}>
-                  {issue.issue.substring(0, 50) + (issue.issue.length > 50 ? '...' : '')}
+                  {/* {issue.issue.substring(0, 50) + (issue.issue.length > 50 ? '...' : '')} */}
+                  <div className={styles.marquee} style={marqueeStyle}>
+                    <div className={styles.marquee__item}>{issue.issue}</div>
+
+                    <div className={styles.marquee__item}>{issue.issue}</div>
+                  </div>
+
                   <Icon icon="gg:external" className={styles.externalIcon} />
                 </a>
 
@@ -89,7 +121,10 @@ export default function RecentComments({ issues, loading = false, error = null }
                     .filter(comment => comment.comment_type)
                     .map(comment => (
                       <div className={styles.commentItem} key={comment.id}>
-                        <span className={styles.commentAuthor}>{comment.full_username}:</span>
+                        <div className={styles.commentMeta}>
+                          <span className={styles.commentAuthor}>{comment.full_username}</span>
+                          <span className={styles.commentTime}>{formatRelativeTime(comment.create_date)}</span>
+                        </div>
                         <p className={styles.commentBody}>
                           {comment.comment.substring(0, 100)}
                           {comment.comment.length > 100 ? '...' : ''}

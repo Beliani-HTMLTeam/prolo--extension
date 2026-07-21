@@ -46,7 +46,7 @@
 .cardsFlex {
   display: flex;
   gap: 16px;
-  height: auto;
+  height: 100%;
 }
 
 .issueCard {
@@ -54,13 +54,13 @@
   width: 300px;
   background: var(--theme-surface-color);
   border-radius: 12px;
-  padding: 16px;
   border: 2px solid var(--theme-border-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: hidden;
 
   &:hover {
     border-color: var(--theme-accent-color);
@@ -81,6 +81,9 @@
   transition: color 0.2s ease;
   line-height: 1.4;
 
+  padding-top: 12px;
+  padding-inline: 12px;
+
   &:hover {
     color: var(--theme-accent-color);
   }
@@ -96,6 +99,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding-inline: 12px;
   font-size: 11px;
   font-weight: 600;
   color: var(--theme-text-color-secondary);
@@ -106,6 +110,37 @@
   flex-direction: column;
   gap: 8px;
   backdrop-filter: none;
+  overflow-y: scroll;
+  padding-inline: 12px;
+  padding-bottom: 12px;
+}
+
+.marquee {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 300px;
+}
+
+.marquee__item {
+  animation-duration: var(--marquee-duration, 10s);
+  animation-iteration-count: infinite;
+  animation-name: marquee-content;
+  animation-timing-function: linear;
+  padding: 5px 15px 5px 15px;
+}
+
+.marquee:hover .marquee__item {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-content {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 .commentItem {
@@ -125,9 +160,23 @@
   }
 }
 
+.commentMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .commentAuthor {
   color: var(--theme-accent-color);
   font-weight: 700;
+}
+
+.commentTime {
+  color: var(--theme-text-color-secondary);
+  font-size: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .commentBody {
@@ -168,7 +217,9 @@
 }
 
 // Base shared layout style for fallback state cards
-.loading, .error, .noComments {
+.loading,
+.error,
+.noComments {
   width: 100%;
   text-align: center;
   padding: 48px 24px;
