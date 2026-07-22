@@ -66,6 +66,7 @@ type CommentsViewProps = {
 
 export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const [cookies] = useCookies(['ebas_username']);
+  const [oldTitle, setOldTitle] = useState(document.title);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isNewestFirst, setIsNewestFirst] = useState(true);
@@ -154,10 +155,15 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
 
       const currentLastSeen = lastSeenCountRef.current;
 
+      if (oldTitle.length === 0) {
+        if (document.title.includes(' | ')) setOldTitle(document.title);
+      }
+
       // check for new comments
       if (currentLastSeen !== null && filtered.length > currentLastSeen) {
         const newCount = filtered.length - currentLastSeen;
         setNewCommentsCount(newCount);
+        if (oldTitle.length > 0) document.title = `(${newCount}) ${oldTitle}`;
       } else if (currentLastSeen === null) {
         setLastSeenCount(filtered.length);
       }
@@ -230,6 +236,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const markAsRead = () => {
     setLastSeenCount(comments.length);
     setNewCommentsCount(0);
+    if (oldTitle.length > 0) document.title = oldTitle;
   };
 
   // Insert text at cursor position
@@ -331,7 +338,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
       void handleSend();
     }
 
-    // ctrl + b/i/u 
+    // ctrl + b/i/u
     if (e.ctrlKey) {
       if (e.key === 'b' || e.key === 'B') {
         e.preventDefault();
