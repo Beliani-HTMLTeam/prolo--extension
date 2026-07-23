@@ -3,8 +3,8 @@ export const NOTIFICATION_ID = 'extension_for_graphics_update_available';
 // check every 12h (in ms)
 export const CHECK_INTERVAL = 12 * 60 * 60 * 1000;
 // if we swap to org github we will need to change these urls
-export const API_URL = 'https://api.github.com/repos/BelianiRafal/Extension-for-Graphics/releases/latest';
-export const RELEASE_PAGE_URL = 'https://github.com/BelianiRafal/Extension-for-Graphics/releases/latest';
+export const API_URL = 'https://api.github.com/repos/Beliani-HTMLTeam/prolo--extension/releases/latest';
+export const RELEASE_PAGE_URL = 'https://github.com/Beliani-HTMLTeam/prolo--extension/releases/latest';
 
 export interface UpdateState {
   lastVersion?: string;
