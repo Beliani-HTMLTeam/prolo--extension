@@ -130,11 +130,7 @@ export default defineBackground(() => {
   let isTabProcessing: boolean = false;
   let currentQueueIndex: number = 0;
   let pendingUploadData: any = null;
-
-  setTimeout(() => {
-    initUpdateChecker();
-  }, 50);
-
+  
   browser.action.onClicked.addListener(tab => {
     console.log('Extension icon clicked');
     // You can send message to open popup or trigger something
