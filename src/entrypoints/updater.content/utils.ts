@@ -1,5 +1,5 @@
-export const STORAGE_KEY = 'extension_for_graphics_update_state';
-export const NOTIFICATION_ID = 'extension_for_graphics_update_available';
+export const STORAGE_KEY = 'prolo_extension_update_state';
+export const NOTIFICATION_ID = 'prolo_extension_update_available';
 // check every 12h (in ms)
 export const CHECK_INTERVAL = 12 * 60 * 60 * 1000;
 // if we swap to org github we will need to change these urls
