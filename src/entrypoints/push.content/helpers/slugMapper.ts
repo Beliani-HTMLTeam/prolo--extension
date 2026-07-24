@@ -57,43 +57,59 @@ export function getCurrentDate(): string {
   return `${year}${month}${day}`;
 }
 
-// Generate LP path from campaign name
-// Input: "21.09.26 - Garden Storage" -> "lp26-09-21"
-// Input: "24.07.26 - Garden Storage" -> "lp26-07-24"
-export function generateLpPath(campaignName: string): string {
-  const { day, month, year } = parseCampaignName(campaignName);
-  // Extract 2-digit year
-  const shortYear = year.slice(-2);
-  // Format: lp{year}-{month}-{day}
-  return `lp${shortYear}-${month}-${day}`;
+// Parse result with warning flag
+export interface ParseResult {
+  date: string;
+  version: string;
+  day: string;
+  month: string;
+  year: string;
+  hasDate: boolean;
+  warning?: string;
 }
 
-// Parse campaign name to extract date and version
-export function parseCampaignName(campaignName: string): { date: string; version: string; day: string; month: string; year: string } {
+// Generate LP path from campaign name with warning
+export function generateLpPath(campaignName: string): string {
+  const result = parseCampaignName(campaignName);
+  const shortYear = result.year.slice(-2);
+  return `lp${shortYear}-${result.month}-${result.day}`;
+}
+
+// Enhanced parse campaign name to extract date and version
+export function parseCampaignName(campaignName: string): ParseResult {
   // Default values
   let date = getCurrentDate();
   let day = '26';
   let month = '07';
   let year = '2026';
   let version = '1';
+  let hasDate = false;
+  let warning: string | undefined;
+
+  // Try multiple date patterns in order of specificity
   
-  // Try to extract date in format: DD.MM.YY or DD-MM-YY or DD.MM.YYYY
-  // First try: DD.MM.YY (e.g., 21.09.26)
+  // Pattern 1: DD.MM.YY (e.g., 24.07.26) - most common
   let dateMatch = campaignName.match(/(\d{2})[\.](\d{2})[\.](\d{2})(?!\d)/);
   
-  // If not found, try: DD-MM-YY (e.g., 21-09-26)
+  // Pattern 2: DD-MM-YY (e.g., 24-07-26)
   if (!dateMatch) {
     dateMatch = campaignName.match(/(\d{2})[-](\d{2})[-](\d{2})(?!\d)/);
   }
   
-  // If not found, try: DD.MM.YYYY (e.g., 21.09.2026)
+  // Pattern 3: DD.MM.YYYY (e.g., 24.07.2026)
   if (!dateMatch) {
     dateMatch = campaignName.match(/(\d{2})[\.](\d{2})[\.](\d{4})/);
     if (dateMatch) {
       day = dateMatch[1];
       month = dateMatch[2];
       year = dateMatch[3];
+      hasDate = true;
     }
+  }
+  
+  // Pattern 4: YY.MM.DD (e.g., 26.07.24)
+  if (!dateMatch) {
+    dateMatch = campaignName.match(/(\d{2})[\.](\d{2})[\.](\d{2})/);
   }
   
   // If found with 2-digit year (YY)
@@ -103,12 +119,23 @@ export function parseCampaignName(campaignName: string): { date: string; version
     const shortYear = dateMatch[3];
     const yearPrefix = parseInt(shortYear) >= 24 ? '20' : '20';
     year = `${yearPrefix}${shortYear}`;
+    hasDate = true;
   } 
   // If found with 4-digit year
   else if (dateMatch && dateMatch[3].length === 4) {
     day = dateMatch[1];
     month = dateMatch[2];
     year = dateMatch[3];
+    hasDate = true;
+  }
+  
+  // If no date found, use current date and show warning
+  if (!hasDate) {
+    const now = new Date();
+    year = now.getFullYear().toString();
+    month = String(now.getMonth() + 1).padStart(2, '0');
+    day = String(now.getDate()).padStart(2, '0');
+    warning = 'No date found in campaign name. Using today\'s date.';
   }
   
   // Construct YYYYMMDD date
@@ -120,13 +147,12 @@ export function parseCampaignName(campaignName: string): { date: string; version
     version = versionMatch[1];
   }
   
-  return { date, version, day, month, year };
+  return { date, version, day, month, year, hasDate, warning };
 }
 
 // URL generation functions
 export function generateClickAction(slug: string, domain: string, campaignName: string, lpPath?: string): string {
   const domainPart = domain.replace('.', '-');
-  // Use custom LP path if provided, otherwise generate from campaign name
   const path = lpPath || generateLpPath(campaignName);
   return `https://www.beliani.${domain}/content/${path}/?utm_source=PUSH&utm_medium=${path}&utm_campaign=garden+storage`;
 }

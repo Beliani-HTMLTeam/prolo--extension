@@ -2,23 +2,20 @@ import { useCallback, useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { showErrorAlert } from './components/Alerts';
-import { CSVToArray, parseCSV } from './helpers/CSVfns';
 import { fetchPushTranslations } from '../issue.content/api/issueData';
 import { PushTranslations } from '../issue.content/lib/types';
 import {
   BASE_SLUG_CONFIG,
-  buildRowDataFromSlug,
   generateCampaignData,
-  generateImageUrl,
-  generateLpPath,
   getAllSlugs,
   isValidTemplateId,
   parseCampaignName,
   SLUG_ORDER,
 } from './helpers/slugMapper';
 import Overlay from '@/components/overlay/Overlay';
+import { OverlayToggleButton } from './components/OverlayToggleButton';
+import { DashboardContent } from './components/DashboardContent';
 import styles from './push.module.scss';
-
 interface CampaignRowData {
   [selector: string]: string;
 }
@@ -70,99 +67,6 @@ const escKeyEvent = new KeyboardEvent('keydown', {
 });
 
 // ---------------------------------------------------------------------------
-// Image Preview Component
-// ---------------------------------------------------------------------------
-const ImagePreview = ({
-  src,
-  alt,
-  size = 'small',
-  onClick,
-}: {
-  src: string;
-  alt: string;
-  size?: 'small' | 'medium' | 'large';
-  onClick?: () => void;
-}) => {
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setError(false);
-    setLoading(true);
-  }, [src]);
-
-  const sizeClass = size === 'large' ? styles.sizeLarge : size === 'medium' ? styles.sizeMedium : styles.sizeSmall;
-
-  if (error || !src) {
-    return (
-      <div className={`${styles.imagePreviewWrapper}`} onClick={onClick}>
-        <div className={`${styles.noImage} ${sizeClass}`}>No Image</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.imagePreviewWrapper} onClick={onClick}>
-      {loading && (
-        <div className={`${styles.loadingPlaceholder} ${sizeClass}`}>
-          <div className={styles.spinner} />
-        </div>
-      )}
-      <img
-        src={src}
-        alt={alt}
-        className={`${styles.thumbnail} ${sizeClass}`}
-        style={{ display: loading ? 'none' : 'block' }}
-        onLoad={() => setLoading(false)}
-        onError={() => {
-          setError(true);
-          setLoading(false);
-        }}
-      />
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
-// Big Image Preview Component
-// ---------------------------------------------------------------------------
-const BigImagePreview = ({ src, alt, onClose }: { src: string | null; alt: string; onClose: () => void }) => {
-  if (!src) return null;
-
-  return (
-    <div className={styles.bigImageContainer}>
-      <div className={styles.header}>
-        <span className={styles.title}>🖼️ Image Preview: {alt}</span>
-        <button onClick={onClose} className={styles.btnClose}>
-          ✕ Close
-        </button>
-      </div>
-      <div className={styles.imageWrapper}>
-        <img
-          src={src}
-          alt={alt}
-          onError={e => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-      </div>
-      <div className={styles.urlText}>📍 {src}</div>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
-// Overlay Toggle Button Component
-// ---------------------------------------------------------------------------
-const OverlayToggleButton = ({ onClick }: { onClick: () => void }) => {
-  return (
-    <button onClick={onClick} className={styles.overlayToggleButton}>
-      📊 Dashboard
-    </button>
-  );
-};
-
-// ---------------------------------------------------------------------------
 // Main App Component
 // ---------------------------------------------------------------------------
 export default function App() {
@@ -175,16 +79,21 @@ export default function App() {
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [isRandomTesting, setIsRandomTesting] = useState(false);
   const [isSendingAll, setIsSendingAll] = useState(false);
-  const [campaignName, setCampaignName] = useState('24.07.26 - Garden Storage');
+  const [campaignName, setCampaignName] = useState('');
   const [pushTranslations, setPushTranslations] = useState<PushTranslations | null>(null);
   const [chdeTemplateId, setChdeTemplateId] = useState('45888');
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>(SLUG_ORDER);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [isLoadingTranslations, setIsLoadingTranslations] = useState(false);
+  const [dateWarning, setDateWarning] = useState<string | null>(null);
+  const [campaignVersion, setCampaignVersion] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [customImages, setCustomImages] = useState<Record<string, { enabled: boolean; url: string; isEditing: boolean }>>({});
   const [customTemplates, setCustomTemplates] = useState<Record<string, { value: string; isEditing: boolean }>>({});
   const [customLpPaths, setCustomLpPaths] = useState<Record<string, { value: string; isEditing: boolean }>>({});
 
+  // Hide alert on load
   useEffect(() => {
     const hideAlert = () => {
       const alertElement = document.querySelector('.alertify-logs .custom-log.danger');
@@ -211,100 +120,196 @@ export default function App() {
   const showOverlay = useCallback(() => setVisible(true), []);
   const hideOverlay = useCallback(() => setVisible(false), []);
 
-  const getPushTranslations = useCallback(async () => {
+  // Function to check for date in campaign name and show warning
+  const checkCampaignNameDate = useCallback((name: string) => {
+    if (!name || !name.trim()) {
+      setDateWarning(null);
+      return null;
+    }
+    
+    const result = parseCampaignName(name);
+    if (!result.hasDate) {
+      setDateWarning(`⚠️ No date found in campaign name. Using today's date: ${result.day}.${result.month}.${result.year}`);
+    } else {
+      setDateWarning(null);
+    }
+    
+    return result;
+  }, []);
+
+  // Function to fetch translations - only called on demand
+  const fetchTranslations = useCallback(async (name: string) => {
+    if (!name || !name.trim()) return null;
+    
+    // Check for date
+    const result = checkCampaignNameDate(name);
+    
+    setIsLoadingTranslations(true);
     try {
-      const translations = await fetchPushTranslations(newsletterSpreadsheet, '2026', '24.07.26 - Garden Storage');
+      // Parse the campaign name to extract year and campaign name
+      const parts = name.split(' - ');
+      const datePart = parts[0] || '';
+      const campaignPart = parts.length > 1 ? parts.slice(1).join(' - ') : name;
+      
+      // Extract year from date or use current year
+      let year = '2026';
+      if (result && result.hasDate) {
+        year = result.year;
+      } else {
+        const now = new Date();
+        year = now.getFullYear().toString();
+      }
+      
+      console.log(`Fetching translations for: ${name} (year: ${year}, campaign: ${campaignPart})`);
+      
+      const translations = await fetchPushTranslations(newsletterSpreadsheet, year, name);
       setPushTranslations(translations);
+      
+      // If there's a warning, show it
+      if (result && !result.hasDate) {
+        await Swal.fire({
+          icon: 'warning',
+          title: 'No Date Found',
+          text: `No date found in campaign name. Using today's date: ${result.day}.${result.month}.${result.year}`,
+          timer: 3000,
+          showConfirmButton: true,
+        });
+      }
+      
+      return translations;
     } catch (error) {
       console.error('Error fetching push translations:', error);
+      await showErrorAlert('Failed to fetch push translations. Please try again.');
+      return null;
+    } finally {
+      setIsLoadingTranslations(false);
     }
-  }, [newsletterSpreadsheet]);
+  }, [newsletterSpreadsheet, checkCampaignNameDate]);
 
+  // Clear data on mount
   useEffect(() => {
-    getPushTranslations();
     browser.storage.local.remove('push_campaign');
-  }, [getPushTranslations]);
+    setCampaign(null);
+    setPushTranslations(null);
+    setDateWarning(null);
+    setCampaignVersion(0);
+  }, []);
 
-  const handleFile = useCallback(async (ev: React.ChangeEvent<HTMLInputElement>) => {
-    const file = ev.target.files?.[0];
-    if (!file) return;
+  // Handle campaign name change - only update the name, don't fetch
+  const handleCampaignNameChange = useCallback((name: string) => {
+    setCampaignName(name);
+    // Check for date and update warning
+    checkCampaignNameDate(name);
+  }, [checkCampaignNameDate]);
 
-    await browser.storage.local.remove('push_campaign');
+  // Handle Generate All button click
+  const handleGenerateAllSlugs = useCallback(async () => {
+    // Prevent multiple clicks while generating
+    if (isGenerating) {
+      console.log('Already generating, ignoring click');
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const parsedCSV = CSVToArray(reader.result as string);
-      const rows = parseCSV(parsedCSV);
+    if (!campaignName || !campaignName.trim()) {
+      await showErrorAlert('Please enter a campaign name first.');
+      return;
+    }
+
+    // Set generating state
+    setIsGenerating(true);
+
+    try {
+      // Check for date warning before generating
+      const result = checkCampaignNameDate(campaignName);
+      if (result && !result.hasDate) {
+        const confirmResult = await Swal.fire({
+          icon: 'warning',
+          title: 'No Date Found',
+          text: `No date found in campaign name. Using today's date: ${result.day}.${result.month}.${result.year}. Continue?`,
+          showCancelButton: true,
+          confirmButtonText: 'Continue',
+          cancelButtonText: 'Cancel',
+        });
+        
+        if (!confirmResult.isConfirmed) {
+          setIsGenerating(false);
+          return;
+        }
+      }
+
+      // Fetch translations if not already loaded
+      let translations = pushTranslations;
+      if (!translations) {
+        translations = await fetchTranslations(campaignName);
+        if (!translations) {
+          await showErrorAlert('Failed to load translations. Please check the campaign name and try again.');
+          setIsGenerating(false);
+          return;
+        }
+      }
+
+      if (!isValidTemplateId(chdeTemplateId)) {
+        await showErrorAlert('Please enter a valid CHDE template ID (numbers only).');
+        setIsGenerating(false);
+        return;
+      }
+
+      const slugsToUse = selectedSlugs.length > 0 ? selectedSlugs : getAllSlugs();
+
+      let campaignData = generateCampaignData(slugsToUse, chdeTemplateId, translations, campaignName);
+
+      // Apply custom overrides
+      for (const slug of slugsToUse) {
+        if (customImages[slug]?.enabled && customImages[slug].url && campaignData[slug]) {
+          campaignData[slug]["[name='image']"] = customImages[slug].url;
+        }
+        if (customTemplates[slug]?.value && campaignData[slug]) {
+          campaignData[slug]["[name='template']"] = customTemplates[slug].value;
+        }
+        if (customLpPaths[slug]?.value && campaignData[slug]) {
+          const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
+          const lpVal = customLpPaths[slug].value;
+          campaignData[slug]["[name='lp_path']"] = lpVal;
+          if (domain) {
+            campaignData[slug]["[name='click_action']"] = `https://www.beliani.${domain}/content/${lpVal}/?utm_source=PUSH&utm_medium=${lpVal}&utm_campaign=garden+storage`;
+          }
+        }
+      }
+
+      if (Object.keys(campaignData).length === 0) {
+        await showErrorAlert('No campaign data generated. Please check your configuration.');
+        setIsGenerating(false);
+        return;
+      }
 
       const stored: StoredCampaign = {
         id: Date.now(),
-        title: 'Push Campaign',
-        data: rows,
+        title: campaignName || 'Push Campaign',
+        data: campaignData,
       };
 
       await browser.storage.local.set({ push_campaign: stored });
       setCampaign(stored);
       setActiveSlug(null);
-      setCustomImages({});
-      setCustomTemplates({});
-      setCustomLpPaths({});
-    };
-    reader.readAsText(file);
-  }, []);
+      
+      // Increment version to force rerender of table
+      setCampaignVersion(prev => prev + 1);
 
-  const handleGenerateAllSlugs = useCallback(async () => {
-    if (!pushTranslations) {
-      await showErrorAlert('Push translations not loaded yet. Please wait.');
-      return;
+      await Swal.fire({
+        icon: 'success',
+        title: 'Campaign Generated!',
+        text: `Generated ${Object.keys(campaignData).length} rows with template ID ${chdeTemplateId}`,
+      });
+    } catch (error) {
+      console.error('Error generating campaign:', error);
+      await showErrorAlert('An error occurred while generating the campaign.');
+    } finally {
+      // ALWAYS reset generating state
+      setIsGenerating(false);
     }
+  }, [campaignName, chdeTemplateId, selectedSlugs, customImages, customTemplates, customLpPaths, pushTranslations, fetchTranslations, checkCampaignNameDate, isGenerating]);
 
-    if (!isValidTemplateId(chdeTemplateId)) {
-      await showErrorAlert('Please enter a valid CHDE template ID (numbers only).');
-      return;
-    }
-
-    const slugsToUse = selectedSlugs.length > 0 ? selectedSlugs : getAllSlugs();
-
-    let campaignData = generateCampaignData(slugsToUse, chdeTemplateId, pushTranslations, campaignName);
-
-    for (const slug of slugsToUse) {
-      if (customImages[slug]?.enabled && customImages[slug].url && campaignData[slug]) {
-        campaignData[slug]["[name='image']"] = customImages[slug].url;
-      }
-      if (customTemplates[slug]?.value && campaignData[slug]) {
-        campaignData[slug]["[name='template']"] = customTemplates[slug].value;
-      }
-      if (customLpPaths[slug]?.value && campaignData[slug]) {
-        const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
-        const lpVal = customLpPaths[slug].value;
-        campaignData[slug]["[name='lp_path']"] = lpVal;
-        if (domain) {
-          campaignData[slug]["[name='click_action']"] = `https://www.beliani.${domain}/content/${lpVal}/?utm_source=PUSH&utm_medium=${lpVal}&utm_campaign=garden+storage`;
-        }
-      }
-    }
-
-    if (Object.keys(campaignData).length === 0) {
-      await showErrorAlert('No campaign data generated. Please check your configuration.');
-      return;
-    }
-
-    const stored: StoredCampaign = {
-      id: Date.now(),
-      title: campaignName || 'Push Campaign',
-      data: campaignData,
-    };
-
-    await browser.storage.local.set({ push_campaign: stored });
-    setCampaign(stored);
-    setActiveSlug(null);
-
-    await Swal.fire({
-      icon: 'success',
-      title: 'Campaign Generated!',
-      text: `Generated ${Object.keys(campaignData).length} rows with template ID ${chdeTemplateId}`,
-    });
-  }, [pushTranslations, chdeTemplateId, campaignName, selectedSlugs, customImages, customTemplates, customLpPaths]);
+  // ... (rest of the handlers remain the same)
 
   const toggleCustomImage = useCallback(
     (slug: string) => {
@@ -571,393 +576,57 @@ export default function App() {
   const selectAllSlugs = useCallback(() => setSelectedSlugs(SLUG_ORDER), []);
   const deselectAllSlugs = useCallback(() => setSelectedSlugs([]), []);
 
-  const renderDashboardContent = () => (
-    <div className={styles.dashboardOverlay}>
-      <button onClick={hideOverlay} className={styles.closeButton}>
-        ✕ Close
-      </button>
-
-      <label className={styles.uploadLabel}>
-        📎 Upload CSV
-        <input type="file" accept="text/csv" onChange={handleFile} />
-      </label>
-
-      <div className={styles.fieldGroup}>
-        <label>Campaign Name (for URL generation):</label>
-        <input
-          type="text"
-          placeholder="e.g., 24.07.26 - Garden Storage"
-          value={campaignName}
-          onChange={e => setCampaignName(e.target.value)}
-          className={styles.input}
-        />
-        {campaignName && (
-          <div className={styles.metaRowInfo}>
-            <span>📅 Date: {parseCampaignName(campaignName).date}</span>
-            <span>🔢 Version: {parseCampaignName(campaignName).version}</span>
-            <span>🖼️ Image: {generateImageUrl(campaignName)}</span>
-            <span>🔗 LP Path: {generateLpPath(campaignName)}</span>
-          </div>
-        )}
-      </div>
-
-      <BigImagePreview
-        src={previewImage?.src || null}
-        alt={previewImage?.alt || 'Preview'}
-        onClose={() => setPreviewImage(null)}
-      />
-
-      <div className={styles.chdeRow}>
-        <span className={styles.chdeLabel}>CHDE Template ID:</span>
-        <input
-          type="text"
-          value={chdeTemplateId}
-          onChange={e => setChdeTemplateId(e.target.value)}
-          placeholder="Enter CHDE template ID"
-          className={styles.input}
-        />
-        <button
-          onClick={handleGenerateAllSlugs}
-          disabled={!pushTranslations || !isValidTemplateId(chdeTemplateId)}
-          className={styles.btnGenerate}
-        >
-          Generate All
-        </button>
-      </div>
-
-      <div className={styles.slugSection}>
-        <div className={styles.slugToolbar}>
-          <button onClick={selectAllSlugs} className={styles.btnSelect}>
-            Select All
-          </button>
-          <button onClick={deselectAllSlugs} className={styles.btnSelect}>
-            Deselect All
-          </button>
-          <span className={styles.selectedCount}>{selectedSlugs.length} selected</span>
-        </div>
-        <div className={styles.slugGrid}>
-          {SLUG_ORDER.map(slug => (
-            <label
-              key={slug}
-              className={`${styles.slugChip} ${selectedSlugs.includes(slug) ? styles.selected : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedSlugs.includes(slug)}
-                onChange={() => toggleSlugSelection(slug)}
-              />
-              {slug}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {campaign && Object.keys(campaign.data).length > 0 && (
-        <div className={styles.templatePreviewBox}>
-          <span className={styles.title}>Template IDs based on CHDE: {chdeTemplateId}</span>
-          <div className={styles.badgeList}>
-            {Object.entries(campaign.data)
-              .slice(0, 5)
-              .map(([slug, rowData]) => (
-                <span key={slug} className={styles.templateBadge}>
-                  {slug.toUpperCase()}: {rowData["[name='template']"]}
-                </span>
-              ))}
-            {Object.keys(campaign.data).length > 5 && (
-              <span className={styles.templateBadge}>+{Object.keys(campaign.data).length - 5} more</span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {!campaign || Object.keys(campaign.data).length === 0 ? (
-        <p className={styles.emptyState}>
-          No campaign loaded.
-          <br />
-          Upload a CSV or enter CHDE ID and click "Generate All".
-        </p>
-      ) : (
-        <>
-          <div className={styles.campaignActions}>
-            <button
-              onClick={handleTest3Random}
-              disabled={isRandomTesting || isSendingAll || Object.keys(campaign.data).length === 0}
-              className={styles.btnTestRandom}
-            >
-              {isRandomTesting ? 'Testing 3 Random...' : '🚀 Test 3 Random'}
-            </button>
-            <button
-              onClick={handleSendAll}
-              disabled={isSendingAll || isRandomTesting || Object.keys(campaign.data).length === 0}
-              className={styles.btnSendAll}
-            >
-              {isSendingAll ? 'Sending All...' : '⚠️ Send All'}
-            </button>
-          </div>
-
-          <div className={styles.tableContainer}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Slug</th>
-                  {campaign &&
-                    Object.keys(campaign.data).length > 0 &&
-                    Object.keys(Object.values(campaign.data)[0]).map(header => {
-                      let displayName = header;
-                      if (header === "[name='image']") displayName = 'Image';
-                      else if (header === "[name='icon']") displayName = 'Icon';
-                      else if (header === "[name='click_action']") displayName = 'Target URL';
-                      else if (header === "[name='title']") displayName = 'Title';
-                      else if (header === "[name='body']") displayName = 'Body';
-                      else if (header === "[name='shop']") displayName = 'Shop';
-                      else if (header === "[name='template']") displayName = 'Template';
-                      else if (header === "[name='language[]']") displayName = 'Language';
-                      else if (header === "[name='cta_lang']") displayName = 'CTA Lang';
-                      else if (header === "[name='lp_path']") displayName = 'LP Path';
-                      else displayName = header.replace(/[\[\]']/g, '');
-
-                      return (
-                        <th key={header} className={styles.colFixed}>
-                          {displayName}
-                        </th>
-                      );
-                    })}
-                  <th>Custom Image</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(campaign.data).map(([slug, rowData]) => {
-                  const customImage = customImages[slug];
-                  const isCustomEnabled = customImage?.enabled || false;
-                  const customImageUrl = customImage?.url || '';
-                  const isImageEditing = customImage?.isEditing || false;
-
-                  const customTemplate = customTemplates[slug];
-                  const isTemplateEditing = customTemplate?.isEditing || false;
-
-                  const customLpPath = customLpPaths[slug];
-                  const isLpEditing = customLpPath?.isEditing || false;
-
-                  return (
-                    <tr key={slug} className={activeSlug === slug ? styles.activeRow : ''}>
-                      <td className={styles.slugCell}>{slug.toUpperCase()}</td>
-
-                      {Object.entries(rowData).map(([key, value]) => {
-                        const isImage = key === "[name='image']";
-                        const isIcon = key === "[name='icon']";
-                        const isClickAction = key === "[name='click_action']";
-                        const isTemplate = key === "[name='template']";
-                        const isLpPath = key === "[name='lp_path']";
-
-                        let displayValue = value;
-                        if (isImage && customImage?.enabled && !customImage.isEditing && customImage.url) {
-                          displayValue = customImage.url;
-                        }
-
-                        if (isTemplate) {
-                          const templateId = customTemplate?.value || value;
-                          const prologisticsUrl = `https://www.prologistics.info/news_email.php?id=${templateId}`;
-
-                          return (
-                            <td key={key}>
-                              {isTemplateEditing ? (
-                                <div className={styles.inlineControl}>
-                                  <input
-                                    type="text"
-                                    value={customTemplate?.value || value}
-                                    onChange={e => updateCustomTemplateValue(slug, e.target.value)}
-                                    placeholder="Enter template ID"
-                                    className={styles.inputSmall}
-                                    autoFocus
-                                  />
-                                  <div className={styles.inlineBtnRow}>
-                                    <button
-                                      onClick={() => saveCustomTemplate(slug)}
-                                      className={styles.btnSave}
-                                      disabled={!customTemplate?.value}
-                                    >
-                                      Save
-                                    </button>
-                                    <button onClick={() => toggleCustomTemplate(slug)} className={styles.btnCancel}>
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className={styles.inlineControl}>
-                                  <a
-                                    href={prologisticsUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={styles.linkAction}
-                                  >
-                                    {templateId}
-                                  </a>
-                                  <button onClick={() => toggleCustomTemplate(slug)} className={styles.btnEdit}>
-                                    ✎ Edit
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          );
-                        }
-
-                        if (isLpPath) {
-                          return (
-                            <td key={key}>
-                              {isLpEditing ? (
-                                <div className={styles.inlineControl}>
-                                  <input
-                                    type="text"
-                                    value={customLpPath?.value || value}
-                                    onChange={e => updateCustomLpPath(slug, e.target.value)}
-                                    placeholder="Enter LP path"
-                                    className={styles.inputSmall}
-                                    autoFocus
-                                  />
-                                  <div className={styles.inlineBtnRow}>
-                                    <button
-                                      onClick={() => saveCustomLpPath(slug)}
-                                      className={styles.btnSave}
-                                      disabled={!customLpPath?.value}
-                                    >
-                                      Save
-                                    </button>
-                                    <button onClick={() => toggleCustomLpPath(slug)} className={styles.btnCancel}>
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className={styles.inlineControl}>
-                                  <span>{customLpPath?.value || value}</span>
-                                  <button onClick={() => toggleCustomLpPath(slug)} className={styles.btnEdit}>
-                                    ✎ Edit
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          );
-                        }
-
-                        if (isClickAction) {
-                          const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
-                          const currentLpPath = customLpPaths[slug]?.value || rowData["[name='lp_path']"] || campaignName;
-                          const fullUrl = `https://www.beliani.${domain}/content/${currentLpPath}/?utm_source=PUSH&utm_medium=${currentLpPath}&utm_campaign=garden+storage`;
-
-                          return (
-                            <td key={key}>
-                              <a
-                                href={fullUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={`${styles.linkAction} ${styles.textTruncate}`}
-                                title={fullUrl}
-                              >
-                                {fullUrl}
-                              </a>
-                            </td>
-                          );
-                        }
-
-                        return (
-                          <td key={key}>
-                            {isImage && displayValue && (
-                              <ImagePreview
-                                src={displayValue}
-                                alt={`Push image for ${slug}`}
-                                size="small"
-                                onClick={() =>
-                                  setPreviewImage({ src: displayValue, alt: `Push Image - ${slug.toUpperCase()}` })
-                                }
-                              />
-                            )}
-                            {isIcon && value && (
-                              <ImagePreview
-                                src={value}
-                                alt={`Icon for ${slug}`}
-                                size="small"
-                                onClick={() => setPreviewImage({ src: value, alt: `Icon - ${slug.toUpperCase()}` })}
-                              />
-                            )}
-                            {!isImage && !isIcon && !isTemplate && !isLpPath && !isClickAction && value && (
-                              <span className={styles.textTruncate}>{value}</span>
-                            )}
-                          </td>
-                        );
-                      })}
-
-                      <td>
-                        <div className={styles.inlineControl}>
-                          <label className={styles.slugChip}>
-                            <input
-                              type="checkbox"
-                              checked={isCustomEnabled}
-                              onChange={() => toggleCustomImage(slug)}
-                              disabled={isRandomTesting || isSendingAll || !!busySlug}
-                            />
-                            Custom
-                          </label>
-                          {isCustomEnabled && isImageEditing && (
-                            <>
-                              <input
-                                type="text"
-                                value={customImageUrl}
-                                onChange={e => updateCustomImageUrl(slug, e.target.value)}
-                                placeholder="Enter image URL"
-                                className={styles.inputSmall}
-                              />
-                              <button
-                                onClick={() => saveCustomImage(slug)}
-                                disabled={!customImageUrl}
-                                className={styles.btnSave}
-                              >
-                                Save
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-
-                      <td>
-                        <div className={styles.tableActionBtns}>
-                          <button
-                            onClick={() => handleTestRow(slug)}
-                            disabled={!!busySlug || isRandomTesting || isSendingAll}
-                            className={styles.btnRowTest}
-                          >
-                            Test
-                          </button>
-                          <button
-                            onClick={() => handleSendRow(slug)}
-                            disabled={!!busySlug || isRandomTesting || isSendingAll}
-                            className={styles.btnRowSend}
-                          >
-                            Send
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className={styles.footerInfo}>
-            <span>Total rows: {Object.keys(campaign.data).length}</span>
-            <span>Campaign: {campaign.title}</span>
-          </div>
-        </>
-      )}
-    </div>
-  );
-
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   return (
     <>
       {!visible && <OverlayToggleButton onClick={showOverlay} />}
-      <Overlay visible={visible}>{visible && renderDashboardContent()}</Overlay>
+      <Overlay visible={visible}>
+        {visible && (
+          <DashboardContent
+            visible={visible}
+            campaign={campaign}
+            campaignVersion={campaignVersion}
+            activeSlug={activeSlug}
+            busySlug={busySlug}
+            isRandomTesting={isRandomTesting}
+            isSendingAll={isSendingAll}
+            campaignName={campaignName}
+            chdeTemplateId={chdeTemplateId}
+            pushTranslations={pushTranslations}
+            selectedSlugs={selectedSlugs}
+            previewImage={previewImage}
+            customImages={customImages}
+            customTemplates={customTemplates}
+            customLpPaths={customLpPaths}
+            dateWarning={dateWarning}
+            isLoadingTranslations={isLoadingTranslations}
+            isGenerating={isGenerating}
+            onHideOverlay={hideOverlay}
+            onSetCampaignName={handleCampaignNameChange}
+            onSetChdeTemplateId={setChdeTemplateId}
+            onGenerateAll={handleGenerateAllSlugs}
+            onSelectAll={selectAllSlugs}
+            onDeselectAll={deselectAllSlugs}
+            onToggleSlug={toggleSlugSelection}
+            onSetPreviewImage={setPreviewImage}
+            onToggleCustomImage={toggleCustomImage}
+            onUpdateCustomImageUrl={updateCustomImageUrl}
+            onSaveCustomImage={saveCustomImage}
+            onToggleCustomTemplate={toggleCustomTemplate}
+            onUpdateCustomTemplateValue={updateCustomTemplateValue}
+            onSaveCustomTemplate={saveCustomTemplate}
+            onToggleCustomLpPath={toggleCustomLpPath}
+            onUpdateCustomLpPath={updateCustomLpPath}
+            onSaveCustomLpPath={saveCustomLpPath}
+            onTest3Random={handleTest3Random}
+            onSendAll={handleSendAll}
+            onTestRow={handleTestRow}
+            onSendRow={handleSendRow}
+          />
+        )}
+      </Overlay>
     </>
   );
 }

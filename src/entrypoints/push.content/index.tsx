@@ -7,7 +7,7 @@ export default defineContentScript({
     'https://www.prologistics.info/push_notifications.php',
     'https://prolodev.prologistics.info/push_notifications.php',
   ],
-  cssInjectionMode: 'ui',
+  cssInjectionMode: 'manifest',
   main() {
 
     // mountCsvUploader();   // ← REMOVED - we now have the selector inside App
