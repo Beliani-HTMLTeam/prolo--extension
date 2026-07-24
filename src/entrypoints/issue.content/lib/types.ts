@@ -156,3 +156,8 @@ export type LineTitleTranslations = {
   subjectLine: Record<string, string> | null;
   pageTitle: Record<string, string> | null;
 }
+
+export type PushTranslations = {
+  pushTitles: Record<string, string> | null;
+  pushMessages: Record<string, string> | null;
+}

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { IssueListItem, IssueListResponse, LineTitleTranslations, SpreadsheetTranslations } from '../lib/types';
+import type { IssueListItem, IssueListResponse, LineTitleTranslations, PushTranslations, SpreadsheetTranslations } from '../lib/types';
 import { SHOP_ALIASES } from '../lib/shopConfig';
 import { trimAllLineBreaks } from '../utils/updater/stringUtils';
 export { extractIssueLinks } from './issueLinks';
@@ -175,6 +175,82 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
     return {
       subjectLine: Object.keys(subjectLine).length > 0 ? subjectLine : null,
       pageTitle: Object.keys(pageTitle).length > 0 ? pageTitle : null,
+    };
+  } catch (e) {
+    console.warn('[spreadsheet] Failed to fetch translations:', e);
+    return empty;
+  }
+};
+
+export const fetchPushTranslations = async (spreadsheetUrl: string, year: string, tabName: string): Promise<PushTranslations> => {
+  const empty: PushTranslations = { pushTitles: null, pushMessages: null };
+  try {
+    const url = spreadsheetUrl;
+    const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    const queryGidMatch = url.match(/[?&]gid=([^&#]+)/);
+    const hashGidMatch = url.match(/#gid=([^&]+)/);
+    const spreadsheetId = idMatch?.[1];
+    const gid = queryGidMatch?.[1] ?? hashGidMatch?.[1];
+    if (!spreadsheetId || !gid) return empty;
+
+    const tabRes = await withZrokTimeout(
+      fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+        headers: ZROK_HEADERS,
+        mode: 'cors',
+        credentials: 'omit',
+      }),
+    );
+    const tabJson = await tabRes.json();
+    if (tabJson?.code !== 200) return empty;
+
+    const dynRes = await withZrokTimeout(
+      fetch(`${ZROK_BASE}/dynamic/${year}/${tabName}`, {
+        headers: ZROK_HEADERS,
+        mode: 'cors',
+        credentials: 'omit',
+      }),
+    );
+    const dynJson = await dynRes.json();
+    if (dynJson?.code !== 200) return empty;
+
+    const data: Record<string, string[]> = dynJson.data ?? {};
+    const keys: string[] = dynJson.keys ?? [];
+
+    const pushTitleIndex = keys.findIndex(k => k.toLowerCase().includes('push title'));
+    const pushMessageIndex = keys.findIndex(k => k.toLowerCase().includes('push message'));
+
+    const pushTitles: Record<string, string> = {};
+    const pushMessages: Record<string, string> = {};
+
+    for (const [rawCountry, countryData] of Object.entries(data)) {
+      const country = SLUG_CANONICAL_ALIAS[rawCountry.toUpperCase()] ?? rawCountry;
+
+      if (pushTitleIndex !== -1 && countryData[pushTitleIndex]) {
+        const subjectLineValue = countryData[pushTitleIndex];
+        if (subjectLineValue && typeof subjectLineValue === 'string' && subjectLineValue.trim()) {
+          pushTitles[country] = trimAllLineBreaks(subjectLineValue.trim());
+        } else {
+          pushTitles[country] = 'TRANSLATION NOT FOUND';
+        }
+      } else {
+        pushTitles[country] = 'TRANSLATION NOT FOUND';
+      }
+
+      if (pushMessageIndex !== -1 && countryData[pushMessageIndex]) {
+        const pageTitleValue = countryData[pushMessageIndex];
+        if (pageTitleValue && typeof pageTitleValue === 'string' && pageTitleValue.trim()) {
+          pushMessages[country] = trimAllLineBreaks(pageTitleValue.trim());
+        } else {
+          pushMessages[country] = 'TRANSLATION NOT FOUND';
+        }
+      } else {
+        pushMessages[country] = 'TRANSLATION NOT FOUND';
+      }
+    }
+
+    return {
+      pushTitles: Object.keys(pushTitles).length > 0 ? pushTitles : null,
+      pushMessages: Object.keys(pushMessages).length > 0 ? pushMessages : null,
     };
   } catch (e) {
     console.warn('[spreadsheet] Failed to fetch translations:', e);

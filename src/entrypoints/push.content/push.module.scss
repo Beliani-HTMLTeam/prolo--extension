@@ -1,0 +1,703 @@
+@use 'sass:color';
+@use '@/assets/styles/variables' as *;
+
+// ---------------------------------------------------------------------------
+// Keyframe Animations
+// ---------------------------------------------------------------------------
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// ---------------------------------------------------------------------------
+// Fixed Overlay Toggle Button
+// ---------------------------------------------------------------------------
+.overlayToggleButton {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  padding: 12px 24px;
+  background: $status-done;
+  color: $pure-white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    background: color.adjust($status-done, $lightness: -8%);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main Dashboard Container (Inside Overlay)
+// ---------------------------------------------------------------------------
+.dashboardOverlay {
+  position: fixed;
+  right: 0;
+  top: 0;
+  background: $pure-white;
+  padding: 20px;
+  border-radius: 12px;
+  color: $dawn-grey;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+// ---------------------------------------------------------------------------
+// Common Controls & Buttons
+// ---------------------------------------------------------------------------
+.closeButton {
+  position: sticky;
+  top: 0;
+  float: right;
+  background: $happy-red;
+  color: $pure-white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 10;
+  align-self: flex-end;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: color.adjust($happy-red, $lightness: -8%);
+    transform: translateY(-1px);
+  }
+}
+
+.uploadLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  color: $cozy-brown;
+  background: $soft-peach;
+  border: 1.5px solid $grey-border-dark;
+  padding: 8px 16px;
+  border-radius: 8px;
+  width: fit-content;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: color.adjust($soft-peach, $lightness: -5%);
+    border-color: $cozy-brown;
+  }
+
+  input[type='file'] {
+    display: none;
+  }
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $dawn-grey;
+  }
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1.5px solid $grey-border-dark;
+  background: $light-grey;
+  color: $dawn-grey;
+  font-size: 13px;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    border-color: $cozy-brown;
+    background: $pure-white;
+  }
+}
+
+.metaRowInfo {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: $grey-dark;
+  margin-top: 4px;
+
+  span {
+    background: $soft-peach;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid $grey-border-dark;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// CHDE Section Row
+// ---------------------------------------------------------------------------
+.chdeRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  .chdeLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: $dawn-grey;
+    white-space: nowrap;
+  }
+
+  .btnGenerate {
+    padding: 8px 18px;
+    background: $status-done;
+    color: $pure-white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: color.adjust($status-done, $lightness: -8%);
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Slug Selection Toolbar
+// ---------------------------------------------------------------------------
+.slugSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .slugToolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .btnSelect {
+      padding: 4px 12px;
+      background: $soft-peach;
+      color: $cozy-brown;
+      border: 1.5px solid $grey-border-dark;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: color.adjust($soft-peach, $lightness: -8%);
+      }
+    }
+
+    .selectedCount {
+      font-size: 12px;
+      font-weight: 500;
+      color: $grey-dark;
+    }
+  }
+
+  .slugGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .slugChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 16px;
+    border: 1.5px solid $grey-border-dark;
+    background: $light-grey;
+    color: $dawn-grey;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &.selected {
+      background: $soft-peach;
+      border-color: $cozy-brown;
+      color: $cozy-brown;
+    }
+
+    input[type='checkbox'] {
+      cursor: pointer;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Template IDs Preview Box
+// ---------------------------------------------------------------------------
+.templatePreviewBox {
+  padding: 10px 14px;
+  background: $light-grey;
+  border-radius: 8px;
+  border: 1.5px solid $grey-border-dark;
+  font-size: 12px;
+
+  .title {
+    color: $grey-dark;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .badgeList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .templateBadge {
+    background: $pure-white;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid $grey-border-dark;
+    font-size: 11px;
+    font-weight: 600;
+    color: $dawn-grey;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Big Image Preview Component
+// ---------------------------------------------------------------------------
+.bigImageContainer {
+  margin-bottom: 12px;
+  padding: 14px;
+  background: $light-grey;
+  border-radius: 10px;
+  border: 1.5px solid $grey-border-dark;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    .title {
+      color: $dawn-grey;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btnClose {
+      background: $soft-peach;
+      color: $cozy-brown;
+      border: 1px solid $grey-border-dark;
+      border-radius: 4px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+
+      &:hover {
+        background: color.adjust($soft-peach, $lightness: -8%);
+      }
+    }
+  }
+
+  .imageWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: $pure-white;
+    border-radius: 6px;
+    padding: 16px;
+    min-height: 200px;
+    border: 1px solid $grey-border-dark;
+
+    img {
+      max-width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+  }
+
+  .urlText {
+    margin-top: 8px;
+    font-size: 11px;
+    color: $grey-dark;
+    word-break: break-all;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Image Preview Component (Small / Medium / Large)
+// ---------------------------------------------------------------------------
+.imagePreviewWrapper {
+  position: relative;
+  display: inline-block;
+
+  .thumbnail {
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1.5px solid $grey-border-dark;
+    background: $light-grey;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  .noImage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $light-grey;
+    border: 1px dashed $grey-border-dark;
+    border-radius: 6px;
+    color: $grey-dark;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .loadingPlaceholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $light-grey;
+    border-radius: 6px;
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid $grey-border-dark;
+      border-top: 2px solid $cozy-brown;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+// Size variants
+.sizeSmall { width: 48px; height: 48px; }
+.sizeMedium { width: 80px; height: 80px; }
+.sizeLarge { width: 120px; height: 120px; }
+
+// ---------------------------------------------------------------------------
+// Actions Banner (Test 3 / Send All)
+// ---------------------------------------------------------------------------
+.campaignActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .btnTestRandom {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 16px;
+    background: $cozy-brown;
+    color: $pure-white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: color.adjust($cozy-brown, $lightness: -8%);
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .btnSendAll {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 16px;
+    background: $happy-red;
+    color: $pure-white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: color.adjust($happy-red, $lightness: -8%);
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Data Table Layout
+// ---------------------------------------------------------------------------
+.tableContainer {
+  overflow: auto;
+  max-height: 420px;
+  border-radius: 8px;
+  border: 1.5px solid $grey-border-dark;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: $pure-white;
+
+  thead {
+    tr {
+      background: $soft-peach;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    th {
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: $cozy-brown;
+      border-bottom: 2px solid $grey-border-dark;
+      white-space: nowrap;
+
+      &.colFixed {
+        min-width: 120px;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $grey-border-dark;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: $light-grey;
+      }
+
+      &.activeRow {
+        background: color.adjust($soft-peach, $lightness: 4%);
+      }
+    }
+
+    td {
+      padding: 8px 12px;
+      border-right: 1px solid $grey-border-dark;
+      color: $dawn-grey;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &.slugCell {
+        font-weight: 700;
+        color: $cozy-brown;
+        white-space: nowrap;
+      }
+
+      .textTruncate {
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+      }
+
+      .linkAction {
+        color: $cozy-brown;
+        text-decoration: none;
+        border-bottom: 1px dotted $cozy-brown;
+        font-weight: 600;
+
+        &:hover {
+          color: $happy-red;
+          border-color: $happy-red;
+        }
+      }
+    }
+  }
+}
+
+// Inline Table Control Actions (Edit mode inputs, Save/Cancel buttons)
+.inlineControl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .inputSmall {
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid $grey-border-dark;
+    background: $pure-white;
+    font-size: 11px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .inlineBtnRow {
+    display: flex;
+    gap: 4px;
+  }
+
+  .btnSave {
+    flex: 1;
+    padding: 2px 8px;
+    background: $status-done;
+    color: $pure-white;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .btnCancel {
+    padding: 2px 8px;
+    background: $grey-dark;
+    color: $pure-white;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .btnEdit {
+    padding: 2px 6px;
+    background: $soft-peach;
+    color: $cozy-brown;
+    border: 1px solid $grey-border-dark;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: color.adjust($soft-peach, $lightness: -8%);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.tableActionBtns {
+  white-space: nowrap;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+
+  .btnRowTest {
+    padding: 4px 10px;
+    background: $soft-peach;
+    color: $cozy-brown;
+    border: 1px solid $grey-border-dark;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: color.adjust($soft-peach, $lightness: -8%);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .btnRowSend {
+    padding: 4px 10px;
+    background: $happy-red;
+    color: $pure-white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: color.adjust($happy-red, $lightness: -8%);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Footer Info
+// ---------------------------------------------------------------------------
+.footerInfo {
+  margin-top: auto;
+  font-size: 12px;
+  color: $grey-dark;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid $grey-border-dark;
+}
+
+.emptyState {
+  color: $grey-dark;
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 13px;
+}
