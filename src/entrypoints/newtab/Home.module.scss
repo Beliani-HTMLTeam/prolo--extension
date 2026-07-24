@@ -102,3 +102,28 @@ kbd {
     }
   }
 }
+
+.filterContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--theme-hover-bg);
+  color: var(--theme-text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: var(--theme-active-bg);
+  }
+}

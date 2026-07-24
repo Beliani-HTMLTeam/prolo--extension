@@ -16,7 +16,8 @@ interface HtmlDashboardProps {
 
 export default function HtmlDashboard({ theme, setTheme }: HtmlDashboardProps) {
   const [sbModalState, setSbModalState] = useState(false);
- const { issues, loading, error } = useIssuesWithComments();
+  const [showOtherIssues, setShowOtherIssues] = useState(false);
+  const { issues, loading, error } = useIssuesWithComments();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,6 +35,8 @@ export default function HtmlDashboard({ theme, setTheme }: HtmlDashboardProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const displayIssues = showOtherIssues ? issues : issues.filter(issue => !issue.isOther);
+
   return (
     <div className={styles.home}>
       <div className={styles.floating}>
@@ -49,7 +52,17 @@ export default function HtmlDashboard({ theme, setTheme }: HtmlDashboardProps) {
         </div>
       </div>
 
-      <RecentComments issues={issues} loading={loading} error={error} />
+      <RecentComments issues={displayIssues} loading={loading} error={error} />
+
+      <div className={styles.filterContainer}>
+        <button 
+          onClick={() => setShowOtherIssues(!showOtherIssues)}
+          className={styles.filterButton}
+        >
+          <Icon icon={showOtherIssues ? 'lucide:filter-x' : 'lucide:filter'} />
+          {showOtherIssues ? 'Hide Other Issues' : 'Show Other Issues'}
+        </button>
+      </div>
 
       <LinksHub />
 
