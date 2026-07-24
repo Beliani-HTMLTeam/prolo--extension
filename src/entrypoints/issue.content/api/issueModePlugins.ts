@@ -6,7 +6,11 @@ import { mapNewsletterChecklistsToTableData } from './checklistNewsletterMapper'
 export type IssueModePlugin = {
   mode: Exclude<ChecklistMode, null>;
   showDashboardActions: boolean;
-  mapTableData: (apiResponse: ChecklistApiResponse, spreadsheet?: SpreadsheetTranslations | null) => ChecklistTableData;
+  mapTableData: (
+    apiResponse: ChecklistApiResponse,
+    spreadsheet?: SpreadsheetTranslations | null,
+    newsletterApiResponse?: ChecklistApiResponse | null,
+  ) => ChecklistTableData;
   createEmptyTableData: () => ChecklistTableData;
 };
 
@@ -40,9 +44,19 @@ const sundayPlugin: IssueModePlugin = {
 const cgbPlugin: IssueModePlugin = {
   mode: 'cgb',
   showDashboardActions: false,
-  mapTableData: apiResponse => mapCgbChecklistsToTableData(apiResponse),
+  mapTableData: (apiResponse, _, newsletterApiResponse) => mapCgbChecklistsToTableData(apiResponse, newsletterApiResponse, { isGraphicsMode: true }),
   createEmptyTableData: () => {
-    const columns = createCgbColumns([]);
+    const columns = createCgbColumns([], { includeTranslations: true, includeTestSent: true });
+    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false };
+  },
+};
+
+const graphicsPlugin: IssueModePlugin = {
+  mode: 'graphics',
+  showDashboardActions: false,
+  mapTableData: (apiResponse, _, newsletterApiResponse) => mapCgbChecklistsToTableData(apiResponse, newsletterApiResponse, { isGraphicsMode: true }),
+  createEmptyTableData: () => {
+    const columns = createCgbColumns([], { includeTranslations: true, includeTestSent: true });
     return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false };
   },
 };
@@ -51,6 +65,7 @@ const PLUGINS: Record<Exclude<ChecklistMode, null>, IssueModePlugin> = {
   newsletter: newsletterPlugin,
   sunday: sundayPlugin,
   cgb: cgbPlugin,
+  graphics: graphicsPlugin,
 };
 
 export const getIssueModePlugin = (mode: ChecklistMode): IssueModePlugin => {

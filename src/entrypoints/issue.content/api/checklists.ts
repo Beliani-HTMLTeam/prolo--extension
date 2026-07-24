@@ -9,8 +9,9 @@ export const mapChecklistsToTableData = (
   apiResponse: ChecklistApiResponse,
   mode: ChecklistMode,
   spreadsheet?: SpreadsheetTranslations | null,
+  newsletterApiResponse?: ChecklistApiResponse | null,
 ): ChecklistTableData => {
-  return getIssueModePlugin(mode).mapTableData(apiResponse, spreadsheet);
+  return getIssueModePlugin(mode).mapTableData(apiResponse, spreadsheet, newsletterApiResponse);
 };
 
 export const fetchChecklists = async (issueId: number) => {

@@ -1,12 +1,17 @@
 import type { ChecklistApiResponse, ChecklistStatus, ChecklistTableData, ChecklistTableRow } from '../lib/types';
-import { createCgbColumns, createRow, normalizeTitle, parseCheckpointDescription } from './checklistShared';
+import { CHECKLIST_TITLES_NORM } from '../lib/checklistTitles';
+import { createCgbColumns, createRow, normalizeTitle, parseCheckpointDescription, COLUMN_IDS } from './checklistShared';
 
-export const mapCgbChecklistsToTableData = (apiResponse: ChecklistApiResponse): ChecklistTableData => {
+export const mapCgbChecklistsToTableData = (
+  apiResponse: ChecklistApiResponse,
+  newsletterApiResponse?: ChecklistApiResponse | null,
+  options?: { isGraphicsMode?: boolean }
+): ChecklistTableData => {
   const rowsByShop = new Map<string, ChecklistTableRow>();
   const includedChecklists = (apiResponse.checklists ?? [])
     .filter(checklist => {
       const checklistTitle = normalizeTitle(checklist.title);
-      return !checklistTitle.startsWith('banners checked');
+      return !checklistTitle.startsWith('banners checked') && checklistTitle !== CHECKLIST_TITLES_NORM.SENT_NSLT_LP_FOR_TESTING;
     })
     .sort((left, right) => {
       const leftOrder = Number(left.ordering);
@@ -73,6 +78,51 @@ export const mapCgbChecklistsToTableData = (apiResponse: ChecklistApiResponse): 
     }
   }
 
+  if (options?.isGraphicsMode) {
+    const testSentChecklist = (apiResponse.checklists ?? []).find(
+      c => normalizeTitle(c.title) === CHECKLIST_TITLES_NORM.SENT_NSLT_LP_FOR_TESTING
+    );
+    if (testSentChecklist) {
+      for (const checkpoint of testSentChecklist.checkpoints ?? []) {
+        const parsed = parseCheckpointDescription(checkpoint.description || '');
+        if (!parsed) continue;
+        const doneValue = checkpoint.done === '1' ? 1 : 0;
+        for (const shopCode of parsed.shopCodes) {
+          const row = getRow(shopCode, Number.MAX_SAFE_INTEGER);
+          row.testSent = doneValue;
+          row.columnStatuses[COLUMN_IDS.TEST_SENT] = doneValue as ChecklistStatus;
+          row.columnCheckpointRefs[COLUMN_IDS.TEST_SENT] = {
+            checklistId: testSentChecklist.id,
+            checkpointId: checkpoint.id,
+          };
+          row.checkpointRefs.testSent = {
+            checklistId: testSentChecklist.id,
+            checkpointId: checkpoint.id,
+          };
+        }
+      }
+    }
+
+    if (newsletterApiResponse) {
+      const translationsChecklist = (newsletterApiResponse.checklists ?? []).find(
+        c => normalizeTitle(c.title) === CHECKLIST_TITLES_NORM.NEWSLETTER_TRANSLATIONS
+      );
+      if (translationsChecklist) {
+        for (const checkpoint of translationsChecklist.checkpoints ?? []) {
+          const parsed = parseCheckpointDescription(checkpoint.description || '');
+          if (!parsed) continue;
+          const doneValue = checkpoint.done === '1' ? 1 : 0;
+          for (const shopCode of parsed.shopCodes) {
+            const row = getRow(shopCode, Number.MAX_SAFE_INTEGER);
+            row.translations = doneValue;
+            row.columnStatuses[COLUMN_IDS.TRANSLATIONS] = doneValue as ChecklistStatus;
+						// read only for graphics
+          }
+        }
+      }
+    }
+  }
+
   const rows = Array.from(rowsByShop.values()).sort((left, right) => {
     if (left.order !== right.order) {
       return left.order - right.order;
@@ -81,6 +131,9 @@ export const mapCgbChecklistsToTableData = (apiResponse: ChecklistApiResponse): 
     return left.shop.localeCompare(right.shop);
   });
 
-  const columns = createCgbColumns(dynamicColumns);
+  const columns = createCgbColumns(dynamicColumns, {
+    includeTranslations: options?.isGraphicsMode,
+    includeTestSent: options?.isGraphicsMode,
+  });
   return { headers: columns.map(column => column.label), columns, rows, hasGroupedNslt: false };
 };
