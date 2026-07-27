@@ -47,6 +47,8 @@ const parseCommentHtml = (html: string): string => {
     '<a href="$1" target="_blank" rel="noopener noreferrer" class="comment-link">$1</a>',
   );
 
+  processed = processed.replace(/<br\s*\/?>/gi, '');
+
   // shorten long urls
   processed = processed.replace(/<a ([^>]*?)>([^<]{50,})<\/a>/gi, (match, attrs, text) => {
     if (text.startsWith('http')) {
