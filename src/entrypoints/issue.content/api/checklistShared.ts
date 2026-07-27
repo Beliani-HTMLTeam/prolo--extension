@@ -81,12 +81,27 @@ export const createNewsletterColumns = (
   return columns;
 };
 
-export const createCgbColumns = (dynamicColumns: Array<{ id: string; label: string }>): ChecklistColumn[] => {
-  return [
+export const createCgbColumns = (
+  dynamicColumns: Array<{ id: string; label: string }>,
+  options?: { includeTranslations?: boolean; includeTestSent?: boolean }
+): ChecklistColumn[] => {
+  const columns: ChecklistColumn[] = [
     { id: COLUMN_IDS.SHOP, label: 'SHOP', kind: 'shop' },
-    ...dynamicColumns.map(column => ({ id: column.id, label: column.label, kind: 'status' as const })),
-    { id: COLUMN_IDS.TEST_REQUEST, label: 'Test Request', kind: 'request' },
   ];
+
+  if (options?.includeTranslations) {
+    columns.push({ id: COLUMN_IDS.TRANSLATIONS, label: 'Translations', kind: 'status' });
+  }
+
+  columns.push(...dynamicColumns.map(column => ({ id: column.id, label: column.label, kind: 'status' as const })));
+
+  if (options?.includeTestSent) {
+    columns.push({ id: COLUMN_IDS.TEST_SENT, label: 'Test Sent', kind: 'status' });
+  }
+
+  columns.push({ id: COLUMN_IDS.TEST_REQUEST, label: 'Test Request', kind: 'request' });
+
+  return columns;
 };
 
 const knownShops = new Set<string>();

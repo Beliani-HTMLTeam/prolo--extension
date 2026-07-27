@@ -12,6 +12,7 @@ export interface IssueWithComments {
   comments: Comment[];
   totalComments: number;
   recentCommentsCount: number;
+  isOther: boolean;
 }
 
 interface RecentCommentsProps {
@@ -45,8 +46,12 @@ const getMarqueeDuration = (title: string): string => {
 export default function RecentComments({ issues, loading = false, error = null }: RecentCommentsProps) {
   const recentIssues = issues.filter(issue => issue.recentCommentsCount > 0);
 
-  // Sort by latest comment
+  // Sort by isOther first (true first), then by latest comment
   const sortedIssues = [...recentIssues].sort((a, b) => {
+    if (a.isOther !== b.isOther) {
+      return a.isOther ? -1 : 1;
+    }
+
     const aLatest = a.comments.reduce((latest, comment) => {
       return new Date(comment.create_date) > new Date(latest.create_date) ? comment : latest;
     }, a.comments[0]);
@@ -95,7 +100,10 @@ export default function RecentComments({ issues, loading = false, error = null }
             };
 
             return (
-              <div className={styles.issueCard} key={issue.id}>
+              <div 
+                className={`${styles.issueCard} ${issue.isOther ? styles.isOther : ''}`.trim()} 
+                key={issue.id}
+              >
                 {/* Issue Title Link */}
                 <a href={issue.link} target="_blank" rel="noopener noreferrer" className={styles.issueLink}>
                   {/* {issue.issue.substring(0, 50) + (issue.issue.length > 50 ? '...' : '')} */}

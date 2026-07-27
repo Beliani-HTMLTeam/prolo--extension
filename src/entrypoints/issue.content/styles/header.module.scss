@@ -10,6 +10,50 @@
   color: $dawn-grey;
   background: $soft-peach;
 
+  .headerLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 60%;
+  }
+
+  .deadlineAndActions {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .actionsRow {
+    display: flex;
+  }
+
+  .actionBtn {
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    background: $pure-white;
+    border: 1px solid $grey-border-dark;
+    padding: 8px 12px;
+    color: $grey-dark;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: $grey-lightest;
+      color: $cozy-brown;
+    }
+  }
+
   .info {
     display: flex;
     flex-direction: column;
@@ -145,13 +189,82 @@
   border-color: $status-done;
 }
 
-.status--closed {
-  color: $grey-dark !important;
-  border-color: $grey-border-dark;
+.status--closed,
+.status--close {
+  color: $status-missing !important;
+  border-color: $status-missing;
 }
 
 .priorityHigh {
   color: $pure-white !important;
   font-weight: 700 !important;
   letter-spacing: 0.2px;
+}
+
+.deadlineWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: $pure-white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid $grey-border-dark;
+  min-width: 220px;
+}
+
+.deadlineInfo {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+}
+
+.deadlineName {
+  color: $grey-dark;
+  font-weight: 500;
+}
+
+.deadlineDate {
+  color: $dawn-grey;
+  font-weight: 600;
+}
+
+.progressContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.progressBar {
+  flex-grow: 1;
+  height: 6px;
+  background: $soft-peach;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: $status-done;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressWarning {
+  background: #f6b26b;
+}
+
+.progressOverdue {
+  background: $status-missing;
+}
+
+.progressText {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: $grey-dark;
+  white-space: nowrap;
 }

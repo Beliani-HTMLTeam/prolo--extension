@@ -1,6 +1,6 @@
 export type ChecklistStatus = 0 | 1 | 2;
 
-export type ChecklistMode = 'newsletter' | 'sunday' | 'cgb' | null;
+export type ChecklistMode = 'newsletter' | 'sunday' | 'cgb' | 'graphics' | null;
 
 export type ChecklistOwner = 'HTML' | 'GRAPHICS' | null;
 
@@ -109,6 +109,7 @@ export type IssueListItem = {
   issue_board_column_name?: string;
   checkpoints_done?: string | number;
   checkpoints_total?: string | number;
+  added_time?: string;
 };
 
 export type IssueLink = { name: string; url: string };
@@ -130,6 +131,10 @@ export type ParsedIssueInfo = {
   boardColumnName: string;
   checkpointsDone: number;
   checkpointsTotal: number;
+  dueDate: Date | null;
+  dueDateName: string | null;
+  issueCreatedAt: string;
+  newsletterIssueId?: number | null;
 };
 
 export type IssueInfoViewModel = ParsedIssueInfo & {

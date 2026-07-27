@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Comment } from '@/entrypoints/issue.content/api/comments';
 
-
-interface IssueWithComments {
+export interface IssueWithComments {
   link: string;
   issue: string;
   id: string;
   comments: Comment[];
   totalComments: number;
   recentCommentsCount: number;
+  isOther: boolean;
 }
 
 const filterCommentsByTime = (comments: Comment[], hours: number = 24): Comment[] => {
@@ -42,12 +42,40 @@ export function useIssuesWithComments() {
           throw new Error('Username not found');
         }
 
-        const issues = await axios.get(
-          `https://www.prologistics.info/api/issueLog/list/?status=open&view_type=list&board_sort=col_time_old_top&solving_resp_username%5B%5D=${username}`,
+        const baseIssuesUrl = 'https://www.prologistics.info/api/issueLog/list/';
+        const baseIssueListQuery = {
+          status: 'open',
+          view_type: 'list',
+          board_sort: 'col_time_old_top',
+        };
+
+        const mainQuery = { ...baseIssueListQuery, 'solving_resp_username[]': username };
+        const otherQueries = [
+          { ...baseIssueListQuery, issue_type: '982' },
+          { ...baseIssueListQuery, resp_username: 'Graphics_HTML' },
+          { ...baseIssueListQuery, solving_resp_username: 'Graphics_HTML' },
+        ];
+
+        const mainResponse = await axios.get(`${baseIssuesUrl}?${new URLSearchParams(mainQuery).toString()}`);
+        const otherResponses = await Promise.all(
+          otherQueries.map(query => axios.get(`${baseIssuesUrl}?${new URLSearchParams(query).toString()}`)),
         );
 
-        const issueList = issues.data.issue_list;
-        const issueIds = issueList.map((issue: any) => issue.id);
+        const mainIssueList = mainResponse.data.issue_list || [];
+        const mainIds = new Set(mainIssueList.map((i: any) => i.id));
+
+        const otherIssueList = Array.from(
+          new Map(
+            otherResponses.flatMap(response => response.data.issue_list).map((issue: any) => [issue.id, issue]),
+          ).values(),
+        ).filter((issue: any) => !mainIds.has(issue.id));
+
+        const combinedList = [
+          ...mainIssueList.map((issue: any) => ({ ...issue, isOther: false })),
+          ...otherIssueList.map((issue: any) => ({ ...issue, isOther: true })),
+        ];
+
+        const issueIds = combinedList.map((issue: any) => issue.id);
 
         const commentsPromises = issueIds.map(async (id: number) => {
           const commentsResponse = await axios.get(
@@ -59,7 +87,7 @@ export function useIssuesWithComments() {
         const commentsData = await Promise.all(commentsPromises);
         const commentsMap = new Map(commentsData.map((item: any) => [item.id, item.comments]));
 
-        const issuesWithComments: IssueWithComments[] = issueList.map((issue: any) => {
+        const issuesWithComments: IssueWithComments[] = combinedList.map((issue: any) => {
           const allComments: Comment[] = commentsMap.get(issue.id) || [];
           const recentComments = filterCommentsByTime(allComments, 24);
 
@@ -70,6 +98,7 @@ export function useIssuesWithComments() {
             comments: recentComments,
             totalComments: allComments.length,
             recentCommentsCount: recentComments.length,
+            isOther: issue.isOther,
           };
         });
 
@@ -89,11 +118,11 @@ export function useIssuesWithComments() {
   const issuesWithRecentComments = issues.filter(issue => issue.recentCommentsCount > 0);
   const totalRecentComments = issues.reduce((sum, issue) => sum + issue.recentCommentsCount, 0);
 
-  return { 
-    issues, 
-    loading, 
+  return {
+    issues,
+    loading,
     error,
     issuesWithRecentComments,
-    totalRecentComments
+    totalRecentComments,
   };
 }
