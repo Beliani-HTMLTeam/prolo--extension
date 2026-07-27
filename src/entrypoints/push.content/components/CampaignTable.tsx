@@ -35,422 +35,502 @@ type CampaignTableProps = {
   onSaveCustomTemplate: (slug: string) => void;
   onToggleCustomLpPath: (slug: string) => void;
   onUpdateCustomLpPath: (slug: string, value: string) => void;
-  onSaveCustomLpPath: (slug: string) => void;
+  onSaveCustomLpPath: (slug: string, value?: string) => void;
   onSetPreviewImage: Dispatch<SetStateAction<{ src: string; alt: string } | null>>;
   onTestRow: (slug: string) => void;
   onSendRow: (slug: string) => void;
 };
 
+// Helper function to extract campaign name from full name
+// Examples:
+// "22.07.26 - Chairs" -> "Chairs"
+// "Voucher - 27.07.26 - Vase" -> "Vase"
+// "17.07.26 - New Category Kitchen" -> "New Category Kitchen"
+// "Mother's Day Wishes" -> "Mother's Day Wishes" (no date, return full)
+const extractCampaignName = (fullName: string): string => {
+  // Check if there's a date pattern (DD.MM.YY or DD-MM-YY)
+  const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2})/;
+  const match = fullName.match(datePattern);
+
+  if (match) {
+    // Find the position of the date match
+    const dateIndex = match.index || 0;
+    const dateEndIndex = dateIndex + match[0].length;
+
+    // Get everything after the date
+    let afterDate = fullName.substring(dateEndIndex).trim();
+
+    // Remove any leading separators like " - " or "-"
+    afterDate = afterDate.replace(/^[\s\-]+/, '');
+
+    // If afterDate is empty, try to get everything before the date
+    if (!afterDate) {
+      const beforeDate = fullName.substring(0, dateIndex).trim();
+      // Remove trailing separators
+      return beforeDate.replace(/[\s\-]+$/, '');
+    }
+
+    return afterDate;
+  }
+
+  // No date found, return the full name
+  return fullName;
+};
+
+// Helper function to get UTM campaign value (lowercase, replace spaces with +)
+const getUtmCampaign = (fullName: string): string => {
+  const campaign = extractCampaignName(fullName);
+  // Convert to lowercase and replace spaces with + for UTM parameter
+  return campaign.toLowerCase().replace(/\s+/g, '+');
+};
+
+// Helper component for translation missing warning
+const TranslationWarning = ({ type }: { type: 'title' | 'message' }) => {
+  return <span className={styles.translationMissing}>⚠️ {type === 'title' ? 'Title' : 'Message'} not found</span>;
+};
+
+// Helper to check if translation is missing
+const isTranslationMissing = (value: string): boolean => {
+  return !value || value.trim() === '' || value.trim() === 'TRANSLATION NOT FOUND';
+};
+
 // Memoized row component
-const CampaignRow = memo(({
-  slug,
-  rowData,
-  activeSlug,
-  busySlug,
-  isRandomTesting,
-  isSendingAll,
-  campaignName,
-  customImages,
-  customTemplates,
-  customLpPaths,
-  onToggleCustomImage,
-  onUpdateCustomImageUrl,
-  onSaveCustomImage,
-  onToggleCustomTemplate,
-  onUpdateCustomTemplateValue,
-  onSaveCustomTemplate,
-  onToggleCustomLpPath,
-  onUpdateCustomLpPath,
-  onSaveCustomLpPath,
-  onSetPreviewImage,
-  onTestRow,
-  onSendRow,
-}: {
-  slug: string;
-  rowData: CampaignRowData;
-  activeSlug: string | null;
-  busySlug: string | null;
-  isRandomTesting: boolean;
-  isSendingAll: boolean;
-  campaignName: string;
-  customImages: Record<string, CustomImage>;
-  customTemplates: Record<string, CustomTemplate>;
-  customLpPaths: Record<string, CustomLpPath>;
-  onToggleCustomImage: (slug: string) => void;
-  onUpdateCustomImageUrl: (slug: string, url: string) => void;
-  onSaveCustomImage: (slug: string) => void;
-  onToggleCustomTemplate: (slug: string) => void;
-  onUpdateCustomTemplateValue: (slug: string, value: string) => void;
-  onSaveCustomTemplate: (slug: string) => void;
-  onToggleCustomLpPath: (slug: string) => void;
-  onUpdateCustomLpPath: (slug: string, value: string) => void;
-  onSaveCustomLpPath: (slug: string) => void;
-  onSetPreviewImage: Dispatch<SetStateAction<{ src: string; alt: string } | null>>;
-  onTestRow: (slug: string) => void;
-  onSendRow: (slug: string) => void;
-}) => {
-  const customImage = customImages[slug];
-  const isCustomEnabled = customImage?.enabled || false;
-  const customImageUrl = customImage?.url || '';
-  const isImageEditing = customImage?.isEditing || false;
+const CampaignRow = memo(
+  ({
+    slug,
+    rowData,
+    activeSlug,
+    busySlug,
+    isRandomTesting,
+    isSendingAll,
+    campaignName,
+    customImages,
+    customTemplates,
+    customLpPaths,
+    onToggleCustomImage,
+    onUpdateCustomImageUrl,
+    onSaveCustomImage,
+    onToggleCustomTemplate,
+    onUpdateCustomTemplateValue,
+    onSaveCustomTemplate,
+    onToggleCustomLpPath,
+    onUpdateCustomLpPath,
+    onSaveCustomLpPath,
+    onSetPreviewImage,
+    onTestRow,
+    onSendRow,
+  }: {
+    slug: string;
+    rowData: CampaignRowData;
+    activeSlug: string | null;
+    busySlug: string | null;
+    isRandomTesting: boolean;
+    isSendingAll: boolean;
+    campaignName: string;
+    customImages: Record<string, CustomImage>;
+    customTemplates: Record<string, CustomTemplate>;
+    customLpPaths: Record<string, CustomLpPath>;
+    onToggleCustomImage: (slug: string) => void;
+    onUpdateCustomImageUrl: (slug: string, url: string) => void;
+    onSaveCustomImage: (slug: string) => void;
+    onToggleCustomTemplate: (slug: string) => void;
+    onUpdateCustomTemplateValue: (slug: string, value: string) => void;
+    onSaveCustomTemplate: (slug: string) => void;
+    onToggleCustomLpPath: (slug: string) => void;
+    onUpdateCustomLpPath: (slug: string, value: string) => void;
+    onSaveCustomLpPath: (slug: string, value?: string) => void;
+    onSetPreviewImage: Dispatch<SetStateAction<{ src: string; alt: string } | null>>;
+    onTestRow: (slug: string) => void;
+    onSendRow: (slug: string) => void;
+  }) => {
+    const customImage = customImages[slug];
+    const isCustomEnabled = customImage?.enabled || false;
+    const customImageUrl = customImage?.url || '';
+    const isImageEditing = customImage?.isEditing || false;
 
-  const customTemplate = customTemplates[slug];
-  const isTemplateEditing = customTemplate?.isEditing || false;
+    const customTemplate = customTemplates[slug];
+    const isTemplateEditing = customTemplate?.isEditing || false;
 
-  const customLpPath = customLpPaths[slug];
-  const isLpEditing = customLpPath?.isEditing || false;
+    const customLpPath = customLpPaths[slug];
+    const isLpEditing = customLpPath?.isEditing || false;
 
-  // Local state for LP and image inputs
-  const [lpEditValue, setLpEditValue] = useState(customLpPath?.value || rowData["[name='lp_path']"] || '');
-  const [imageEditValue, setImageEditValue] = useState(customImage?.url || '');
+    // Local state for LP and image inputs
+    const [lpEditValue, setLpEditValue] = useState(customLpPath?.value || rowData["[name='lp_path']"] || '');
+    const [imageEditValue, setImageEditValue] = useState(customImage?.url || '');
 
-  // Handle LP save
-  const handleLpSave = useCallback(() => {
-    if (lpEditValue.trim()) {
-      onUpdateCustomLpPath(slug, lpEditValue);
-      onSaveCustomLpPath(slug);
-    }
-  }, [slug, lpEditValue, onUpdateCustomLpPath, onSaveCustomLpPath]);
+    // Handle LP save
+    const handleLpSave = useCallback(() => {
+      if (lpEditValue.trim()) {
+        onSaveCustomLpPath(slug, lpEditValue); // pass the value
+      }
+    }, [slug, lpEditValue, onSaveCustomLpPath]);
 
-  // Handle image save
-  const handleImageSave = useCallback(() => {
-    if (imageEditValue.trim()) {
-      onUpdateCustomImageUrl(slug, imageEditValue);
-      onSaveCustomImage(slug);
-    }
-  }, [slug, imageEditValue, onUpdateCustomImageUrl, onSaveCustomImage]);
+    // Handle image save
+    const handleImageSave = useCallback(() => {
+      if (imageEditValue.trim()) {
+        onUpdateCustomImageUrl(slug, imageEditValue);
+        onSaveCustomImage(slug);
+      }
+    }, [slug, imageEditValue, onUpdateCustomImageUrl, onSaveCustomImage]);
 
-  return (
-    <tr className={activeSlug === slug ? styles.activeRow : ''}>
-      <td className={styles.colSlug}>{slug.toUpperCase()}</td>
+    // Check if title and message exist (not empty and not 'TRANSLATION NOT FOUND')
+    const titleValue = rowData["[name='title']"] || '';
+    const bodyValue = rowData["[name='body']"] || '';
+    const hasTitle = !isTranslationMissing(titleValue);
+    const hasMessage = !isTranslationMissing(bodyValue);
 
-      {Object.entries(rowData).map(([key, value]) => {
-        const isImage = key === "[name='image']";
-        const isIcon = key === "[name='icon']";
-        const isClickAction = key === "[name='click_action']";
-        const isTemplate = key === "[name='template']";
-        const isLpPath = key === "[name='lp_path']";
+    // Get UTM campaign value
+    const utmCampaign = getUtmCampaign(campaignName);
 
-        let displayValue = value;
-        if (isImage && customImage?.enabled && !customImage.isEditing && customImage.url) {
-          displayValue = customImage.url;
-        }
+    return (
+      <tr
+        className={`${activeSlug === slug ? styles.activeRow : ''} ${!hasTitle || !hasMessage ? styles.warningRow : ''}`}
+      >
+        <td className={styles.colSlug}>{slug.toUpperCase()}</td>
 
-        // Template column - display only as link (no editing)
-        if (isTemplate) {
-          const templateId = customTemplate?.value || value;
-          const prologisticsUrl = `https://www.prologistics.info/news_email.php?id=${templateId}`;
+        {Object.entries(rowData).map(([key, value]) => {
+          const isImage = key === "[name='image']";
+          const isIcon = key === "[name='icon']";
+          const isClickAction = key === "[name='click_action']";
+          const isTemplate = key === "[name='template']";
+          const isLpPath = key === "[name='lp_path']";
+          const isTitle = key === "[name='title']";
+          const isBody = key === "[name='body']";
+
+          let displayValue = value;
+          if (isImage && customImage?.enabled && !customImage.isEditing && customImage.url) {
+            displayValue = customImage.url;
+          }
+
+          // Template column - display only as link (no editing)
+          if (isTemplate) {
+            const templateId = customTemplate?.value || value;
+            const prologisticsUrl = `https://www.prologistics.info/news_email.php?id=${templateId}`;
+
+            return (
+              <td key={key} className={styles.colTemplate}>
+                <div className={styles.cellWrapper}>
+                  <div className={styles.displayContainer}>
+                    <a href={prologisticsUrl} target="_blank" rel="noopener noreferrer" className={styles.linkAction}>
+                      {templateId}
+                    </a>
+                  </div>
+                </div>
+              </td>
+            );
+          }
+
+          // LP Path column
+          if (isLpPath) {
+            return (
+              <td key={key} className={styles.colPath}>
+                <div className={styles.cellWrapper}>
+                  {isLpEditing ? (
+                    <div className={styles.editContainer}>
+                      <div className={styles.inputWrapper}>
+                        <input
+                          type="text"
+                          value={lpEditValue}
+                          onChange={e => setLpEditValue(e.target.value)}
+                          placeholder="Enter LP path"
+                          className={styles.inputSmall}
+                          autoFocus
+                        />
+                      </div>
+                      <div className={styles.iconGroup}>
+                        <button
+                          onClick={handleLpSave}
+                          className={styles.iconSave}
+                          disabled={!lpEditValue.trim()}
+                          title="Save"
+                        >
+                          ✓
+                        </button>
+                        <button onClick={() => onToggleCustomLpPath(slug)} className={styles.iconCancel} title="Cancel">
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.displayContainer}>
+                      <span className={styles.textTruncate}>{customLpPath?.value || value}</span>
+                      <button
+                        onClick={() => {
+                          setLpEditValue(customLpPath?.value || value);
+                          onToggleCustomLpPath(slug);
+                        }}
+                        className={styles.iconEdit}
+                        title="Edit LP path"
+                      >
+                        ✎
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </td>
+            );
+          }
+
+          // Click Action column
+          if (isClickAction) {
+            const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
+            const currentLpPath = customLpPaths[slug]?.value || rowData["[name='lp_path']"] || campaignName;
+            const fullUrl = `https://www.beliani.${domain}/content/${currentLpPath}/?utm_source=PUSH&utm_medium=${currentLpPath}&utm_campaign=${utmCampaign}`;
+
+            return (
+              <td key={key} className={styles.colUrl}>
+                <a
+                  href={fullUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.linkAction}
+                  title={fullUrl}
+                >
+                  {fullUrl}
+                </a>
+              </td>
+            );
+          }
+
+          // Title column - show warning if missing
+          if (isTitle) {
+            return (
+              <td key={key} className={styles.colText}>
+                {hasTitle ? <span className={styles.textTruncate}>{value}</span> : <TranslationWarning type="title" />}
+              </td>
+            );
+          }
+
+          // Body/Message column - show warning if missing
+          if (isBody) {
+            return (
+              <td key={key} className={styles.colText}>
+                {hasMessage ? (
+                  <span className={styles.textTruncate}>{value}</span>
+                ) : (
+                  <TranslationWarning type="message" />
+                )}
+              </td>
+            );
+          }
 
           return (
-            <td key={key} className={styles.colTemplate}>
-              <div className={styles.cellWrapper}>
-                <div className={styles.displayContainer}>
-                  <a
-                    href={prologisticsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.linkAction}
-                  >
-                    {templateId}
-                  </a>
-                </div>
-              </div>
+            <td key={key} className={isImage || isIcon ? styles.colImage : styles.colDefault}>
+              {isImage && displayValue && (
+                <ImagePreview
+                  src={displayValue}
+                  alt={`Push image for ${slug}`}
+                  size="small"
+                  onClick={() => onSetPreviewImage({ src: displayValue, alt: `Push Image - ${slug.toUpperCase()}` })}
+                />
+              )}
+              {isIcon && value && (
+                <ImagePreview
+                  src={value}
+                  alt={`Icon for ${slug}`}
+                  size="small"
+                  onClick={() => onSetPreviewImage({ src: value, alt: `Icon - ${slug.toUpperCase()}` })}
+                />
+              )}
+              {!isImage && !isIcon && !isTemplate && !isLpPath && !isClickAction && !isTitle && !isBody && value && (
+                <span className={styles.textTruncate}>{value}</span>
+              )}
             </td>
           );
-        }
+        })}
 
-        // LP Path column
-        if (isLpPath) {
-          return (
-            <td key={key} className={styles.colPath}>
-              <div className={styles.cellWrapper}>
-                {isLpEditing ? (
-                  <div className={styles.editContainer}>
-                    <div className={styles.inputWrapper}>
-                      <input
-                        type="text"
-                        value={lpEditValue}
-                        onChange={e => setLpEditValue(e.target.value)}
-                        placeholder="Enter LP path"
-                        className={styles.inputSmall}
-                        autoFocus
-                      />
-                    </div>
-                    <div className={styles.iconGroup}>
-                      <button
-                        onClick={handleLpSave}
-                        className={styles.iconSave}
-                        disabled={!lpEditValue.trim()}
-                        title="Save"
-                      >
-                        ✓
-                      </button>
-                      <button
-                        onClick={() => onToggleCustomLpPath(slug)}
-                        className={styles.iconCancel}
-                        title="Cancel"
-                      >
-                        ✕
-                      </button>
-                    </div>
+        {/* Custom Image Column */}
+        <td className={styles.colCustomImage}>
+          <div className={styles.cellWrapper}>
+            <div className={styles.customImageContainer}>
+              <label className={styles.customImageLabel}>
+                <input
+                  type="checkbox"
+                  checked={isCustomEnabled}
+                  onChange={() => {
+                    if (!isCustomEnabled) {
+                      setImageEditValue(customImageUrl);
+                    }
+                    onToggleCustomImage(slug);
+                  }}
+                  disabled={isRandomTesting || isSendingAll || !!busySlug}
+                />
+                Custom
+              </label>
+              {isCustomEnabled && isImageEditing && (
+                <div className={styles.editContainer}>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type="text"
+                      value={imageEditValue}
+                      onChange={e => setImageEditValue(e.target.value)}
+                      placeholder="Enter image URL"
+                      className={styles.inputSmall}
+                    />
                   </div>
-                ) : (
-                  <div className={styles.displayContainer}>
-                    <span className={styles.textTruncate}>{customLpPath?.value || value}</span>
+                  <div className={styles.iconGroup}>
                     <button
-                      onClick={() => {
-                        setLpEditValue(customLpPath?.value || value);
-                        onToggleCustomLpPath(slug);
-                      }}
-                      className={styles.iconEdit}
-                      title="Edit LP path"
+                      onClick={handleImageSave}
+                      className={styles.iconSave}
+                      disabled={!imageEditValue.trim()}
+                      title="Save"
                     >
-                      ✎
+                      ✓
                     </button>
                   </div>
-                )}
-              </div>
-            </td>
-          );
-        }
-
-        // Click Action column
-        if (isClickAction) {
-          const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
-          const currentLpPath = customLpPaths[slug]?.value || rowData["[name='lp_path']"] || campaignName;
-          const fullUrl = `https://www.beliani.${domain}/content/${currentLpPath}/?utm_source=PUSH&utm_medium=${currentLpPath}&utm_campaign=garden+storage`;
-
-          return (
-            <td key={key} className={styles.colUrl}>
-              <a
-                href={fullUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.linkAction}
-                title={fullUrl}
-              >
-                {fullUrl}
-              </a>
-            </td>
-          );
-        }
-
-        return (
-          <td key={key} className={isImage || isIcon ? styles.colImage : styles.colDefault}>
-            {isImage && displayValue && (
-              <ImagePreview
-                src={displayValue}
-                alt={`Push image for ${slug}`}
-                size="small"
-                onClick={() =>
-                  onSetPreviewImage({ src: displayValue, alt: `Push Image - ${slug.toUpperCase()}` })
-                }
-              />
-            )}
-            {isIcon && value && (
-              <ImagePreview
-                src={value}
-                alt={`Icon for ${slug}`}
-                size="small"
-                onClick={() => onSetPreviewImage({ src: value, alt: `Icon - ${slug.toUpperCase()}` })}
-              />
-            )}
-            {!isImage && !isIcon && !isTemplate && !isLpPath && !isClickAction && value && (
-              <span className={styles.textTruncate}>{value}</span>
-            )}
-          </td>
-        );
-      })}
-
-      {/* Custom Image Column */}
-      <td className={styles.colCustomImage}>
-        <div className={styles.cellWrapper}>
-          <div className={styles.customImageContainer}>
-            <label className={styles.customImageLabel}>
-              <input
-                type="checkbox"
-                checked={isCustomEnabled}
-                onChange={() => {
-                  if (!isCustomEnabled) {
-                    setImageEditValue(customImageUrl);
-                  }
-                  onToggleCustomImage(slug);
-                }}
-                disabled={isRandomTesting || isSendingAll || !!busySlug}
-              />
-              Custom
-            </label>
-            {isCustomEnabled && isImageEditing && (
-              <div className={styles.editContainer}>
-                <div className={styles.inputWrapper}>
-                  <input
-                    type="text"
-                    value={imageEditValue}
-                    onChange={e => setImageEditValue(e.target.value)}
-                    placeholder="Enter image URL"
-                    className={styles.inputSmall}
-                  />
                 </div>
-                <div className={styles.iconGroup}>
-                  <button
-                    onClick={handleImageSave}
-                    className={styles.iconSave}
-                    disabled={!imageEditValue.trim()}
-                    title="Save"
-                  >
-                    ✓
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </td>
+        </td>
 
-      {/* Actions Column */}
-      <td className={styles.colActions}>
-        <div className={styles.tableActionBtns}>
-          <button
-            onClick={() => onTestRow(slug)}
-            disabled={!!busySlug || isRandomTesting || isSendingAll}
-            className={styles.btnRowTest}
-          >
-            Test
-          </button>
-          <button
-            onClick={() => onSendRow(slug)}
-            disabled={!!busySlug || isRandomTesting || isSendingAll}
-            className={styles.btnRowSend}
-          >
-            Send
-          </button>
-        </div>
-      </td>
-    </tr>
-  );
-});
+        {/* Actions Column */}
+        <td className={styles.colActions}>
+          <div className={styles.tableActionBtns}>
+            <button
+              onClick={() => onTestRow(slug)}
+              disabled={!!busySlug || isRandomTesting || isSendingAll}
+              className={styles.btnRowTest}
+            >
+              Test
+            </button>
+            <button
+              onClick={() => onSendRow(slug)}
+              disabled={!!busySlug || isRandomTesting || isSendingAll}
+              className={styles.btnRowSend}
+            >
+              Send
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  },
+);
 
 CampaignRow.displayName = 'CampaignRow';
 
 // Main CampaignTable component
-export const CampaignTable = memo(({
-  campaign,
-  activeSlug,
-  busySlug,
-  isRandomTesting,
-  isSendingAll,
-  campaignName,
-  customImages,
-  customTemplates,
-  customLpPaths,
-  onToggleCustomImage,
-  onUpdateCustomImageUrl,
-  onSaveCustomImage,
-  onToggleCustomTemplate,
-  onUpdateCustomTemplateValue,
-  onSaveCustomTemplate,
-  onToggleCustomLpPath,
-  onUpdateCustomLpPath,
-  onSaveCustomLpPath,
-  onSetPreviewImage,
-  onTestRow,
-  onSendRow,
-}: CampaignTableProps) => {
-  if (!campaign || Object.keys(campaign.data).length === 0) {
-    return null;
-  }
+export const CampaignTable = memo(
+  ({
+    campaign,
+    activeSlug,
+    busySlug,
+    isRandomTesting,
+    isSendingAll,
+    campaignName,
+    customImages,
+    customTemplates,
+    customLpPaths,
+    onToggleCustomImage,
+    onUpdateCustomImageUrl,
+    onSaveCustomImage,
+    onToggleCustomTemplate,
+    onUpdateCustomTemplateValue,
+    onSaveCustomTemplate,
+    onToggleCustomLpPath,
+    onUpdateCustomLpPath,
+    onSaveCustomLpPath,
+    onSetPreviewImage,
+    onTestRow,
+    onSendRow,
+  }: CampaignTableProps) => {
+    if (!campaign || Object.keys(campaign.data).length === 0) {
+      return null;
+    }
 
-  const headers = Object.keys(Object.values(campaign.data)[0]);
+    const headers = Object.keys(Object.values(campaign.data)[0]);
 
-  return (
-    <div className={styles.tableWrapper}>
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className={styles.colSlug}>Slug</th>
-              {headers.map(header => {
-                let displayName = header;
-                let colClass = styles.colDefault;
-                
-                if (header === "[name='image']") {
-                  displayName = 'Image';
-                  colClass = styles.colImage;
-                } else if (header === "[name='icon']") {
-                  displayName = 'Icon';
-                  colClass = styles.colImage;
-                } else if (header === "[name='click_action']") {
-                  displayName = 'Target URL';
-                  colClass = styles.colUrl;
-                } else if (header === "[name='title']") {
-                  displayName = 'Title';
-                  colClass = styles.colText;
-                } else if (header === "[name='body']") {
-                  displayName = 'Body';
-                  colClass = styles.colText;
-                } else if (header === "[name='shop']") {
-                  displayName = 'Shop';
-                  colClass = styles.colSmall;
-                } else if (header === "[name='template']") {
-                  displayName = 'Template';
-                  colClass = styles.colTemplate;
-                } else if (header === "[name='language[]']") {
-                  displayName = 'Language';
-                  colClass = styles.colSmall;
-                } else if (header === "[name='cta_lang']") {
-                  displayName = 'CTA Lang';
-                  colClass = styles.colSmall;
-                } else if (header === "[name='lp_path']") {
-                  displayName = 'LP Path';
-                  colClass = styles.colPath;
-                } else {
-                  displayName = header.replace(/[\[\]']/g, '');
-                  colClass = styles.colDefault;
-                }
+    return (
+      <div className={styles.tableWrapper}>
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.colSlug}>Slug</th>
+                {headers.map(header => {
+                  let displayName = header;
+                  let colClass = styles.colDefault;
 
-                return (
-                  <th key={header} className={colClass}>
-                    {displayName}
-                  </th>
-                );
-              })}
-              <th className={styles.colCustomImage}>Custom Image</th>
-              <th className={styles.colActions}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(campaign.data).map(([slug, rowData]) => (
-              <CampaignRow
-                key={slug}
-                slug={slug}
-                rowData={rowData}
-                activeSlug={activeSlug}
-                busySlug={busySlug}
-                isRandomTesting={isRandomTesting}
-                isSendingAll={isSendingAll}
-                campaignName={campaignName}
-                customImages={customImages}
-                customTemplates={customTemplates}
-                customLpPaths={customLpPaths}
-                onToggleCustomImage={onToggleCustomImage}
-                onUpdateCustomImageUrl={onUpdateCustomImageUrl}
-                onSaveCustomImage={onSaveCustomImage}
-                onToggleCustomTemplate={onToggleCustomTemplate}
-                onUpdateCustomTemplateValue={onUpdateCustomTemplateValue}
-                onSaveCustomTemplate={onSaveCustomTemplate}
-                onToggleCustomLpPath={onToggleCustomLpPath}
-                onUpdateCustomLpPath={onUpdateCustomLpPath}
-                onSaveCustomLpPath={onSaveCustomLpPath}
-                onSetPreviewImage={onSetPreviewImage}
-                onTestRow={onTestRow}
-                onSendRow={onSendRow}
-              />
-            ))}
-          </tbody>
-        </table>
+                  if (header === "[name='image']") {
+                    displayName = 'Image';
+                    colClass = styles.colImage;
+                  } else if (header === "[name='icon']") {
+                    displayName = 'Icon';
+                    colClass = styles.colImage;
+                  } else if (header === "[name='click_action']") {
+                    displayName = 'Target URL';
+                    colClass = styles.colUrl;
+                  } else if (header === "[name='title']") {
+                    displayName = 'Title';
+                    colClass = styles.colText;
+                  } else if (header === "[name='body']") {
+                    displayName = 'Message';
+                    colClass = styles.colText;
+                  } else if (header === "[name='shop']") {
+                    displayName = 'Shop';
+                    colClass = styles.colSmall;
+                  } else if (header === "[name='template']") {
+                    displayName = 'Template';
+                    colClass = styles.colTemplate;
+                  } else if (header === "[name='language[]']") {
+                    displayName = 'Language';
+                    colClass = styles.colSmall;
+                  } else if (header === "[name='cta_lang']") {
+                    displayName = 'CTA Lang';
+                    colClass = styles.colSmall;
+                  } else if (header === "[name='lp_path']") {
+                    displayName = 'LP Path';
+                    colClass = styles.colPath;
+                  } else {
+                    displayName = header.replace(/[\[\]']/g, '');
+                    colClass = styles.colDefault;
+                  }
+
+                  return (
+                    <th key={header} className={colClass}>
+                      {displayName}
+                    </th>
+                  );
+                })}
+                <th className={styles.colCustomImage}>Custom Image</th>
+                <th className={styles.colActions}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(campaign.data).map(([slug, rowData]) => (
+                <CampaignRow
+                  key={slug}
+                  slug={slug}
+                  rowData={rowData}
+                  activeSlug={activeSlug}
+                  busySlug={busySlug}
+                  isRandomTesting={isRandomTesting}
+                  isSendingAll={isSendingAll}
+                  campaignName={campaignName}
+                  customImages={customImages}
+                  customTemplates={customTemplates}
+                  customLpPaths={customLpPaths}
+                  onToggleCustomImage={onToggleCustomImage}
+                  onUpdateCustomImageUrl={onUpdateCustomImageUrl}
+                  onSaveCustomImage={onSaveCustomImage}
+                  onToggleCustomTemplate={onToggleCustomTemplate}
+                  onUpdateCustomTemplateValue={onUpdateCustomTemplateValue}
+                  onSaveCustomTemplate={onSaveCustomTemplate}
+                  onToggleCustomLpPath={onToggleCustomLpPath}
+                  onUpdateCustomLpPath={onUpdateCustomLpPath}
+                  onSaveCustomLpPath={onSaveCustomLpPath}
+                  onSetPreviewImage={onSetPreviewImage}
+                  onTestRow={onTestRow}
+                  onSendRow={onSendRow}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 CampaignTable.displayName = 'CampaignTable';

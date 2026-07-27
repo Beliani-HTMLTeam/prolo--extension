@@ -632,7 +632,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
+  width: 100%;
   height: 20px;
   border: none;
   border-radius: 4px;
@@ -665,7 +665,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
+  width: 100%;
   height: 20px;
   border: 1px solid $grey-border-dark;
   border-radius: 4px;
@@ -1056,4 +1056,49 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+.translationMissing {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 4px;
+  color: #92400e;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: pulseWarning 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseWarning {
+  0%, 100% { 
+    background: #fef3c7;
+    border-color: #f59e0b;
+  }
+  50% { 
+    background: #fbbf24;
+    border-color: #d97706;
+  }
+}
+
+// Warning row style - highlights the entire row
+.warningRow {
+  background: #fffbeb !important;
+  
+  &:hover {
+    background: #fef3c7 !important;
+  }
+  
+  td {
+    &:first-child {
+      border-left: 3px solid #f59e0b;
+    }
+  }
+}
+
+.iconGroup {
+  display: flex;
+  gap: 4px;
+  padding-top: 4px;
 }
