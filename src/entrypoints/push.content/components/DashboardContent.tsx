@@ -43,6 +43,8 @@ type DashboardContentProps = {
   dateWarning?: string | null;
   isLoadingTranslations?: boolean;
   isGenerating?: boolean;
+  isLoadingTabs?: boolean;
+  availableTabs?: string[];
   onHideOverlay: () => void;
   onSetCampaignName: (name: string) => void;
   onSetChdeTemplateId: (id: string) => void;
@@ -84,6 +86,8 @@ export const DashboardContent = ({
   dateWarning,
   isLoadingTranslations,
   isGenerating,
+  isLoadingTabs,
+  availableTabs = [],
   onHideOverlay,
   onSetCampaignName,
   onSetChdeTemplateId,
@@ -108,6 +112,12 @@ export const DashboardContent = ({
 }: DashboardContentProps) => {
   const parsedDate = campaignName ? parseCampaignName(campaignName) : null;
 
+  // Get template ID for a slug from campaign data
+  const getTemplateIdForSlug = (slug: string): string | null => {
+    if (!campaign || !campaign.data[slug]) return null;
+    return campaign.data[slug]["[name='template']"] || null;
+  };
+
   return (
     <div className={styles.dashboardOverlay}>
       <button onClick={onHideOverlay} className={styles.closeButton}>
@@ -117,14 +127,24 @@ export const DashboardContent = ({
         {/* Left Sidebar */}
         <div className={styles.sidebar}>
           <div className={styles.fieldGroup}>
-            <label>Campaign Name (for URL generation):</label>
-            <input
-              type="text"
-              placeholder="e.g., 24.07.26 - Garden Storage"
-              value={campaignName}
-              onChange={e => onSetCampaignName(e.target.value)}
-              className={styles.input}
-            />
+            <label>Campaign Name:</label>
+            {isLoadingTabs ? (
+              <div className={styles.loadingIndicator}>Loading tabs...</div>
+            ) : (
+              <select
+                value={campaignName}
+                onChange={e => onSetCampaignName(e.target.value)}
+                className={styles.select}
+                disabled={availableTabs.length === 0}
+              >
+                <option value="">Select a campaign</option>
+                {availableTabs.map(tab => (
+                  <option key={tab} value={tab}>
+                    {tab}
+                  </option>
+                ))}
+              </select>
+            )}
             {dateWarning && <div className={styles.dateWarning}>{dateWarning}</div>}
             {campaignName && parsedDate && (
               <div className={styles.metaRowInfo}>
@@ -168,6 +188,7 @@ export const DashboardContent = ({
             </button>
           </div>
 
+          {/* Combined Slug Selection with Template IDs */}
           <div className={styles.slugSection}>
             <div className={styles.slugToolbar}>
               <button onClick={onSelectAll} className={styles.btnSelect}>
@@ -179,18 +200,29 @@ export const DashboardContent = ({
               <span className={styles.selectedCount}>{selectedSlugs.length} selected</span>
             </div>
             <div className={styles.slugGrid}>
-              {SLUG_ORDER.map(slug => (
-                <label
-                  key={slug}
-                  className={`${styles.slugChip} ${selectedSlugs.includes(slug) ? styles.selected : ''}`}
-                >
-                  <input type="checkbox" checked={selectedSlugs.includes(slug)} onChange={() => onToggleSlug(slug)} />
-                  {slug}
-                </label>
-              ))}
+              {SLUG_ORDER.map(slug => {
+                const templateId = getTemplateIdForSlug(slug);
+                return (
+                  <label
+                    key={slug}
+                    className={`${styles.slugChip} ${selectedSlugs.includes(slug) ? styles.selected : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedSlugs.includes(slug)}
+                      onChange={() => onToggleSlug(slug)}
+                    />
+                    <span className={styles.slugName}>{slug}</span>
+                    {templateId && (
+                      <span className={styles.slugTemplateId}>→ {templateId}</span>
+                    )}
+                  </label>
+                );
+              })}
             </div>
           </div>
 
+          {/* Keep template preview box */}
           {campaign && Object.keys(campaign.data).length > 0 && (
             <div className={styles.templatePreviewBox}>
               <span className={styles.title}>Template IDs based on CHDE: {chdeTemplateId}</span>
@@ -217,7 +249,7 @@ export const DashboardContent = ({
                 <>
                   No campaign loaded.
                   <br />
-                  Enter a campaign name and click "Generate All".
+                  Select a campaign name and click "Generate All".
                 </>
               )}
             </div>

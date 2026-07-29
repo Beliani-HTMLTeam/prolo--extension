@@ -45,11 +45,12 @@ type CampaignTableProps = {
 // Examples:
 // "22.07.26 - Chairs" -> "Chairs"
 // "Voucher - 27.07.26 - Vase" -> "Vase"
+// "07.08.2026 - Dining Room Sale" -> "Dining Room Sale"
 // "17.07.26 - New Category Kitchen" -> "New Category Kitchen"
 // "Mother's Day Wishes" -> "Mother's Day Wishes" (no date, return full)
 const extractCampaignName = (fullName: string): string => {
-  // Check if there's a date pattern (DD.MM.YY or DD-MM-YY)
-  const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2})/;
+  // Check for date patterns: DD.MM.YY or DD-MM-YY or DD.MM.YYYY or DD-MM-YYYY
+  const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2,4})/;
   const match = fullName.match(datePattern);
 
   if (match) {
@@ -80,8 +81,22 @@ const extractCampaignName = (fullName: string): string => {
 // Helper function to get UTM campaign value (lowercase, replace spaces with +)
 const getUtmCampaign = (fullName: string): string => {
   const campaign = extractCampaignName(fullName);
-  // Convert to lowercase and replace spaces with + for UTM parameter
+  // Convert to lowercase, replace spaces with +, and remove any extra dashes
   return campaign.toLowerCase().replace(/\s+/g, '+');
+};
+
+// Helper function to extract domain and path from URL
+const extractDomainAndPath = (url: string): string => {
+  try {
+    // Remove protocol (http:// or https://)
+    let cleaned = url.replace(/^https?:\/\//, '');
+    // Remove www. if present
+    cleaned = cleaned.replace(/^www\./, '');
+    // Return the domain + path (everything up to ?)
+    return cleaned.split('?')[0];
+  } catch {
+    return url;
+  }
 };
 
 // Helper component for translation missing warning
@@ -161,7 +176,7 @@ const CampaignRow = memo(
     // Handle LP save
     const handleLpSave = useCallback(() => {
       if (lpEditValue.trim()) {
-        onSaveCustomLpPath(slug, lpEditValue); // pass the value
+        onSaveCustomLpPath(slug, lpEditValue);
       }
     }, [slug, lpEditValue, onSaveCustomLpPath]);
 
@@ -173,7 +188,7 @@ const CampaignRow = memo(
       }
     }, [slug, imageEditValue, onUpdateCustomImageUrl, onSaveCustomImage]);
 
-    // Check if title and message exist (not empty and not 'TRANSLATION NOT FOUND')
+    // Check if title and message exist
     const titleValue = rowData["[name='title']"] || '';
     const bodyValue = rowData["[name='body']"] || '';
     const hasTitle = !isTranslationMissing(titleValue);
@@ -181,6 +196,10 @@ const CampaignRow = memo(
 
     // Get UTM campaign value
     const utmCampaign = getUtmCampaign(campaignName);
+
+    // Get language and CTA language values
+    const language = rowData["[name='language[]']"] || '';
+    const ctaLang = rowData["[name='cta_lang']"] || '';
 
     return (
       <tr
@@ -196,6 +215,14 @@ const CampaignRow = memo(
           const isLpPath = key === "[name='lp_path']";
           const isTitle = key === "[name='title']";
           const isBody = key === "[name='body']";
+          const isLanguage = key === "[name='language[]']";
+          const isCtaLang = key === "[name='cta_lang']";
+          const isShop = key === "[name='shop']";
+
+          // Skip Shop, Language, and CTA Lang columns - they're handled separately
+          if (isShop || isLanguage || isCtaLang) {
+            return null;
+          }
 
           let displayValue = value;
           if (isImage && customImage?.enabled && !customImage.isEditing && customImage.url) {
@@ -271,11 +298,12 @@ const CampaignRow = memo(
             );
           }
 
-          // Click Action column
+          // Click Action column - show only domain + path without protocol and subdomain
           if (isClickAction) {
             const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
             const currentLpPath = customLpPaths[slug]?.value || rowData["[name='lp_path']"] || campaignName;
             const fullUrl = `https://www.beliani.${domain}/content/${currentLpPath}/?utm_source=PUSH&utm_medium=${currentLpPath}&utm_campaign=${utmCampaign}`;
+            const displayUrl = extractDomainAndPath(fullUrl);
 
             return (
               <td key={key} className={styles.colUrl}>
@@ -286,7 +314,7 @@ const CampaignRow = memo(
                   className={styles.linkAction}
                   title={fullUrl}
                 >
-                  {fullUrl}
+                  {displayUrl}
                 </a>
               </td>
             );
@@ -338,6 +366,14 @@ const CampaignRow = memo(
             </td>
           );
         })}
+
+        {/* Combined Languages column - always shows both languages */}
+        <td key="languages" className={styles.colLanguages}>
+          <div className={styles.languagesContainer}>
+            <span className={styles.languageItem}>{language || '-'}</span>
+            <span className={styles.languageItem}>{ctaLang || '-'}</span>
+          </div>
+        </td>
 
         {/* Custom Image Column */}
         <td className={styles.colCustomImage}>
@@ -452,6 +488,11 @@ export const CampaignTable = memo(
                   let displayName = header;
                   let colClass = styles.colDefault;
 
+                  // Skip Shop, Language, and CTA Lang columns
+                  if (header === "[name='shop']" || header === "[name='language[]']" || header === "[name='cta_lang']") {
+                    return null;
+                  }
+
                   if (header === "[name='image']") {
                     displayName = 'Image';
                     colClass = styles.colImage;
@@ -467,18 +508,9 @@ export const CampaignTable = memo(
                   } else if (header === "[name='body']") {
                     displayName = 'Message';
                     colClass = styles.colText;
-                  } else if (header === "[name='shop']") {
-                    displayName = 'Shop';
-                    colClass = styles.colSmall;
                   } else if (header === "[name='template']") {
                     displayName = 'Template';
                     colClass = styles.colTemplate;
-                  } else if (header === "[name='language[]']") {
-                    displayName = 'Language';
-                    colClass = styles.colSmall;
-                  } else if (header === "[name='cta_lang']") {
-                    displayName = 'CTA Lang';
-                    colClass = styles.colSmall;
                   } else if (header === "[name='lp_path']") {
                     displayName = 'LP Path';
                     colClass = styles.colPath;
@@ -493,6 +525,8 @@ export const CampaignTable = memo(
                     </th>
                   );
                 })}
+                {/* Combined Languages column header */}
+                <th className={styles.colLanguages}>Languages</th>
                 <th className={styles.colCustomImage}>Custom Image</th>
                 <th className={styles.colActions}>Actions</th>
               </tr>
@@ -532,5 +566,4 @@ export const CampaignTable = memo(
     );
   },
 );
-
 CampaignTable.displayName = 'CampaignTable';

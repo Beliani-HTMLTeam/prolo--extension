@@ -182,6 +182,30 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
   }
 };
 
+export const fetchCachedTabs = async ( year: string): Promise<{ tabs: string[] | null }> => {
+  const empty: { tabs: string[] | null } = { tabs: null };
+  try {
+    const tabsRes = await withZrokTimeout(
+      fetch(`${ZROK_BASE}/misc/getCachedTabs/${year}`, {
+        headers: ZROK_HEADERS,
+        mode: 'cors',
+        credentials: 'omit',
+      }),
+    );
+    const tabJson = await tabsRes.json();
+    if (tabJson?.code !== 200) return empty;
+
+    const tabs = tabJson.tabs ?? [];
+
+    return {
+      tabs: tabs.length > 0 ? tabs : null,
+    };
+  } catch (e) {
+    console.warn('[spreadsheet] Failed to fetch translations:', e);
+    return empty;
+  }
+};
+
 export const fetchPushTranslations = async (spreadsheetUrl: string, year: string, tabName: string): Promise<PushTranslations> => {
   const empty: PushTranslations = { pushTitles: null, pushMessages: null };
   try {

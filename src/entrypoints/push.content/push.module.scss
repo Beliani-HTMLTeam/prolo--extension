@@ -1102,3 +1102,64 @@
   gap: 4px;
   padding-top: 4px;
 }
+
+.colLanguages {
+  min-width: 100px;
+  max-width: 150px;
+}
+
+.languagesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.languageItem {
+  font-size: 0.7rem;
+  color: $dawn-grey;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: $grey-surface;
+  border-radius: 3px;
+  display: inline-block;
+  width: fit-content;
+  border: 1px solid $grey-border;
+  
+  &:first-child {
+    border-color: $cozy-brown;
+  }
+  
+  &:last-child {
+    border-color: $happy-red;
+  }
+}
+
+.select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid $grey-border-dark;
+  background: $pure-white;
+  color: $dawn-grey;
+  font-size: 13px;
+  font-family: $font-family;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: auto;
+  cursor: pointer;
+
+  &:focus {
+    border-color: $cozy-brown;
+    box-shadow: 0 0 0 3px rgba(117, 0, 0, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  option {
+    padding: 4px;
+  }
+}

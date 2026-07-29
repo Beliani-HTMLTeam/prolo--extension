@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { showErrorAlert } from './components/Alerts';
-import { fetchPushTranslations } from '../issue.content/api/issueData';
+import { fetchCachedTabs, fetchPushTranslations } from '../issue.content/api/issueData';
 import { PushTranslations } from '../issue.content/lib/types';
 import {
   BASE_SLUG_CONFIG,
@@ -15,7 +15,7 @@ import {
 import Overlay from '@/components/overlay/Overlay';
 import { OverlayToggleButton } from './components/OverlayToggleButton';
 import { DashboardContent } from './components/DashboardContent';
-import styles from './push.module.scss';
+
 interface CampaignRowData {
   [selector: string]: string;
 }
@@ -68,7 +68,7 @@ const escKeyEvent = new KeyboardEvent('keydown', {
 
 // Helper function to extract campaign name from full name
 const extractCampaignName = (fullName: string): string => {
-  const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2})/;
+  const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2,4})/;
   const match = fullName.match(datePattern);
   
   if (match) {
@@ -105,6 +105,8 @@ export default function App() {
   const [isRandomTesting, setIsRandomTesting] = useState(false);
   const [isSendingAll, setIsSendingAll] = useState(false);
   const [campaignName, setCampaignName] = useState('');
+  const [availableTabs, setAvailableTabs] = useState<string[]>([]);
+  const [isLoadingTabs, setIsLoadingTabs] = useState(false);
   const [pushTranslations, setPushTranslations] = useState<PushTranslations | null>(null);
   const [chdeTemplateId, setChdeTemplateId] = useState('45888');
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>(SLUG_ORDER);
@@ -127,7 +129,7 @@ export default function App() {
 
     const timeoutId = setTimeout(() => {
       if (isGeneratingRef.current) {
-        console.warn('⚠️ Generation timeout after 60s');
+        console.warn('Warning: Generation timeout after 60s');
         isGeneratingRef.current = false;
         setIsGenerating(false);
         showErrorAlert('Generation timed out after 60 seconds. Please try again.');
@@ -161,6 +163,27 @@ export default function App() {
     };
   }, []);
 
+  // Load available tabs on mount
+  useEffect(() => {
+    const loadTabs = async () => {
+      setIsLoadingTabs(true);
+      try {
+        const currentYear = new Date().getFullYear().toString();
+        const result = await fetchCachedTabs(currentYear);
+        if (result.tabs && result.tabs.length > 0) {
+          setAvailableTabs(result.tabs);
+          // Set first tab as default
+          setCampaignName(result.tabs[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load tabs:', error);
+      } finally {
+        setIsLoadingTabs(false);
+      }
+    };
+    loadTabs();
+  }, []);
+
   const showOverlay = useCallback(() => setVisible(true), []);
   const hideOverlay = useCallback(() => setVisible(false), []);
 
@@ -173,7 +196,7 @@ export default function App() {
     
     const result = parseCampaignName(name);
     if (!result.hasDate) {
-      setDateWarning(`⚠️ No date found in campaign name. Using today's date: ${result.day}.${result.month}.${result.year}`);
+      setDateWarning(`No date found in campaign name. Using today's date: ${result.day}.${result.month}.${result.year}`);
     } else {
       setDateWarning(null);
     }
@@ -185,7 +208,7 @@ export default function App() {
   const fetchTranslations = useCallback(async (name: string) => {
     if (!name || !name.trim()) return null;
     
-    console.log(`🔍 Fetching translations for: ${name}`);
+    console.log(`Fetching translations for: ${name}`);
     
     const result = checkCampaignNameDate(name);
     
@@ -203,14 +226,14 @@ export default function App() {
         year = now.getFullYear().toString();
       }
       
-      console.log(`📊 Fetching translations for: ${name} (year: ${year}, campaign: ${campaignPart})`);
+      console.log(`Fetching translations for: ${name} (year: ${year}, campaign: ${campaignPart})`);
       
       const translations = await fetchPushTranslations(newsletterSpreadsheet, year, name);
       
       // IMPORTANT: Update the state with new translations
       setPushTranslations(translations);
       
-      console.log(`✅ Translations fetched successfully`);
+      console.log(`Translations fetched successfully`);
       
       if (result && !result.hasDate) {
         await Swal.fire({
@@ -224,7 +247,7 @@ export default function App() {
       
       return translations;
     } catch (error) {
-      console.error('❌ Error fetching push translations:', error);
+      console.error('Error fetching push translations:', error);
       await showErrorAlert('Failed to fetch push translations. Please try again.');
       return null;
     } finally {
@@ -241,34 +264,39 @@ export default function App() {
     setCampaignVersion(0);
   }, []);
 
-  // Handle campaign name change - only update the name, don't fetch
+  // Handle campaign name change - fetch translations when selected
   const handleCampaignNameChange = useCallback((name: string) => {
     setCampaignName(name);
     checkCampaignNameDate(name);
     
     // Clear old translations when name changes
     setPushTranslations(null);
-  }, [checkCampaignNameDate]);
+    
+    // Fetch translations for the selected tab
+    if (name && name.trim()) {
+      fetchTranslations(name);
+    }
+  }, [checkCampaignNameDate, fetchTranslations]);
 
   // Handle Generate All button click
   const handleGenerateAllSlugs = useCallback(async () => {
-    console.log('🚀 Generate All clicked');
+    console.log('Generate All clicked');
     
     // Use ref to check if already generating (prevents race conditions)
     if (isGeneratingRef.current) {
-      console.log('⚠️ Already generating, ignoring click');
+      console.log('Warning: Already generating, ignoring click');
       return;
     }
 
     if (!campaignName || !campaignName.trim()) {
-      console.log('⚠️ No campaign name');
-      await showErrorAlert('Please enter a campaign name first.');
+      console.log('Warning: No campaign name');
+      await showErrorAlert('Please select a campaign name first.');
       return;
     }
 
-    console.log(`📝 Campaign name: ${campaignName}`);
-    console.log(`📝 CHDE Template ID: ${chdeTemplateId}`);
-    console.log(`📝 Selected slugs: ${selectedSlugs.length}`);
+    console.log(`Campaign name: ${campaignName}`);
+    console.log(`CHDE Template ID: ${chdeTemplateId}`);
+    console.log(`Selected slugs: ${selectedSlugs.length}`);
 
     // Clear previous campaign data immediately to show generating state
     setCampaign(null);
@@ -276,7 +304,7 @@ export default function App() {
     setCampaignVersion(prev => prev + 1);
 
     // Clear local storage before generating new campaign
-    console.log('🗑️ Clearing local storage...');
+    console.log('Clearing local storage...');
     await browser.storage.local.remove('push_campaign');
 
     // Set generating state - both ref and state
@@ -287,7 +315,7 @@ export default function App() {
       // Check for date warning before generating
       const result = checkCampaignNameDate(campaignName);
       if (result && !result.hasDate) {
-        console.log('⚠️ No date found in campaign name');
+        console.log('Warning: No date found in campaign name');
         const confirmResult = await Swal.fire({
           icon: 'warning',
           title: 'No Date Found',
@@ -298,7 +326,7 @@ export default function App() {
         });
         
         if (!confirmResult.isConfirmed) {
-          console.log('❌ User cancelled generation');
+          console.log('User cancelled generation');
           isGeneratingRef.current = false;
           setIsGenerating(false);
           return;
@@ -306,10 +334,10 @@ export default function App() {
       }
 
       // ALWAYS fetch fresh translations for the current campaign name
-      console.log('📡 Fetching fresh translations for:', campaignName);
+      console.log('Fetching fresh translations for:', campaignName);
       const translations = await fetchTranslations(campaignName);
       if (!translations) {
-        console.log('❌ Failed to fetch translations');
+        console.log('Failed to fetch translations');
         await showErrorAlert('Failed to load translations. Please check the campaign name and try again.');
         isGeneratingRef.current = false;
         setIsGenerating(false);
@@ -318,7 +346,7 @@ export default function App() {
       console.log('✅ Translations fetched successfully');
 
       if (!isValidTemplateId(chdeTemplateId)) {
-        console.log('❌ Invalid CHDE template ID');
+        console.log('Invalid CHDE template ID');
         await showErrorAlert('Please enter a valid CHDE template ID (numbers only).');
         isGeneratingRef.current = false;
         setIsGenerating(false);
@@ -326,14 +354,14 @@ export default function App() {
       }
 
       const slugsToUse = selectedSlugs.length > 0 ? selectedSlugs : getAllSlugs();
-      console.log(`📊 Generating for ${slugsToUse.length} slugs with campaign: ${campaignName}`);
+      console.log(`Generating for ${slugsToUse.length} slugs with campaign: ${campaignName}`);
 
-      console.log('🔄 Generating campaign data...');
+      console.log('Generating campaign data...');
       // Use the fresh translations directly
       let campaignData = generateCampaignData(slugsToUse, chdeTemplateId, translations, campaignName);
 
       // Apply custom overrides
-      console.log('🔄 Applying custom overrides...');
+      console.log('Applying custom overrides...');
       for (const slug of slugsToUse) {
         if (customImages[slug]?.enabled && customImages[slug].url && campaignData[slug]) {
           campaignData[slug]["[name='image']"] = customImages[slug].url;
@@ -354,14 +382,14 @@ export default function App() {
       }
 
       if (Object.keys(campaignData).length === 0) {
-        console.log('❌ No campaign data generated');
+        console.log('No campaign data generated');
         await showErrorAlert('No campaign data generated. Please check your configuration.');
         isGeneratingRef.current = false;
         setIsGenerating(false);
         return;
       }
 
-      console.log(`✅ Campaign data generated with ${Object.keys(campaignData).length} rows`);
+      console.log(`Campaign data generated with ${Object.keys(campaignData).length} rows`);
 
       const stored: StoredCampaign = {
         id: Date.now(),
@@ -369,7 +397,7 @@ export default function App() {
         data: campaignData,
       };
 
-      console.log('💾 Saving to storage...');
+      console.log('Saving to storage...');
       await browser.storage.local.set({ push_campaign: stored });
       setCampaign(stored);
       setActiveSlug(null);
@@ -388,13 +416,13 @@ export default function App() {
         text: `Generated ${Object.keys(campaignData).length} rows with template ID ${chdeTemplateId}`,
       });
     } catch (error) {
-      console.error('❌ Error generating campaign:', error);
+      console.error('Error generating campaign:', error);
       await showErrorAlert('An error occurred while generating the campaign.');
       isGeneratingRef.current = false;
       setIsGenerating(false);
     } finally {
       // ALWAYS reset generating state - both ref and state
-      console.log('🔄 Resetting isGenerating state');
+      console.log('Resetting isGenerating state');
       isGeneratingRef.current = false;
       setIsGenerating(false);
     }
@@ -502,57 +530,57 @@ export default function App() {
     setCustomLpPaths(prev => ({ ...prev, [slug]: { value, isEditing: prev[slug]?.isEditing || true } }));
   }, []);
 
-const saveCustomLpPath = useCallback(
-  async (slug: string, newValue?: string) => {
-    if (!campaign) return;
+  const saveCustomLpPath = useCallback(
+    async (slug: string, newValue?: string) => {
+      if (!campaign) return;
 
-    const lpValue = (newValue ?? customLpPaths[slug]?.value ?? '').trim();
-    if (!lpValue) {
-      await showErrorAlert('Please enter an LP path.');
-      return;
-    }
+      const lpValue = (newValue ?? customLpPaths[slug]?.value ?? '').trim();
+      if (!lpValue) {
+        await showErrorAlert('Please enter an LP path.');
+        return;
+      }
 
-    const baseConfig = BASE_SLUG_CONFIG[slug];
-    if (!baseConfig) {
-      await showErrorAlert(`No configuration found for slug: ${slug}`);
-      return;
-    }
+      const baseConfig = BASE_SLUG_CONFIG[slug];
+      if (!baseConfig) {
+        await showErrorAlert(`No configuration found for slug: ${slug}`);
+        return;
+      }
 
-    const updatedData = { ...campaign.data };
-    if (updatedData[slug]) {
-      const utmCampaign = getUtmCampaign(campaignName);
-      updatedData[slug] = {
-        ...updatedData[slug],
-        "[name='lp_path']": lpValue,
-        "[name='click_action']": `https://www.beliani.${baseConfig.domain}/content/${lpValue}/?utm_source=PUSH&utm_medium=${lpValue}&utm_campaign=${utmCampaign}`,
+      const updatedData = { ...campaign.data };
+      if (updatedData[slug]) {
+        const utmCampaign = getUtmCampaign(campaignName);
+        updatedData[slug] = {
+          ...updatedData[slug],
+          "[name='lp_path']": lpValue,
+          "[name='click_action']": `https://www.beliani.${baseConfig.domain}/content/${lpValue}/?utm_source=PUSH&utm_medium=${lpValue}&utm_campaign=${utmCampaign}`,
+        };
+      }
+
+      const updatedCampaign: StoredCampaign = {
+        ...campaign,
+        data: updatedData,
       };
-    }
 
-    const updatedCampaign: StoredCampaign = {
-      ...campaign,
-      data: updatedData,
-    };
+      await browser.storage.local.set({ push_campaign: updatedCampaign });
+      setCampaign(updatedCampaign);
 
-    await browser.storage.local.set({ push_campaign: updatedCampaign });
-    setCampaign(updatedCampaign);
+      setCustomLpPaths(prev => ({
+        ...prev,
+        [slug]: { value: lpValue, isEditing: false },
+      }));
 
-    setCustomLpPaths(prev => ({
-      ...prev,
-      [slug]: { value: lpValue, isEditing: false },
-    }));
+      setCampaignVersion(prev => prev + 1);
 
-    setCampaignVersion(prev => prev + 1);
-
-    await Swal.fire({
-      icon: 'success',
-      title: 'LP Path Updated!',
-      text: `LP path and click_action updated for ${slug.toUpperCase()}`,
-      timer: 1500,
-      showConfirmButton: false,
-    });
-  },
-  [campaign, customLpPaths, campaignName],
-);
+      await Swal.fire({
+        icon: 'success',
+        title: 'LP Path Updated!',
+        text: `LP path and click_action updated for ${slug.toUpperCase()}`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    },
+    [campaign, customLpPaths, campaignName],
+  );
 
   const populateRow = useCallback(
     async (slug: string): Promise<boolean> => {
@@ -721,6 +749,8 @@ const saveCustomLpPath = useCallback(
             dateWarning={dateWarning}
             isLoadingTranslations={isLoadingTranslations}
             isGenerating={isGenerating}
+            isLoadingTabs={isLoadingTabs}
+            availableTabs={availableTabs}
             onHideOverlay={hideOverlay}
             onSetCampaignName={handleCampaignNameChange}
             onSetChdeTemplateId={setChdeTemplateId}
