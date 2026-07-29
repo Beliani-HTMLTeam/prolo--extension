@@ -59,6 +59,7 @@ const NewsEmailAppContent = () => {
   const [isCustomBannerOpen, setIsCustomBannerOpen] = useState(false);
   const [isSelectNewslettersOpen, setIsSelectNewslettersOpen] = useState(false);
   const [isGenerateNewslettersOpen, setIsGenerateNewslettersOpen] = useState(false);
+  const [titVersion, setTitVersion] = useState<number>(1);
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateResults, setUpdateResults] = useState<UpdateResult[]>([]);
@@ -284,6 +285,7 @@ const NewsEmailAppContent = () => {
       },
       3, // concurrency limit
       { currentSlug },
+      titVersion,
     );
 
     setIsUpdating(false);
@@ -328,6 +330,8 @@ const NewsEmailAppContent = () => {
             <NewsletterLayout
               banners={selectedBanners}
               dragIndex={dragIndex}
+              titVersion={titVersion}
+              onTitVersionChange={setTitVersion}
               onRemoveBanner={removeBanner}
               onEditBannerRequest={handleEditBannerRequest}
               onTimerRequest={handleTimerRequest}
@@ -383,7 +387,13 @@ const NewsEmailAppContent = () => {
         </div>
 
         {/* Preview newsletter modal */}
-        <CampaignPreview isOpen={isPreviewOpen} banners={selectedBanners} translations={translations} onClose={() => setIsPreviewOpen(false)} />
+        <CampaignPreview
+          isOpen={isPreviewOpen}
+          banners={selectedBanners}
+          translations={translations}
+          titVersion={titVersion}
+          onClose={() => setIsPreviewOpen(false)}
+        />
 
         {/* Preview banners modal */}
         <PreviewBannersModal

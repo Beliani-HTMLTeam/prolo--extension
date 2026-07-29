@@ -25,6 +25,7 @@ export const updateNewsletter = async (
   template: string,
   banners: BannerType[],
   translations: Translations,
+  titVersion: number = 1,
 ) => {
   const slugIndex = SHOP_SLUGS.indexOf(slug);
   const newsletterId = domData.id;
@@ -37,6 +38,7 @@ export const updateNewsletter = async (
     slugIndex === -1 ? 0 : slugIndex,
     newsletterId,
     translations,
+    titVersion,
   );
 
   const formData = new FormData();
@@ -73,6 +75,7 @@ export const updateNewslettersBatch = async (
   onProgress: (completed: number, results: UpdateResult[]) => void,
   concurrency: number = 3,
   options: UpdateNewslettersBatchOptions = {},
+  titVersion: number = 1,
 ) => {
   const limit = pLimit(concurrency);
   let completed = 0;
@@ -101,7 +104,7 @@ export const updateNewslettersBatch = async (
       }
 
       try {
-        await pRetry(() => updateNewsletter(slug, domData, template, banners, translations), {
+        await pRetry(() => updateNewsletter(slug, domData, template, banners, translations, titVersion), {
           retries: 2,
           onFailedAttempt: error => {
             console.warn(
@@ -129,7 +132,7 @@ export const updateNewslettersBatch = async (
 
   if (deferredCurrentResult && currentDomData) {
     try {
-      await pRetry(() => updateNewsletter(currentSlug!, currentDomData, template, banners, translations), {
+      await pRetry(() => updateNewsletter(currentSlug!, currentDomData, template, banners, translations, titVersion), {
         retries: 2,
         onFailedAttempt: error => {
           console.warn(

@@ -2,12 +2,15 @@ import appStyles from '../../App.module.scss';
 import styles from './NewsletterLayout.module.scss';
 
 import { BannerType } from '../../types';
+import TitVersionSelect from '../TitVersionSelect';
 
 import MobileBanner from './MobileBanner';
 
 type NewsletterLayoutProps = {
   banners: BannerType[];
   dragIndex: number | null;
+  titVersion: number;
+  onTitVersionChange: (version: number) => void;
   onRemoveBanner: (banner: BannerType) => void;
   onEditBannerRequest: (banner: BannerType) => void;
   onTimerRequest: (banner: BannerType) => void;
@@ -20,6 +23,8 @@ type NewsletterLayoutProps = {
 const NewsletterLayout = ({
   banners,
   dragIndex,
+  titVersion,
+  onTitVersionChange,
   onRemoveBanner,
   onEditBannerRequest,
   onTimerRequest,
@@ -31,7 +36,10 @@ const NewsletterLayout = ({
   return (
     <>
       <div className={appStyles.panelHeader}>
-        <h2>Newsletter layout</h2>
+        <div className={styles.headerTitleRow}>
+          <h2>Newsletter layout</h2>
+          <TitVersionSelect value={titVersion} onChange={onTitVersionChange} />
+        </div>
         <p>Drag banners to reorder them. Remove unwanted items with the trash icon.</p>
       </div>
 

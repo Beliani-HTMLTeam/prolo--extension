@@ -9,11 +9,15 @@ type CampaignPreviewProps = {
   isOpen: boolean;
   banners: BannerType[];
   translations: any;
+  titVersion?: number;
   onClose: () => void;
 };
 
-const CampaignPreview = ({ isOpen, banners, translations, onClose }: CampaignPreviewProps) => {
-  const previewHtml = useMemo(() => buildNewsletterPreviewHtml(newsletterTemplate, banners, 0, undefined, translations), [banners, translations]);
+const CampaignPreview = ({ isOpen, banners, translations, titVersion = 1, onClose }: CampaignPreviewProps) => {
+  const previewHtml = useMemo(
+    () => buildNewsletterPreviewHtml(newsletterTemplate, banners, 0, undefined, translations, titVersion),
+    [banners, translations, titVersion],
+  );
 
 
   return (

@@ -155,6 +155,7 @@ const buildRenderContext = (
   slug: string,
   banners: BannerType[],
   newsletterId: string = '',
+  titVersion: number = 1,
 ): Record<string, any> => {
   const ctx: Record<string, any> = {
     utm: '?utm_source=newsletter&utm_medium=email&utm_campaign=',
@@ -175,6 +176,8 @@ const buildRenderContext = (
       ctx[`${dictName}["${key}"]`] = val ?? '';
     }
   }
+
+  ctx['header["Sunday_TiT"]'] = `https://pictureserver.net/static/${slug}sunday_${titVersion}.png`;
 
   const topHref = (ctx['header["Top image href"]'] as string) || '';
   const domain = topHref.replace(/\/$/, ''); // strip trailing slash
@@ -309,9 +312,10 @@ export const buildNewsletterPreviewHtml = (
   slugIndex: number = 0,
   newsletterId?: string,
   translations: Translations = null,
+  titVersion: number = 1,
 ): string => {
   const slug = SHOP_SLUGS[slugIndex] ?? 'uk';
-  const ctx = buildRenderContext(translations, slug, banners, newsletterId ?? '');
+  const ctx = buildRenderContext(translations, slug, banners, newsletterId ?? '', titVersion);
   return renderMustache(template, ctx);
 };
 
