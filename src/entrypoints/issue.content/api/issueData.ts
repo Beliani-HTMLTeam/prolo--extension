@@ -218,7 +218,7 @@ export interface SundayTranslationsResult {
 }
 
 const SUNDAY_SPREADSHEET_ID = '1RcsQspit0B3b3xX1NwZ9RWnUzZrkoVDULu2cnPMZ04U'
-const SUNDAY_GID = '2042078338';
+const SUNDAY_GID = '1224674314';
 
 export const fetchAllSundayTranslations = async (
   issueItem: IssueListItem
@@ -252,7 +252,7 @@ export const fetchAllSundayTranslations = async (
 
     const data: Record<string, string[]> = dynJson.data ?? {};
 
-    const subjectLineIndices = [4, 5, 6, 7, 8, 9];
+    const subjectLineIndices = [2,3,4,5,6,7];
 
     const subjectLine: Record<number, Record<string, string>> = {};
 
