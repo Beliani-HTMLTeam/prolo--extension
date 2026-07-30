@@ -12,7 +12,7 @@ export interface SlugConfig {
 }
 
 // Base configuration without template IDs (they'll be calculated)
-interface BaseSlugConfig {
+export interface BaseSlugConfig {
   shop: string;
   templateOffset: number;
   language: string;

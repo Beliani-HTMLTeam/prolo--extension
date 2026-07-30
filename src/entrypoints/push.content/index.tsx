@@ -1,6 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import App, {  } from './App';
-// import { mountCsvUploader } from './components/PushUploader';   // ← Remove or comment out
+import App from './App';
 
 export default defineContentScript({
   matches: [
@@ -9,9 +8,6 @@ export default defineContentScript({
   ],
   cssInjectionMode: 'manifest',
   main() {
-
-    // mountCsvUploader();   // ← REMOVED - we now have the selector inside App
-
     const reactContainerExt = document.createElement('div');
     reactContainerExt.id = 'push-macro-react-root';
     document.body.appendChild(reactContainerExt);

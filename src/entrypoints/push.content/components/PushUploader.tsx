@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { useCallback, useEffect, useState } from 'react';
 import { showErrorAlert } from './Alerts';
-import { CSVToArray, parseCSV } from '../helpers/Csvfns';
+import { CSVToArray, parseCSV } from '../helpers/CSVfns';
 
 // ---------------------------------------------------------------------------
 // Types (replaces the old PushCampaign class — a plain shape is enough

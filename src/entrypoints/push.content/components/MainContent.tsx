@@ -1,0 +1,111 @@
+import styles from '../push.module.scss';
+import { CampaignActions } from './CampaignActions';
+import { CampaignTable } from './CampaignTable';
+import { EmptyState } from './EmptyState';
+import { FooterInfo } from './FooterInfo';
+
+type MainContentProps = {
+  campaign: any;
+  campaignVersion: number;
+  activeSlug: string | null;
+  busySlug: string | null;
+  isRandomTesting: boolean;
+  isSendingAll: boolean;
+  isGenerating?: boolean;
+  isLoadingTranslations?: boolean;
+  campaignName: string;
+  customImages: Record<string, any>;
+  customTemplates: Record<string, any>;
+  customLpPaths: Record<string, any>;
+  onToggleCustomImage: (slug: string) => void;
+  onUpdateCustomImageUrl: (slug: string, url: string) => void;
+  onSaveCustomImage: (slug: string) => void;
+  onToggleCustomTemplate: (slug: string) => void;
+  onUpdateCustomTemplateValue: (slug: string, value: string) => void;
+  onSaveCustomTemplate: (slug: string) => void;
+  onToggleCustomLpPath: (slug: string) => void;
+  onUpdateCustomLpPath: (slug: string, value: string) => void;
+  onSaveCustomLpPath: (slug: string) => void;
+  onSetPreviewImage: (value: any) => void;
+  onTestRow: (slug: string) => void;
+  onSendRow: (slug: string) => void;
+  onTest3Random: () => void;
+  onSendAll: () => void;
+};
+
+export const MainContent = ({
+  campaign,
+  campaignVersion,
+  activeSlug,
+  busySlug,
+  isRandomTesting,
+  isSendingAll,
+  isGenerating,
+  isLoadingTranslations,
+  campaignName,
+  customImages,
+  customTemplates,
+  customLpPaths,
+  onToggleCustomImage,
+  onUpdateCustomImageUrl,
+  onSaveCustomImage,
+  onToggleCustomTemplate,
+  onUpdateCustomTemplateValue,
+  onSaveCustomTemplate,
+  onToggleCustomLpPath,
+  onUpdateCustomLpPath,
+  onSaveCustomLpPath,
+  onSetPreviewImage,
+  onTestRow,
+  onSendRow,
+  onTest3Random,
+  onSendAll,
+}: MainContentProps) => {
+  const hasCampaignData = campaign && Object.keys(campaign.data).length > 0;
+  const totalRows = hasCampaignData ? Object.keys(campaign.data).length : 0;
+
+  return (
+    <div className={styles.mainContent}>
+      {!hasCampaignData ? (
+        <EmptyState isGenerating={isGenerating} isLoadingTranslations={isLoadingTranslations} />
+      ) : (
+        <>
+          <CampaignActions
+            isRandomTesting={isRandomTesting}
+            isSendingAll={isSendingAll}
+            hasCampaignData={hasCampaignData}
+            onTest3Random={onTest3Random}
+            onSendAll={onSendAll}
+          />
+
+          <CampaignTable
+            key={campaignVersion}
+            campaign={campaign}
+            activeSlug={activeSlug}
+            busySlug={busySlug}
+            isRandomTesting={isRandomTesting}
+            isSendingAll={isSendingAll}
+            campaignName={campaignName}
+            customImages={customImages}
+            customTemplates={customTemplates}
+            customLpPaths={customLpPaths}
+            onToggleCustomImage={onToggleCustomImage}
+            onUpdateCustomImageUrl={onUpdateCustomImageUrl}
+            onSaveCustomImage={onSaveCustomImage}
+            onToggleCustomTemplate={onToggleCustomTemplate}
+            onUpdateCustomTemplateValue={onUpdateCustomTemplateValue}
+            onSaveCustomTemplate={onSaveCustomTemplate}
+            onToggleCustomLpPath={onToggleCustomLpPath}
+            onUpdateCustomLpPath={onUpdateCustomLpPath}
+            onSaveCustomLpPath={onSaveCustomLpPath}
+            onSetPreviewImage={onSetPreviewImage}
+            onTestRow={onTestRow}
+            onSendRow={onSendRow}
+          />
+
+          <FooterInfo totalRows={totalRows} campaignTitle={campaign?.title || ''} />
+        </>
+      )}
+    </div>
+  );
+};
