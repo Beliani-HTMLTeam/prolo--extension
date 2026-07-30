@@ -44,6 +44,11 @@ export const PlanningTable = ({
             {hasAB ? (<b>A/B</b>) : ''}
             {slug}
             {!ready && <Icon icon="mdi:alert-circle" width="14" height="14" />}
+            {ids?.map(id => (
+              <span key={id.newsletterId} className={planningStyles.newsletterId}>
+                {id.type} {id.newsletterId}
+              </span>
+            ))}
           </div>
           
           <div className={planningStyles.subjectLine}>

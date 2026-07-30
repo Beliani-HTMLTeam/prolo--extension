@@ -24,7 +24,7 @@ export const getShopIdsMap = (tableData: ChecklistTableData, startId: number) =>
     
     const ids: Array<{ type: 'A' | 'B'; newsletterId: number }> = [];
 
-    ids.push({ type: 'A', newsletterId: currentId });
+    ids.push({ type: 'A', newsletterId: row.nsltId ? parseInt(row.nsltId, 10) : row.nsltAId ? parseInt(row.nsltAId, 10) : currentId });
     currentId++;
 
     if (row?.nsltBId) {
