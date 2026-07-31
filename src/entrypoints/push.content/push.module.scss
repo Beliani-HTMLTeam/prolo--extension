@@ -1227,14 +1227,24 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  margin-bottom: 8px;
 }
 
+// ---------------------------------------------------------------------------
 // Template Overrides Section
+// ---------------------------------------------------------------------------
 .templateOverridesSection {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-top: 4px;
+}
+
+.overridesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .toggleOverridesBtn {
@@ -1272,8 +1282,40 @@
   border-radius: 10px;
   font-size: 10px;
   font-weight: 700;
+  line-height: 18px;
 }
 
+.addOverrideBtn {
+  padding: 4px 12px;
+  background: $cozy-brown;
+  color: $pure-white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: $font-family;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: $cozy-brown-dark;
+    transform: scale(1.05);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Template Overrides List
+// ---------------------------------------------------------------------------
 .templateOverridesList {
   display: flex;
   flex-direction: column;
@@ -1296,6 +1338,10 @@
     background: $grey-border-dark;
     border-radius: 2px;
   }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: $grey-dark;
+  }
 }
 
 .noOverrides {
@@ -1303,8 +1349,72 @@
   font-size: 12px;
   padding: 12px;
   text-align: center;
+  font-style: italic;
 }
 
+// ---------------------------------------------------------------------------
+// Add Override Form
+// ---------------------------------------------------------------------------
+.addOverrideForm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: $subtle-peach;
+  border-radius: 4px;
+  border: 1px dashed $cozy-brown;
+  flex-wrap: wrap;
+
+  .selectSmall {
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid $grey-border-dark;
+    background: $pure-white;
+    font-size: 11px;
+    font-family: $font-family;
+    min-width: 60px;
+    flex: 1;
+    min-width: 80px;
+
+    &:focus {
+      outline: none;
+      border-color: $cozy-brown;
+      box-shadow: 0 0 0 2px rgba(117, 0, 0, 0.06);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .inputSmall {
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid $grey-border-dark;
+    background: $pure-white;
+    font-size: 11px;
+    font-family: monospace;
+    width: 80px;
+    flex: 1;
+    min-width: 60px;
+
+    &:focus {
+      outline: none;
+      border-color: $cozy-brown;
+      box-shadow: 0 0 0 2px rgba(117, 0, 0, 0.06);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Override Item
+// ---------------------------------------------------------------------------
 .overrideItem {
   display: flex;
   align-items: center;
@@ -1314,10 +1424,15 @@
   border-radius: 4px;
   border: 1px solid $grey-border-light;
   gap: 8px;
+  transition: all 0.15s ease;
 
   &:hover {
     background: $subtle-peach;
     border-color: $grey-border-dark;
+  }
+
+  &:last-child {
+    border-bottom: none;
   }
 }
 
@@ -1326,6 +1441,8 @@
   font-size: 11px;
   color: $cozy-brown;
   min-width: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .overrideDisplay {
@@ -1344,6 +1461,9 @@
   border-radius: 4px;
   border: 1px solid $grey-border-light;
   font-family: monospace;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: center;
 }
 
 .overrideEdit {
@@ -1361,11 +1481,119 @@
     background: $pure-white;
     font-size: 11px;
     font-family: monospace;
+    text-align: center;
 
     &:focus {
       outline: none;
       border-color: $cozy-brown;
+      box-shadow: 0 0 0 2px rgba(117, 0, 0, 0.06);
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Icon Buttons (reuse from existing)
+// ---------------------------------------------------------------------------
+.iconEdit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid $grey-border-dark;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: $cozy-brown;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  opacity: 0.7;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  &:hover:not(:disabled) {
+    background: $soft-peach;
+    border-color: $cozy-brown;
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(117, 0, 0, 0.15);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.iconSave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  background: $status-done;
+  color: $pure-white;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &:hover:not(:disabled) {
+    background: color.adjust($status-done, $lightness: -6%);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.iconCancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid $grey-border-dark;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: $happy-red;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: $soft-peach;
+    border-color: $happy-red;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 }
 
@@ -1389,6 +1617,7 @@
     background: $soft-peach;
     border-color: $happy-red;
     transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
   }
 
   &:active:not(:disabled) {
