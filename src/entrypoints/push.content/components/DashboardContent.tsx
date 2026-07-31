@@ -59,6 +59,7 @@ type DashboardContentProps = {
   onSendAll: () => void;
   onTestRow: (slug: string) => void;
   onSendRow: (slug: string) => void;
+  testProgress?: { current: number; total: number } | null;
 };
 
 export const DashboardContent = ({
@@ -102,6 +103,7 @@ export const DashboardContent = ({
   onSendAll,
   onTestRow,
   onSendRow,
+  testProgress,
 }: DashboardContentProps) => {
   return (
     <div className={styles.dashboardOverlay}>
@@ -156,6 +158,7 @@ export const DashboardContent = ({
           onSendRow={onSendRow}
           onTest3Random={onTest3Random}
           onSendAll={onSendAll}
+          testProgress={testProgress}
         />
       </div>
     </div>

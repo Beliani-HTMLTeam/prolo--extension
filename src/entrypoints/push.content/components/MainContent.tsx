@@ -14,6 +14,7 @@ type MainContentProps = {
   isGenerating?: boolean;
   isLoadingTranslations?: boolean;
   campaignName: string;
+  testProgress?: { current: number; total: number } | null;
   customImages: Record<string, any>;
   customTemplates: Record<string, any>;
   customLpPaths: Record<string, any>;
@@ -43,6 +44,7 @@ export const MainContent = ({
   isGenerating,
   isLoadingTranslations,
   campaignName,
+  testProgress,
   customImages,
   customTemplates,
   customLpPaths,
@@ -74,6 +76,7 @@ export const MainContent = ({
             isRandomTesting={isRandomTesting}
             isSendingAll={isSendingAll}
             hasCampaignData={hasCampaignData}
+            testProgress={testProgress}
             onTest3Random={onTest3Random}
             onSendAll={onSendAll}
           />

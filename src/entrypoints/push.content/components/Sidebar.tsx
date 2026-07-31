@@ -78,7 +78,7 @@ export const Sidebar = ({
         onDeselectAll={onDeselectAll}
       />
 
-      <TemplatePreview campaign={campaign} chdeTemplateId={chdeTemplateId} />
+      {/* <TemplatePreview campaign={campaign} chdeTemplateId={chdeTemplateId} /> */}
     </div>
   );
 };

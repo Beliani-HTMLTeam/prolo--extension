@@ -76,15 +76,16 @@ export default function App() {
   } = useCustomOverrides(campaign, setCampaign, campaignName, bumpVersion);
 
   const {
-    activeSlug,
-    setActiveSlug,
-    busySlug,
-    isRandomTesting,
-    isSendingAll,
-    handleTest3Random,
-    handleSendAll,
-    handleTestRow,
-    handleSendRow,
+     activeSlug,
+  setActiveSlug,
+  busySlug,
+  isRandomTesting,
+  isSendingAll,
+  testProgress,
+  handleTest3Random,
+  handleSendAll,
+  handleTestRow,
+  handleSendRow,
   } = useCampaignPush(campaign);
 
   const { handleGenerateAllSlugs } = useGenerateCampaign({
@@ -150,6 +151,7 @@ export default function App() {
             onSendAll={handleSendAll}
             onTestRow={handleTestRow}
             onSendRow={handleSendRow}
+            testProgress={testProgress}
           />
         )}
       </Overlay>

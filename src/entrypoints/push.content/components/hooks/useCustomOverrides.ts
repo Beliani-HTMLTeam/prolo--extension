@@ -233,31 +233,33 @@ export function useCustomOverrides(
   );
 
   /** Apply in-memory custom overrides onto freshly generated campaign data. */
-  const applyOverridesToData = useCallback(
-    (campaignData: Record<string, Record<string, string>>, slugs: string[]) => {
-      const data = { ...campaignData };
-      for (const slug of slugs) {
-        if (customImages[slug]?.enabled && customImages[slug].url && data[slug]) {
-          data[slug]["[name='image']"] = customImages[slug].url;
-        }
-        if (customTemplates[slug]?.value && data[slug]) {
-          data[slug]["[name='template']"] = customTemplates[slug].value;
-        }
-        if (customLpPaths[slug]?.value && data[slug]) {
-          const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
-          const lpVal = customLpPaths[slug].value;
-          data[slug]["[name='lp_path']"] = lpVal;
-          if (domain) {
-            const utmCampaign = getUtmCampaign(campaignName);
-            data[slug]["[name='click_action']"] =
-              `https://www.beliani.${domain}/content/${lpVal}/?utm_source=PUSH&utm_medium=${lpVal}&utm_campaign=${utmCampaign}`;
-          }
+const applyOverridesToData = useCallback(
+  (campaignData: Record<string, Record<string, string>>): Record<string, Record<string, string>> => {
+    const slugs = Object.keys(campaignData);
+    const result = { ...campaignData };
+    
+    for (const slug of slugs) {
+      if (customImages[slug]?.enabled && customImages[slug].url && result[slug]) {
+        result[slug]["[name='image']"] = customImages[slug].url;
+      }
+      if (customTemplates[slug]?.value && result[slug]) {
+        result[slug]["[name='template']"] = customTemplates[slug].value;
+      }
+      if (customLpPaths[slug]?.value && result[slug]) {
+        const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
+        const lpVal = customLpPaths[slug].value;
+        result[slug]["[name='lp_path']"] = lpVal;
+        if (domain) {
+          const utmCampaign = getUtmCampaign(campaignName);
+          result[slug]["[name='click_action']"] = `https://www.beliani.${domain}/content/${lpVal}/?utm_source=PUSH&utm_medium=${lpVal}&utm_campaign=${utmCampaign}`;
         }
       }
-      return data;
-    },
-    [customImages, customTemplates, customLpPaths, campaignName],
-  );
+    }
+    
+    return result;
+  },
+  [customImages, customTemplates, customLpPaths, campaignName]
+);
 
   return {
     customImages,

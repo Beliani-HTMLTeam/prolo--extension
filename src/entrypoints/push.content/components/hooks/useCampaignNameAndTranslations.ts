@@ -66,6 +66,7 @@ export function useCampaignNameAndTranslations(
 
         console.log('Translations fetched successfully');
 
+        console.log("translations", translations)
         if (result && !result.hasDate) {
           await Swal.fire({
             icon: 'warning',
@@ -88,17 +89,15 @@ export function useCampaignNameAndTranslations(
     [spreadsheetUrl, checkCampaignNameDate],
   );
 
+  // Only update the name and check date, do NOT fetch translations
   const handleCampaignNameChange = useCallback(
     (name: string) => {
       setCampaignName(name);
       checkCampaignNameDate(name);
+      // Clear previous translations when name changes
       setPushTranslations(null);
-
-      if (name && name.trim()) {
-        fetchTranslations(name);
-      }
     },
-    [checkCampaignNameDate, fetchTranslations],
+    [checkCampaignNameDate],
   );
 
   const clearTranslations = useCallback(() => {

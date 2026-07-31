@@ -52,6 +52,7 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [isRandomTesting, setIsRandomTesting] = useState(false);
   const [isSendingAll, setIsSendingAll] = useState(false);
+  const [testProgress, setTestProgress] = useState<{ current: number; total: number } | null>(null);
 
   const populateRow = useCallback(
     async (slug: string): Promise<boolean> => {
@@ -99,9 +100,7 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
       if (!populated) return false;
 
       await delay(800);
-      const buttonSelector = isTest
-        ? "input#test[value='Test']"
-        : "input[type='submit'][name='submit'][value='Send']";
+      const buttonSelector = isTest ? "input#test[value='Test']" : "input[type='submit'][name='submit'][value='Send']";
       const button = document.querySelector<HTMLElement>(buttonSelector);
       if (!button) {
         await showErrorAlert('Nie znaleziono przycisku akcji.');
@@ -119,21 +118,27 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
 
   const handleTest3Random = useCallback(async () => {
     if (!campaign || isRandomTesting) return;
+    
     setIsRandomTesting(true);
 
     const slugs = Object.keys(campaign.data);
-    const shuffled = [...slugs].sort(() => Math.random() - 0.5);
+    const shuffled = slugs.sort(() => Math.random() - 0.5);
     const randomThree = shuffled.slice(0, 3);
+    
+    setTestProgress({ current: 0, total: randomThree.length });
 
-    for (const slug of randomThree) {
+    for (let i = 0; i < randomThree.length; i++) {
+      const slug = randomThree[i];
       setActiveSlug(slug);
+      setTestProgress({ current: i + 1, total: randomThree.length });
       await runPushForSlug(slug, true);
       await delay(1200);
     }
 
     setIsRandomTesting(false);
     setActiveSlug(null);
-  }, [campaign, runPushForSlug, isRandomTesting]);
+    setTestProgress(null);
+  }, [campaign, isRandomTesting, runPushForSlug]);
 
   const handleSendAll = useCallback(async () => {
     if (!campaign || isSendingAll) return;
@@ -194,6 +199,7 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     busySlug,
     isRandomTesting,
     isSendingAll,
+    testProgress,
     populateRow,
     runPushForSlug,
     handleTest3Random,

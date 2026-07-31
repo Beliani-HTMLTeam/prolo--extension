@@ -3,6 +3,7 @@ import { BASE_SLUG_CONFIG } from '../helpers/slugMapper';
 import { ImagePreview } from './ImagePreview';
 import styles from '../push.module.scss';
 
+
 type CampaignRowData = {
   [selector: string]: string;
 };
@@ -42,47 +43,47 @@ type CampaignTableProps = {
 };
 
 // Helper function to extract campaign name from full name
-// Examples:
-// "22.07.26 - Chairs" -> "Chairs"
-// "Voucher - 27.07.26 - Vase" -> "Vase"
-// "07.08.2026 - Dining Room Sale" -> "Dining Room Sale"
-// "17.07.26 - New Category Kitchen" -> "New Category Kitchen"
-// "Mother's Day Wishes" -> "Mother's Day Wishes" (no date, return full)
 const extractCampaignName = (fullName: string): string => {
-  // Check for date patterns: DD.MM.YY or DD-MM-YY or DD.MM.YYYY or DD-MM-YYYY
   const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2,4})/;
   const match = fullName.match(datePattern);
 
   if (match) {
-    // Find the position of the date match
     const dateIndex = match.index || 0;
     const dateEndIndex = dateIndex + match[0].length;
-
-    // Get everything after the date
     let afterDate = fullName.substring(dateEndIndex).trim();
-
-    // Remove any leading separators like " - " or "-"
     afterDate = afterDate.replace(/^[\s\-]+/, '');
-
-    // If afterDate is empty, try to get everything before the date
-    if (!afterDate) {
-      const beforeDate = fullName.substring(0, dateIndex).trim();
-      // Remove trailing separators
-      return beforeDate.replace(/[\s\-]+$/, '');
+    if (afterDate) {
+      return afterDate;
     }
-
-    return afterDate;
+    const beforeDate = fullName.substring(0, dateIndex).trim();
+    return beforeDate.replace(/[\s\-]+$/, '');
   }
-
-  // No date found, return the full name
   return fullName;
 };
 
 // Helper function to get UTM campaign value (lowercase, replace spaces with +)
 const getUtmCampaign = (fullName: string): string => {
   const campaign = extractCampaignName(fullName);
-  // Convert to lowercase, replace spaces with +, and remove any extra dashes
   return campaign.toLowerCase().replace(/\s+/g, '+');
+};
+
+// Helper component for translation missing warning
+const TranslationWarning = ({ type }: { type: 'title' | 'message' }) => {
+  return <span className={styles.translationMissing}>⚠️ {type === 'title' ? 'Title' : 'Message'} not found</span>;
+};
+
+// Helper to check if translation is missing
+const isTranslationMissing = (value: string): boolean => {
+  return !value || value.trim() === '' || value.trim() === 'TRANSLATION NOT FOUND';
+};
+
+// Check if a slug has valid translations (both title and message should exist)
+const hasValidTranslations = (rowData: CampaignRowData): boolean => {
+  const titleValue = rowData["[name='title']"] || '';
+  const bodyValue = rowData["[name='body']"] || '';
+  const hasTitle = !isTranslationMissing(titleValue);
+  const hasMessage = !isTranslationMissing(bodyValue);
+  return hasTitle && hasMessage;
 };
 
 // Helper function to extract domain and path from URL
@@ -97,16 +98,6 @@ const extractDomainAndPath = (url: string): string => {
   } catch {
     return url;
   }
-};
-
-// Helper component for translation missing warning
-const TranslationWarning = ({ type }: { type: 'title' | 'message' }) => {
-  return <span className={styles.translationMissing}>⚠️ {type === 'title' ? 'Title' : 'Message'} not found</span>;
-};
-
-// Helper to check if translation is missing
-const isTranslationMissing = (value: string): boolean => {
-  return !value || value.trim() === '' || value.trim() === 'TRANSLATION NOT FOUND';
 };
 
 // Memoized row component
@@ -298,7 +289,7 @@ const CampaignRow = memo(
             );
           }
 
-          // Click Action column - show only domain + path without protocol and subdomain
+          // Click Action column
           if (isClickAction) {
             const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
             const currentLpPath = customLpPaths[slug]?.value || rowData["[name='lp_path']"] || campaignName;
@@ -475,6 +466,26 @@ export const CampaignTable = memo(
       return null;
     }
 
+    // Filter out slugs that don't have valid translations
+    const filteredEntries = Object.entries(campaign.data)
+      .filter(([slug, rowData]) => {
+        const hasValid = hasValidTranslations(rowData);
+        if (!hasValid) {
+          console.log(`🔍 Filtering out ${slug} - missing translations`);
+        }
+        return hasValid;
+      });
+
+    // If no entries have valid translations, show a message
+    if (filteredEntries.length === 0) {
+      return (
+        <div className={styles.emptyTranslations}>
+          <p>No valid translations found for any slug.</p>
+          <p className={styles.hint}>Please check if the campaign has translations for the selected slugs.</p>
+        </div>
+      );
+    }
+
     const headers = Object.keys(Object.values(campaign.data)[0]);
 
     return (
@@ -532,7 +543,7 @@ export const CampaignTable = memo(
               </tr>
             </thead>
             <tbody>
-              {Object.entries(campaign.data).map(([slug, rowData]) => (
+              {filteredEntries.map(([slug, rowData]) => (
                 <CampaignRow
                   key={slug}
                   slug={slug}
@@ -561,6 +572,15 @@ export const CampaignTable = memo(
               ))}
             </tbody>
           </table>
+          {/* Show count of filtered out slugs */}
+          {Object.keys(campaign.data).length !== filteredEntries.length && (
+            <div className={styles.filteredNotice}>
+              <span>
+                Showing {filteredEntries.length} of {Object.keys(campaign.data).length} slugs 
+                ({Object.keys(campaign.data).length - filteredEntries.length} hidden - missing translations)
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
