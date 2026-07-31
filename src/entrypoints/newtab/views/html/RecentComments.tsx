@@ -43,6 +43,11 @@ const getMarqueeDuration = (title: string): string => {
   return `${lengthBasedDuration}s`;
 };
 
+const handleScroll = (event: React.WheelEvent<HTMLDivElement>) => {
+  event.preventDefault();
+  event.currentTarget.scrollLeft += event.deltaY;
+};
+
 export default function RecentComments({ issues, loading = false, error = null }: RecentCommentsProps) {
   const recentIssues = issues.filter(issue => issue.recentCommentsCount > 0);
 
@@ -89,7 +94,7 @@ export default function RecentComments({ issues, loading = false, error = null }
 
   return (
     <aside className={styles.recentCommentsContainer}>
-      <div className={styles.scrollWrapper}>
+      <div className={styles.scrollWrapper} onWheel={handleScroll}>
         <div className={styles.cardsFlex}>
           {sortedIssues.map(issue => {
             const sortedComments = [...issue.comments].sort(
@@ -124,7 +129,7 @@ export default function RecentComments({ issues, loading = false, error = null }
                 </div>
 
                 {/* Nested Comments List */}
-                <div className={styles.commentsList}>
+                <div className={styles.commentsList} onWheel={(e) => e.stopPropagation()}>
                   {sortedComments
                     .filter(comment => comment.comment_type)
                     .map(comment => (
