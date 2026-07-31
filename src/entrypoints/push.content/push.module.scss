@@ -1221,3 +1221,182 @@
     display: inline-block;
   }
 }
+
+.chdeInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+// Template Overrides Section
+.templateOverridesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.toggleOverridesBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: $light-grey;
+  border: 1px solid $grey-border-dark;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $dawn-grey;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: $font-family;
+  width: fit-content;
+
+  &:hover:not(:disabled) {
+    background: $soft-peach;
+    border-color: $cozy-brown;
+    color: $cozy-brown;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.overrideCount {
+  background: $cozy-brown;
+  color: $pure-white;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.templateOverridesList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: $pure-white;
+  border: 1px solid $grey-border-dark;
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: $grey-border-light;
+    border-radius: 2px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $grey-border-dark;
+    border-radius: 2px;
+  }
+}
+
+.noOverrides {
+  color: $grey-dark;
+  font-size: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.overrideItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: $grey-surface;
+  border-radius: 4px;
+  border: 1px solid $grey-border-light;
+  gap: 8px;
+
+  &:hover {
+    background: $subtle-peach;
+    border-color: $grey-border-dark;
+  }
+}
+
+.overrideSlug {
+  font-weight: 700;
+  font-size: 11px;
+  color: $cozy-brown;
+  min-width: 50px;
+}
+
+.overrideDisplay {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.overrideValue {
+  font-size: 12px;
+  color: $dawn-grey;
+  background: $pure-white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid $grey-border-light;
+  font-family: monospace;
+}
+
+.overrideEdit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-end;
+
+  .inputSmall {
+    width: 80px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid $grey-border-dark;
+    background: $pure-white;
+    font-size: 11px;
+    font-family: monospace;
+
+    &:focus {
+      outline: none;
+      border-color: $cozy-brown;
+    }
+  }
+}
+
+.iconRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid $grey-border-dark;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: $happy-red;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: $soft-peach;
+    border-color: $happy-red;
+    transform: scale(1.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}

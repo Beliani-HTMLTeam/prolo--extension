@@ -60,6 +60,8 @@ type DashboardContentProps = {
   onTestRow: (slug: string) => void;
   onSendRow: (slug: string) => void;
   testProgress?: { current: number; total: number } | null;
+  onAddCustomTemplate: (slug: string, value: string) => void; // Add this
+  onRemoveCustomTemplate: (slug: string) => void; // Add this
 };
 
 export const DashboardContent = ({
@@ -82,6 +84,8 @@ export const DashboardContent = ({
   isGenerating,
   isLoadingTabs,
   availableTabs = [],
+   onAddCustomTemplate, // Add this
+  onRemoveCustomTemplate, // Add this
   onHideOverlay,
   onSetCampaignName,
   onSetChdeTemplateId,
@@ -129,6 +133,9 @@ export const DashboardContent = ({
           onDeselectAll={onDeselectAll}
           onToggleSlug={onToggleSlug}
           onSetPreviewImage={onSetPreviewImage}
+          onAddCustomTemplate={onAddCustomTemplate} // Pass this
+          onRemoveCustomTemplate={onRemoveCustomTemplate} // Pass this
+          customTemplates={customTemplates}
         />
 
         <MainContent

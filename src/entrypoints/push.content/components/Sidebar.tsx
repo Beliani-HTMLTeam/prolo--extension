@@ -16,6 +16,7 @@ type SidebarProps = {
   isGenerating?: boolean;
   isLoadingTabs?: boolean;
   availableTabs?: string[];
+  customTemplates?: Record<string, { value: string; isEditing: boolean }>;
   onSetCampaignName: (name: string) => void;
   onSetChdeTemplateId: (id: string) => void;
   onGenerateAll: () => void;
@@ -23,6 +24,11 @@ type SidebarProps = {
   onDeselectAll: () => void;
   onToggleSlug: (slug: string) => void;
   onSetPreviewImage: (value: any) => void;
+  onToggleCustomTemplate?: (slug: string) => void;
+  onUpdateCustomTemplateValue?: (slug: string, value: string) => void;
+  onSaveCustomTemplate?: (slug: string) => void;
+  onAddCustomTemplate?: (slug: string, value: string) => void;
+  onRemoveCustomTemplate?: (slug: string) => void;
 };
 
 export const Sidebar = ({
@@ -36,6 +42,7 @@ export const Sidebar = ({
   isGenerating,
   isLoadingTabs,
   availableTabs = [],
+  customTemplates = {},
   onSetCampaignName,
   onSetChdeTemplateId,
   onGenerateAll,
@@ -43,7 +50,14 @@ export const Sidebar = ({
   onDeselectAll,
   onToggleSlug,
   onSetPreviewImage,
+  onToggleCustomTemplate,
+  onUpdateCustomTemplateValue,
+  onSaveCustomTemplate,
+  onAddCustomTemplate,
+  onRemoveCustomTemplate,
 }: SidebarProps) => {
+  console.log('🔄 Sidebar render - customTemplates:', customTemplates);
+
   return (
     <div className={styles.sidebar}>
       <CampaignSelector
@@ -68,6 +82,12 @@ export const Sidebar = ({
         campaignName={campaignName}
         onSetChdeTemplateId={onSetChdeTemplateId}
         onGenerateAll={onGenerateAll}
+        customTemplates={customTemplates}
+        onToggleCustomTemplate={onToggleCustomTemplate}
+        onUpdateCustomTemplateValue={onUpdateCustomTemplateValue}
+        onSaveCustomTemplate={onSaveCustomTemplate}
+        onAddCustomTemplate={onAddCustomTemplate}
+        onRemoveCustomTemplate={onRemoveCustomTemplate}
       />
 
       <SlugSelector
@@ -77,8 +97,6 @@ export const Sidebar = ({
         onSelectAll={onSelectAll}
         onDeselectAll={onDeselectAll}
       />
-
-      {/* <TemplatePreview campaign={campaign} chdeTemplateId={chdeTemplateId} /> */}
     </div>
   );
 };

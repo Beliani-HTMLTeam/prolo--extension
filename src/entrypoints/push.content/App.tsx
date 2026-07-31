@@ -52,12 +52,7 @@ export default function App() {
     clearTranslations();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const {
-    selectedSlugs,
-    toggleSlugSelection,
-    selectAllSlugs,
-    deselectAllSlugs,
-  } = useSlugSelection();
+  const { selectedSlugs, toggleSlugSelection, selectAllSlugs, deselectAllSlugs } = useSlugSelection();
 
   const {
     customImages,
@@ -73,19 +68,21 @@ export default function App() {
     updateCustomLpPath,
     saveCustomLpPath,
     applyOverridesToData,
+    addCustomTemplate,
+    removeCustomTemplate,
   } = useCustomOverrides(campaign, setCampaign, campaignName, bumpVersion);
 
   const {
-     activeSlug,
-  setActiveSlug,
-  busySlug,
-  isRandomTesting,
-  isSendingAll,
-  testProgress,
-  handleTest3Random,
-  handleSendAll,
-  handleTestRow,
-  handleSendRow,
+    activeSlug,
+    setActiveSlug,
+    busySlug,
+    isRandomTesting,
+    isSendingAll,
+    testProgress,
+    handleTest3Random,
+    handleSendAll,
+    handleTestRow,
+    handleSendRow,
   } = useCampaignPush(campaign);
 
   const { handleGenerateAllSlugs } = useGenerateCampaign({
@@ -144,6 +141,8 @@ export default function App() {
             onToggleCustomTemplate={toggleCustomTemplate}
             onUpdateCustomTemplateValue={updateCustomTemplateValue}
             onSaveCustomTemplate={saveCustomTemplate}
+             onAddCustomTemplate={addCustomTemplate}
+  onRemoveCustomTemplate={removeCustomTemplate}
             onToggleCustomLpPath={toggleCustomLpPath}
             onUpdateCustomLpPath={updateCustomLpPath}
             onSaveCustomLpPath={saveCustomLpPath}

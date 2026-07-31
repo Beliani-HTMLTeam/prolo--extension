@@ -261,19 +261,41 @@ const applyOverridesToData = useCallback(
   [customImages, customTemplates, customLpPaths, campaignName]
 );
 
-  return {
-    customImages,
-    customTemplates,
-    customLpPaths,
-    toggleCustomImage,
-    updateCustomImageUrl,
-    saveCustomImage,
-    toggleCustomTemplate,
-    updateCustomTemplateValue,
-    saveCustomTemplate,
-    toggleCustomLpPath,
-    updateCustomLpPath,
-    saveCustomLpPath,
-    applyOverridesToData,
-  };
+const addCustomTemplate = useCallback((slug: string, value: string) => {
+  setCustomTemplates(prev => ({
+    ...prev,
+    [slug]: {
+      value: value.trim(),
+      isEditing: false,
+    },
+  }));
+}, []);
+
+// Remove custom template
+const removeCustomTemplate = useCallback((slug: string) => {
+  setCustomTemplates(prev => {
+    const newState = { ...prev };
+    delete newState[slug];
+    return newState;
+  });
+}, []);
+
+// Return these in the hook
+return {
+  customImages,
+  customTemplates,
+  customLpPaths,
+  toggleCustomImage,
+  updateCustomImageUrl,
+  saveCustomImage,
+  toggleCustomTemplate,
+  updateCustomTemplateValue,
+  saveCustomTemplate,
+  addCustomTemplate,        // Add this
+  removeCustomTemplate,     // Add this
+  toggleCustomLpPath,
+  updateCustomLpPath,
+  saveCustomLpPath,
+  applyOverridesToData,
+};
 }
