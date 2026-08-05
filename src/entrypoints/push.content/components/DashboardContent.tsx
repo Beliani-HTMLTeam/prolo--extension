@@ -62,6 +62,9 @@ type DashboardContentProps = {
   testProgress?: { current: number; total: number } | null;
   onAddCustomTemplate: (slug: string, value: string) => void; // Add this
   onRemoveCustomTemplate: (slug: string) => void; // Add this
+   confirmation?: { isOpen: boolean; slug: string | null; onConfirm: (() => void) | null; onCancel: (() => void) | null };
+  closeConfirmation?: () => void;
+   sendAllProgress?: { current: number; total: number } | null;
 };
 
 export const DashboardContent = ({
@@ -74,6 +77,7 @@ export const DashboardContent = ({
   campaignName,
   chdeTemplateId,
   pushTranslations,
+  sendAllProgress,
   selectedSlugs,
   previewImage,
   customImages,
@@ -108,6 +112,8 @@ export const DashboardContent = ({
   onTestRow,
   onSendRow,
   testProgress,
+  confirmation,
+  closeConfirmation,
 }: DashboardContentProps) => {
   return (
     <div className={styles.dashboardOverlay}>
@@ -166,6 +172,9 @@ export const DashboardContent = ({
           onTest3Random={onTest3Random}
           onSendAll={onSendAll}
           testProgress={testProgress}
+          confirmation={confirmation}
+          closeConfirmation={closeConfirmation}
+          sendAllProgress={sendAllProgress}
         />
       </div>
     </div>

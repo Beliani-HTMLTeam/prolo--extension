@@ -5,6 +5,7 @@ type CampaignActionsProps = {
   isSendingAll: boolean;
   hasCampaignData: boolean;
   testProgress?: { current: number; total: number } | null;
+  sendAllProgress?: { current: number; total: number } | null;
   onTest3Random: () => void;
   onSendAll: () => void;
 };
@@ -14,15 +15,25 @@ export const CampaignActions = ({
   isSendingAll,
   hasCampaignData,
   testProgress,
+  sendAllProgress,
   onTest3Random,
   onSendAll,
 }: CampaignActionsProps) => {
-   const getTestButtonText = () => {
+  // Get button text based on progress
+  const getTestButtonText = () => {
     if (!isRandomTesting) return '🚀 Test 3 Random';
     if (testProgress) {
       return `Testing ${testProgress.current}/${testProgress.total}...`;
     }
     return 'Testing 3 Random...';
+  };
+
+  const getSendAllButtonText = () => {
+    if (!isSendingAll) return '⚠️ Send All';
+    if (sendAllProgress) {
+      return `Sending ${sendAllProgress.current}/${sendAllProgress.total}...`;
+    }
+    return 'Sending All...';
   };
 
   return (
@@ -45,9 +56,17 @@ export const CampaignActions = ({
       <button
         onClick={onSendAll}
         disabled={isSendingAll || isRandomTesting || !hasCampaignData}
-        className={styles.btnSendAll}
+        className={`${styles.btnSendAll} ${isSendingAll ? styles.sending : ''}`}
       >
-        {isSendingAll ? 'Sending All...' : '⚠️ Send All'}
+        {getSendAllButtonText()}
+        {isSendingAll && sendAllProgress && (
+          <span className={styles.progressBar}>
+            <span 
+              className={styles.progressFill} 
+              style={{ width: `${(sendAllProgress.current / sendAllProgress.total) * 100}%` }}
+            />
+          </span>
+        )}
       </button>
     </div>
   );

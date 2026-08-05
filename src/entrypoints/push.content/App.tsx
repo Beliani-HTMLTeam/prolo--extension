@@ -72,18 +72,21 @@ export default function App() {
     removeCustomTemplate,
   } = useCustomOverrides(campaign, setCampaign, campaignName, bumpVersion);
 
-  const {
-    activeSlug,
-    setActiveSlug,
-    busySlug,
-    isRandomTesting,
-    isSendingAll,
-    testProgress,
-    handleTest3Random,
-    handleSendAll,
-    handleTestRow,
-    handleSendRow,
-  } = useCampaignPush(campaign);
+const {
+  activeSlug,
+  setActiveSlug,
+  busySlug,
+  isRandomTesting,
+  isSendingAll,
+  testProgress,
+  confirmation,
+  closeConfirmation,
+  handleTest3Random,
+  sendAllProgress,
+  handleSendAll,
+  handleTestRow,
+  handleSendRow,
+} = useCampaignPush(campaign);
 
   const { handleGenerateAllSlugs } = useGenerateCampaign({
     campaignName,
@@ -151,6 +154,9 @@ export default function App() {
             onTestRow={handleTestRow}
             onSendRow={handleSendRow}
             testProgress={testProgress}
+            closeConfirmation={closeConfirmation}
+            confirmation={confirmation}
+             sendAllProgress={sendAllProgress}
           />
         )}
       </Overlay>

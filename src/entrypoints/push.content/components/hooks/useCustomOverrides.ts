@@ -52,7 +52,7 @@ export const getUtmCampaign = (fullName: string): string => {
  */
 export function useCustomOverrides(
   campaign: StoredCampaign | null,
-  setCampaign: (c: StoredCampaign) => void,
+  setCampaign: (c: StoredCampaign | null) => void,
   campaignName: string,
   bumpVersion: () => void,
 ) {
@@ -80,53 +80,103 @@ export function useCustomOverrides(
     [campaign],
   );
 
-  const updateCustomImageUrl = useCallback((slug: string, url: string) => {
-    setCustomImages(prev => ({
+const updateCustomImageUrl = useCallback((slug: string, url: string) => {
+  console.log('📝 updateCustomImageUrl called for:', slug, url);
+  setCustomImages(prev => {
+    const newState = {
       ...prev,
       [slug]: {
         enabled: prev[slug]?.enabled || false,
         url,
         isEditing: prev[slug]?.isEditing || true,
       },
+    };
+    console.log('📝 New customImages state:', newState);
+    return newState;
+  });
+}, []);
+
+ const saveCustomImage = useCallback(
+  async (slug: string, newUrl?: string) => {
+    console.log('💾 saveCustomImage called for:', slug, 'newUrl:', newUrl);
+    console.log('📝 customImages state:', customImages);
+    
+    if (!campaign) {
+      await showErrorAlert('No campaign loaded.');
+      return;
+    }
+    
+    // Use the passed URL directly, or fall back to the state
+    const customImage = customImages[slug];
+    const urlToSave = newUrl || customImage?.url;
+    
+    console.log('📝 URL to save:', urlToSave);
+    
+    if (!customImage?.enabled && !newUrl) {
+      await showErrorAlert('Please enable custom image first.');
+      return;
+    }
+    
+    if (!urlToSave || !urlToSave.startsWith('http')) {
+      await showErrorAlert('Please enter a valid image URL starting with http:// or https://');
+      return;
+    }
+
+    console.log('💾 Saving custom image for:', slug, urlToSave);
+
+    // Create a deep copy of the campaign data
+    const updatedData = JSON.parse(JSON.stringify(campaign.data));
+    if (updatedData[slug]) {
+      updatedData[slug] = {
+        ...updatedData[slug],
+        "[name='image']": urlToSave,
+      };
+    }
+
+    const updatedCampaign: StoredCampaign = {
+      ...campaign,
+      data: updatedData,
+    };
+    
+    // Save to storage
+    await browser.storage.local.set({ push_campaign: updatedCampaign });
+    
+    // Update campaign state
+    setCampaign(updatedCampaign);
+    
+    // Update customImages state to hide editing and store the new URL
+    setCustomImages(prev => ({ 
+      ...prev, 
+      [slug]: { 
+        enabled: true,
+        url: urlToSave,
+        isEditing: false 
+      } 
     }));
-  }, []);
 
-  const saveCustomImage = useCallback(
-    async (slug: string) => {
-      if (!campaign) return;
-      const customImage = customImages[slug];
-      if (!customImage?.enabled || !customImage.url?.startsWith('http')) {
-        await showErrorAlert('Please enter a valid image URL starting with http:// or https://');
-        return;
-      }
+    // Bump version to force re-render of the table
+    bumpVersion();
 
-      const updatedData = { ...campaign.data };
-      if (updatedData[slug]) {
-        updatedData[slug]["[name='image']"] = customImage.url;
-      }
-
-      const updatedCampaign = { ...campaign, data: updatedData };
-      await browser.storage.local.set({ push_campaign: updatedCampaign });
-      setCampaign(updatedCampaign);
-      setCustomImages(prev => ({ ...prev, [slug]: { ...customImage, isEditing: false } }));
-
-      await Swal.fire({
-        icon: 'success',
-        title: 'Image Updated!',
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    },
-    [campaign, customImages, setCampaign],
-  );
-
+    await Swal.fire({
+      icon: 'success',
+      title: 'Image Updated!',
+      text: `Custom image saved for ${slug.toUpperCase()}`,
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  },
+  [campaign, customImages, setCampaign, bumpVersion],
+);
   // ---- Template ----
   const toggleCustomTemplate = useCallback(
     (slug: string) => {
       setCustomTemplates(prev => {
         const current = prev[slug];
         const val = campaign?.data[slug]?.["[name='template']"] || '';
-        return { ...prev, [slug]: { value: current?.value || val, isEditing: !current?.isEditing } };
+        if (current?.isEditing) {
+          return { ...prev, [slug]: { ...current, isEditing: false } };
+        }
+        return { ...prev, [slug]: { value: current?.value || val, isEditing: true } };
       });
     },
     [campaign],
@@ -157,8 +207,16 @@ export function useCustomOverrides(
         ...prev,
         [slug]: { value: customTemplate.value, isEditing: false },
       }));
+      bumpVersion();
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Template Updated!',
+        timer: 1500,
+        showConfirmButton: false,
+      });
     },
-    [campaign, customTemplates, setCampaign],
+    [campaign, customTemplates, setCampaign, bumpVersion],
   );
 
   // ---- LP Path ----
@@ -167,7 +225,10 @@ export function useCustomOverrides(
       setCustomLpPaths(prev => {
         const current = prev[slug];
         const val = campaign?.data[slug]?.["[name='lp_path']"] || '';
-        return { ...prev, [slug]: { value: current?.value || val, isEditing: !current?.isEditing } };
+        if (current?.isEditing) {
+          return { ...prev, [slug]: { ...current, isEditing: false } };
+        }
+        return { ...prev, [slug]: { value: current?.value || val, isEditing: true } };
       });
     },
     [campaign],
@@ -232,70 +293,69 @@ export function useCustomOverrides(
     [campaign, customLpPaths, campaignName, setCampaign, bumpVersion],
   );
 
+  // ---- Add/Remove Template ----
+  const addCustomTemplate = useCallback((slug: string, value: string) => {
+    setCustomTemplates(prev => ({
+      ...prev,
+      [slug]: {
+        value: value.trim(),
+        isEditing: false,
+      },
+    }));
+  }, []);
+
+  const removeCustomTemplate = useCallback((slug: string) => {
+    setCustomTemplates(prev => {
+      const newState = { ...prev };
+      delete newState[slug];
+      return newState;
+    });
+  }, []);
+
   /** Apply in-memory custom overrides onto freshly generated campaign data. */
-const applyOverridesToData = useCallback(
-  (campaignData: Record<string, Record<string, string>>): Record<string, Record<string, string>> => {
-    const slugs = Object.keys(campaignData);
-    const result = { ...campaignData };
-    
-    for (const slug of slugs) {
-      if (customImages[slug]?.enabled && customImages[slug].url && result[slug]) {
-        result[slug]["[name='image']"] = customImages[slug].url;
-      }
-      if (customTemplates[slug]?.value && result[slug]) {
-        result[slug]["[name='template']"] = customTemplates[slug].value;
-      }
-      if (customLpPaths[slug]?.value && result[slug]) {
-        const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
-        const lpVal = customLpPaths[slug].value;
-        result[slug]["[name='lp_path']"] = lpVal;
-        if (domain) {
-          const utmCampaign = getUtmCampaign(campaignName);
-          result[slug]["[name='click_action']"] = `https://www.beliani.${domain}/content/${lpVal}/?utm_source=PUSH&utm_medium=${lpVal}&utm_campaign=${utmCampaign}`;
+  const applyOverridesToData = useCallback(
+    (campaignData: Record<string, Record<string, string>>): Record<string, Record<string, string>> => {
+      const slugs = Object.keys(campaignData);
+      const result = { ...campaignData };
+      
+      for (const slug of slugs) {
+        if (customImages[slug]?.enabled && customImages[slug].url && result[slug]) {
+          result[slug]["[name='image']"] = customImages[slug].url;
+        }
+        if (customTemplates[slug]?.value && result[slug]) {
+          result[slug]["[name='template']"] = customTemplates[slug].value;
+        }
+        if (customLpPaths[slug]?.value && result[slug]) {
+          const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
+          const lpVal = customLpPaths[slug].value;
+          result[slug]["[name='lp_path']"] = lpVal;
+          if (domain) {
+            const utmCampaign = getUtmCampaign(campaignName);
+            result[slug]["[name='click_action']"] = `https://www.beliani.${domain}/content/${lpVal}/?utm_source=PUSH&utm_medium=${lpVal}&utm_campaign=${utmCampaign}`;
+          }
         }
       }
-    }
-    
-    return result;
-  },
-  [customImages, customTemplates, customLpPaths, campaignName]
-);
-
-const addCustomTemplate = useCallback((slug: string, value: string) => {
-  setCustomTemplates(prev => ({
-    ...prev,
-    [slug]: {
-      value: value.trim(),
-      isEditing: false,
+      
+      return result;
     },
-  }));
-}, []);
+    [customImages, customTemplates, customLpPaths, campaignName],
+  );
 
-// Remove custom template
-const removeCustomTemplate = useCallback((slug: string) => {
-  setCustomTemplates(prev => {
-    const newState = { ...prev };
-    delete newState[slug];
-    return newState;
-  });
-}, []);
-
-// Return these in the hook
-return {
-  customImages,
-  customTemplates,
-  customLpPaths,
-  toggleCustomImage,
-  updateCustomImageUrl,
-  saveCustomImage,
-  toggleCustomTemplate,
-  updateCustomTemplateValue,
-  saveCustomTemplate,
-  addCustomTemplate,        // Add this
-  removeCustomTemplate,     // Add this
-  toggleCustomLpPath,
-  updateCustomLpPath,
-  saveCustomLpPath,
-  applyOverridesToData,
-};
+  return {
+    customImages,
+    customTemplates,
+    customLpPaths,
+    toggleCustomImage,
+    updateCustomImageUrl,
+    saveCustomImage,
+    toggleCustomTemplate,
+    updateCustomTemplateValue,
+    saveCustomTemplate,
+    addCustomTemplate,
+    removeCustomTemplate,
+    toggleCustomLpPath,
+    updateCustomLpPath,
+    saveCustomLpPath,
+    applyOverridesToData,
+  };
 }

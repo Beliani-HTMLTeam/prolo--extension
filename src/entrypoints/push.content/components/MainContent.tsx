@@ -1,6 +1,7 @@
 import styles from '../push.module.scss';
 import { CampaignActions } from './CampaignActions';
 import { CampaignTable } from './CampaignTable';
+import { ConfirmationDialog } from './ConfirmationDialog';
 import { EmptyState } from './EmptyState';
 import { FooterInfo } from './FooterInfo';
 
@@ -15,6 +16,9 @@ type MainContentProps = {
   isLoadingTranslations?: boolean;
   campaignName: string;
   testProgress?: { current: number; total: number } | null;
+  sendAllProgress?: { current: number; total: number } | null; // Add this
+  confirmation?: { isOpen: boolean; slug: string | null; onConfirm: (() => void) | null; onCancel: (() => void) | null };
+  closeConfirmation?: () => void;
   customImages: Record<string, any>;
   customTemplates: Record<string, any>;
   customLpPaths: Record<string, any>;
@@ -45,6 +49,9 @@ export const MainContent = ({
   isLoadingTranslations,
   campaignName,
   testProgress,
+  sendAllProgress, // Add this
+  confirmation = { isOpen: false, slug: null, onConfirm: null, onCancel: null },
+  closeConfirmation = () => {},
   customImages,
   customTemplates,
   customLpPaths,
@@ -66,8 +73,36 @@ export const MainContent = ({
   const hasCampaignData = campaign && Object.keys(campaign.data).length > 0;
   const totalRows = hasCampaignData ? Object.keys(campaign.data).length : 0;
 
+  console.log('🔍 MainContent render - confirmation:', confirmation);
+  console.log('🔍 isOpen:', confirmation.isOpen);
+
+  // Handle confirmation
+  const handleConfirm = () => {
+    console.log('✅ Confirm clicked');
+    if (confirmation.onConfirm) {
+      confirmation.onConfirm();
+    }
+  };
+
+  const handleCancel = () => {
+    console.log('❌ Cancel clicked');
+    if (closeConfirmation) {
+      closeConfirmation();
+    }
+  };
+
   return (
     <div className={styles.mainContent}>
+      {/* Confirmation Dialog - rendered before the table */}
+      {confirmation.isOpen && confirmation.slug && (
+        <ConfirmationDialog
+          isOpen={confirmation.isOpen}
+          slug={confirmation.slug}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
+
       {!hasCampaignData ? (
         <EmptyState isGenerating={isGenerating} isLoadingTranslations={isLoadingTranslations} />
       ) : (
@@ -77,6 +112,7 @@ export const MainContent = ({
             isSendingAll={isSendingAll}
             hasCampaignData={hasCampaignData}
             testProgress={testProgress}
+            sendAllProgress={sendAllProgress}
             onTest3Random={onTest3Random}
             onSendAll={onSendAll}
           />

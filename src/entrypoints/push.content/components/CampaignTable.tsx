@@ -2,6 +2,7 @@ import { Dispatch, memo, SetStateAction } from 'react';
 import { BASE_SLUG_CONFIG } from '../helpers/slugMapper';
 import { ImagePreview } from './ImagePreview';
 import styles from '../push.module.scss';
+import { showErrorAlert } from './Alerts';
 
 
 type CampaignRowData = {
@@ -30,7 +31,7 @@ type CampaignTableProps = {
   customLpPaths: Record<string, CustomLpPath>;
   onToggleCustomImage: (slug: string) => void;
   onUpdateCustomImageUrl: (slug: string, url: string) => void;
-  onSaveCustomImage: (slug: string) => void;
+   onSaveCustomImage: (slug: string, url?: string) => void;
   onToggleCustomTemplate: (slug: string) => void;
   onUpdateCustomTemplateValue: (slug: string, value: string) => void;
   onSaveCustomTemplate: (slug: string) => void;
@@ -138,7 +139,7 @@ const CampaignRow = memo(
     customLpPaths: Record<string, CustomLpPath>;
     onToggleCustomImage: (slug: string) => void;
     onUpdateCustomImageUrl: (slug: string, url: string) => void;
-    onSaveCustomImage: (slug: string) => void;
+    onSaveCustomImage: (slug: string, url?: string) => void;
     onToggleCustomTemplate: (slug: string) => void;
     onUpdateCustomTemplateValue: (slug: string, value: string) => void;
     onSaveCustomTemplate: (slug: string) => void;
@@ -164,6 +165,10 @@ const CampaignRow = memo(
     const [lpEditValue, setLpEditValue] = useState(customLpPath?.value || rowData["[name='lp_path']"] || '');
     const [imageEditValue, setImageEditValue] = useState(customImage?.url || '');
 
+    useEffect(() => {
+  setImageEditValue(customImage?.url || '');
+}, [customImage]);
+
     // Handle LP save
     const handleLpSave = useCallback(() => {
       if (lpEditValue.trim()) {
@@ -172,12 +177,16 @@ const CampaignRow = memo(
     }, [slug, lpEditValue, onSaveCustomLpPath]);
 
     // Handle image save
-    const handleImageSave = useCallback(() => {
-      if (imageEditValue.trim()) {
-        onUpdateCustomImageUrl(slug, imageEditValue);
-        onSaveCustomImage(slug);
-      }
-    }, [slug, imageEditValue, onUpdateCustomImageUrl, onSaveCustomImage]);
+const handleImageSave = useCallback(() => {
+  const trimmedUrl = imageEditValue.trim();
+  console.log('🔄 handleImageSave called for:', slug, 'value:', trimmedUrl);
+  
+  if (trimmedUrl) {
+    // Directly call onSaveCustomImage with the value
+    // This bypasses the stale state issue
+    onSaveCustomImage(slug, trimmedUrl);
+  }
+}, [slug, imageEditValue, onSaveCustomImage]);
 
     // Check if title and message exist
     const titleValue = rowData["[name='title']"] || '';
@@ -367,49 +376,53 @@ const CampaignRow = memo(
         </td>
 
         {/* Custom Image Column */}
-        <td className={styles.colCustomImage}>
-          <div className={styles.cellWrapper}>
-            <div className={styles.customImageContainer}>
-              <label className={styles.customImageLabel}>
-                <input
-                  type="checkbox"
-                  checked={isCustomEnabled}
-                  onChange={() => {
-                    if (!isCustomEnabled) {
-                      setImageEditValue(customImageUrl);
-                    }
-                    onToggleCustomImage(slug);
-                  }}
-                  disabled={isRandomTesting || isSendingAll || !!busySlug}
-                />
-                Custom
-              </label>
-              {isCustomEnabled && isImageEditing && (
-                <div className={styles.editContainer}>
-                  <div className={styles.inputWrapper}>
-                    <input
-                      type="text"
-                      value={imageEditValue}
-                      onChange={e => setImageEditValue(e.target.value)}
-                      placeholder="Enter image URL"
-                      className={styles.inputSmall}
-                    />
-                  </div>
-                  <div className={styles.iconGroup}>
-                    <button
-                      onClick={handleImageSave}
-                      className={styles.iconSave}
-                      disabled={!imageEditValue.trim()}
-                      title="Save"
-                    >
-                      ✓
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </td>
+       <td className={styles.colCustomImage}>
+  <div className={styles.cellWrapper}>
+    <div className={styles.customImageContainer}>
+      <label className={styles.customImageLabel}>
+        <input
+          type="checkbox"
+          checked={isCustomEnabled}
+          onChange={() => {
+            if (!isCustomEnabled) {
+              // When enabling, set the current image URL from rowData
+              const currentImageUrl = rowData["[name='image']"] || '';
+              setImageEditValue(currentImageUrl);
+              onToggleCustomImage(slug);
+            } else {
+              onToggleCustomImage(slug);
+            }
+          }}
+          disabled={isRandomTesting || isSendingAll || !!busySlug}
+        />
+        Custom
+      </label>
+     {isCustomEnabled && isImageEditing && (
+  <div className={styles.editContainer}>
+    <div className={styles.inputWrapper}>
+      <input
+        type="text"
+        value={imageEditValue}
+        onChange={e => setImageEditValue(e.target.value)}
+        placeholder="Enter image URL"
+        className={styles.inputSmall}
+      />
+    </div>
+    <div className={styles.iconGroup}>
+      <button
+        onClick={handleImageSave}
+        className={styles.iconSave}
+        disabled={!imageEditValue.trim()}
+        title="Save"
+      >
+        ✓
+      </button>
+    </div>
+  </div>
+)}
+    </div>
+  </div>
+</td>
 
         {/* Actions Column */}
         <td className={styles.colActions}>
