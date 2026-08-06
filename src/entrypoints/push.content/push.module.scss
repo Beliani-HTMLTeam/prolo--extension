@@ -1741,3 +1741,196 @@
     transform: translateY(0) scale(1);
   }
 }
+
+.oldNewsletterSection {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: $light-grey;
+  border-radius: 6px;
+  border: 1px solid $grey-border-dark;
+}
+
+.oldNewsletterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.oldNewsletterTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: $dawn-grey;
+}
+
+.oldNewsletterHint {
+  font-size: 10px;
+  color: $grey-dark;
+  font-style: italic;
+}
+
+.oldNewsletterRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.oldNewsletterField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 11px;
+    font-weight: 500;
+    color: $dawn-grey;
+  }
+
+  .inputSmall {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid $grey-border-dark;
+    background: $pure-white;
+    font-size: 11px;
+    font-family: monospace;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $cozy-brown;
+      box-shadow: 0 0 0 2px rgba(117, 0, 0, 0.06);
+    }
+  }
+}
+
+.successOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+.successDialog {
+  background: $pure-white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+.successIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.successTitle {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.successText {
+  margin: 0 0 24px 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.successBtn {
+  padding: 10px 32px;
+  background: #10b981;
+  color: $pure-white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: $font-family;
+
+  &:hover {
+    background: #059669;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.newsletterFamilyToggle {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: $light-grey;
+  border-radius: 6px;
+  border: 1px solid $grey-border-dark;
+}
+
+.toggleHeader {
+  margin-bottom: 8px;
+}
+
+.toggleTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: $dawn-grey;
+}
+
+.toggleContainer {
+  display: flex;
+  gap: 8px;
+}
+
+.toggleOption {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid $grey-border-dark;
+  border-radius: 6px;
+  background: $pure-white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+  font-size: 12px;
+  color: $dawn-grey;
+
+  &:hover:not(:disabled) {
+    border-color: $cozy-brown;
+    background: $subtle-peach;
+  }
+
+  &.active {
+    border-color: $cozy-brown;
+    background: $soft-peach;
+    color: $cozy-brown;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.toggleOptionHint {
+  font-size: 9px;
+  font-weight: 400;
+  color: $grey-dark;
+}

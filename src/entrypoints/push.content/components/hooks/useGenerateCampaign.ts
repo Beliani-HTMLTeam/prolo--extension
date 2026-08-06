@@ -7,6 +7,7 @@ import { generateCampaignData, getAllSlugs, isValidTemplateId, parseCampaignName
 import { showErrorAlert } from '../Alerts';
 import { PushTranslations } from '@/entrypoints/issue.content/lib/types';
 
+
 type UseGenerateCampaignProps = {
   campaignName: string;
   chdeTemplateId: string;
@@ -21,6 +22,11 @@ type UseGenerateCampaignProps = {
   setCampaign: (campaign: StoredCampaign | null) => void;
   setActiveSlug: (slug: string | null) => void;
   bumpVersion: () => void;
+  // New props for old newsletter family
+  useOldNewsletterFamily?: boolean;
+  oldNewsletterFamilyIds?: Record<string, string>;
+    onShowSuccess?: (title: string, message: string) => Promise<void>;
+
 };
 
 export function useGenerateCampaign({
@@ -34,10 +40,15 @@ export function useGenerateCampaign({
   setCampaign,
   setActiveSlug,
   bumpVersion,
+ useOldNewsletterFamily = false,
+  oldNewsletterFamilyIds = {},
+   onShowSuccess,
 }: UseGenerateCampaignProps) {
   const handleGenerateAllSlugs = useCallback(async () => {
     console.log('🚀 Generate All clicked');
 
+      console.log(`📝 useOldNewsletterFamily: ${useOldNewsletterFamily}`);
+    console.log(`📝 oldNewsletterFamilyIds:`, oldNewsletterFamilyIds);
     // Use isGenerating to check if already generating (prevents race conditions)
     if (generating.isGenerating) {
       console.log('⚠️ Already generating, ignoring click');
@@ -53,6 +64,7 @@ export function useGenerateCampaign({
     console.log(`📝 Campaign name: ${campaignName}`);
     console.log(`📝 CHDE Template ID: ${chdeTemplateId}`);
     console.log(`📝 Selected slugs: ${selectedSlugs.length}`);
+    console.log(`📝 Old Newsletter IDs:`, oldNewsletterFamilyIds);
 
     // Clear previous campaign data immediately to show generating state
     setCampaign(null);
@@ -109,7 +121,34 @@ export function useGenerateCampaign({
       console.log(`📊 Generating for ${slugsToUse.length} slugs with campaign: ${campaignName}`);
 
       console.log('🔄 Generating campaign data...');
-      let campaignData = generateCampaignData(slugsToUse, chdeTemplateId, translations, campaignName);
+
+    let oldIds = undefined;
+    if (useOldNewsletterFamily) {
+      // Filter out empty values
+      const filteredIds: Record<string, string> = {};
+      if (oldNewsletterFamilyIds.HR?.trim()) {
+        filteredIds.HR = oldNewsletterFamilyIds.HR.trim();
+      }
+      if (oldNewsletterFamilyIds.SI?.trim()) {
+        filteredIds.SI = oldNewsletterFamilyIds.SI.trim();
+      }
+      if (Object.keys(filteredIds).length > 0) {
+        oldIds = filteredIds;
+        console.log('📝 Using old newsletter IDs:', oldIds);
+      } else {
+        console.warn('⚠️ Old family selected but no IDs provided for HR/SI');
+      }
+    }
+
+    let campaignData = generateCampaignData(
+      slugsToUse, 
+      chdeTemplateId, 
+      translations, 
+      campaignName,
+      undefined, 
+      undefined, 
+      oldIds
+    );
 
       // Apply custom overrides
       console.log('🔄 Applying custom overrides...');
@@ -142,11 +181,12 @@ export function useGenerateCampaign({
       // Reset generating state BEFORE showing success message
       generating.setIsGenerating(false);
 
-      await Swal.fire({
-        icon: 'success',
-        title: 'Campaign Generated!',
-        text: `Generated ${Object.keys(campaignData).length} rows with template ID ${chdeTemplateId}`,
-      });
+    if (onShowSuccess) {
+        await onShowSuccess(
+          '🎉 Campaign Generated!',
+          `Generated ${Object.keys(campaignData).length} rows with template ID ${chdeTemplateId}`
+        );
+      }
     } catch (error) {
       console.error('❌ Error generating campaign:', error);
       await showErrorAlert('An error occurred while generating the campaign.');
@@ -163,7 +203,8 @@ export function useGenerateCampaign({
     setCampaign,
     setActiveSlug,
     bumpVersion,
-  ]);
+ useOldNewsletterFamily,
+    oldNewsletterFamilyIds,  ]);
 
   return { handleGenerateAllSlugs };
 }

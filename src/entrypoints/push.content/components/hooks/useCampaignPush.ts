@@ -51,6 +51,13 @@ export interface ConfirmationState {
   onCancel: (() => void) | null;
 }
 
+export interface SuccessState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onClose: () => void;
+}
+
 /**
  * Populates the host form from campaign row data and triggers Test / Send actions.
  */
@@ -66,6 +73,12 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     slug: null,
     onConfirm: null,
     onCancel: null,
+  });
+   const [success, setSuccess] = useState<SuccessState>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onClose: () => {},
   });
 
   const populateRow = useCallback(
@@ -302,6 +315,34 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     }
   }, [confirmation]);
 
+   const showSuccess = useCallback((title: string, message: string): Promise<void> => {
+    return new Promise<void>((resolve) => {
+      setSuccess({
+        isOpen: true,
+        title,
+        message,
+        onClose: () => {
+          setSuccess({
+            isOpen: false,
+            title: '',
+            message: '',
+            onClose: () => {},
+          });
+          resolve();
+        },
+      });
+    });
+  }, []);
+
+    const closeSuccess = useCallback(() => {
+    setSuccess({
+      isOpen: false,
+      title: '',
+      message: '',
+      onClose: () => {},
+    });
+  }, []);
+
   return {
     activeSlug,
     setActiveSlug,
@@ -318,5 +359,8 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     handleSendAll,
     handleTestRow,
     handleSendRow,
+      success,
+    closeSuccess,
+    showSuccess,
   };
 }

@@ -60,11 +60,18 @@ type DashboardContentProps = {
   onTestRow: (slug: string) => void;
   onSendRow: (slug: string) => void;
   testProgress?: { current: number; total: number } | null;
-  onAddCustomTemplate: (slug: string, value: string) => void; // Add this
-  onRemoveCustomTemplate: (slug: string) => void; // Add this
-   confirmation?: { isOpen: boolean; slug: string | null; onConfirm: (() => void) | null; onCancel: (() => void) | null };
+  sendAllProgress?: { current: number; total: number } | null;
+  onAddCustomTemplate: (slug: string, value: string) => void;
+  onRemoveCustomTemplate: (slug: string) => void;
+  confirmation?: { isOpen: boolean; slug: string | null; onConfirm: (() => void) | null; onCancel: (() => void) | null };
   closeConfirmation?: () => void;
-   sendAllProgress?: { current: number; total: number } | null;
+  success?: { isOpen: boolean; title: string; message: string; onClose: () => void };
+  closeSuccess?: () => void;
+  // Add these new props
+  useOldNewsletterFamily?: boolean;
+  oldNewsletterFamilyIds?: Record<string, string>;
+  onUseOldNewsletterFamily?: (useOld: boolean) => void;
+  onOldNewsletterIdsChange?: (ids: Record<string, string>) => void;
 };
 
 export const DashboardContent = ({
@@ -77,7 +84,6 @@ export const DashboardContent = ({
   campaignName,
   chdeTemplateId,
   pushTranslations,
-  sendAllProgress,
   selectedSlugs,
   previewImage,
   customImages,
@@ -88,8 +94,8 @@ export const DashboardContent = ({
   isGenerating,
   isLoadingTabs,
   availableTabs = [],
-   onAddCustomTemplate, // Add this
-  onRemoveCustomTemplate, // Add this
+  onAddCustomTemplate,
+  onRemoveCustomTemplate,
   onHideOverlay,
   onSetCampaignName,
   onSetChdeTemplateId,
@@ -112,8 +118,15 @@ export const DashboardContent = ({
   onTestRow,
   onSendRow,
   testProgress,
+  sendAllProgress,
   confirmation,
   closeConfirmation,
+  success,
+  closeSuccess,
+  useOldNewsletterFamily = false, 
+    oldNewsletterFamilyIds,
+  onUseOldNewsletterFamily,
+  onOldNewsletterIdsChange,
 }: DashboardContentProps) => {
   return (
     <div className={styles.dashboardOverlay}>
@@ -139,9 +152,13 @@ export const DashboardContent = ({
           onDeselectAll={onDeselectAll}
           onToggleSlug={onToggleSlug}
           onSetPreviewImage={onSetPreviewImage}
-          onAddCustomTemplate={onAddCustomTemplate} // Pass this
-          onRemoveCustomTemplate={onRemoveCustomTemplate} // Pass this
+          onAddCustomTemplate={onAddCustomTemplate}
+          onRemoveCustomTemplate={onRemoveCustomTemplate}
           customTemplates={customTemplates}
+         useOldNewsletterFamily={useOldNewsletterFamily}
+  oldNewsletterFamilyIds={oldNewsletterFamilyIds}
+  onUseOldNewsletterFamily={onUseOldNewsletterFamily}
+  onOldNewsletterIdsChange={onOldNewsletterIdsChange}
         />
 
         <MainContent
@@ -172,9 +189,11 @@ export const DashboardContent = ({
           onTest3Random={onTest3Random}
           onSendAll={onSendAll}
           testProgress={testProgress}
+          sendAllProgress={sendAllProgress}
           confirmation={confirmation}
           closeConfirmation={closeConfirmation}
-          sendAllProgress={sendAllProgress}
+          success={success}
+          closeSuccess={closeSuccess}
         />
       </div>
     </div>

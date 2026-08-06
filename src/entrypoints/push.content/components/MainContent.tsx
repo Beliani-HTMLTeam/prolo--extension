@@ -4,6 +4,7 @@ import { CampaignTable } from './CampaignTable';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { EmptyState } from './EmptyState';
 import { FooterInfo } from './FooterInfo';
+import { SuccessDialog } from './SuccessDialog';
 
 type MainContentProps = {
   campaign: any;
@@ -16,9 +17,11 @@ type MainContentProps = {
   isLoadingTranslations?: boolean;
   campaignName: string;
   testProgress?: { current: number; total: number } | null;
-  sendAllProgress?: { current: number; total: number } | null; // Add this
+  sendAllProgress?: { current: number; total: number } | null;
   confirmation?: { isOpen: boolean; slug: string | null; onConfirm: (() => void) | null; onCancel: (() => void) | null };
   closeConfirmation?: () => void;
+  success?: { isOpen: boolean; title: string; message: string; onClose: () => void }; // Add this
+  closeSuccess?: () => void; // Add this
   customImages: Record<string, any>;
   customTemplates: Record<string, any>;
   customLpPaths: Record<string, any>;
@@ -49,9 +52,11 @@ export const MainContent = ({
   isLoadingTranslations,
   campaignName,
   testProgress,
-  sendAllProgress, // Add this
+  sendAllProgress,
   confirmation = { isOpen: false, slug: null, onConfirm: null, onCancel: null },
   closeConfirmation = () => {},
+  success = { isOpen: false, title: '', message: '', onClose: () => {} }, // Add default
+  closeSuccess = () => {}, // Add default
   customImages,
   customTemplates,
   customLpPaths,
@@ -91,15 +96,35 @@ export const MainContent = ({
     }
   };
 
+  // Handle success
+  const handleSuccessClose = () => {
+    if (closeSuccess) {
+      closeSuccess();
+    }
+    if (success.onClose) {
+      success.onClose();
+    }
+  };
+
   return (
     <div className={styles.mainContent}>
-      {/* Confirmation Dialog - rendered before the table */}
+      {/* Confirmation Dialog */}
       {confirmation.isOpen && confirmation.slug && (
         <ConfirmationDialog
           isOpen={confirmation.isOpen}
           slug={confirmation.slug}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
+        />
+      )}
+
+      {/* Success Dialog */}
+      {success.isOpen && (
+        <SuccessDialog
+          isOpen={success.isOpen}
+          title={success.title}
+          message={success.message}
+          onClose={handleSuccessClose}
         />
       )}
 

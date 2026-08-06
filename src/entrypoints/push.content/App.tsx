@@ -24,6 +24,8 @@ export default function App() {
 
   const generating = useGeneratingGuard(60_000);
   const { availableTabs, isLoadingTabs } = useAvailableTabs();
+const [useOldNewsletterFamily, setUseOldNewsletterFamily] = useState(false);
+const [oldNewsletterFamilyIds, setOldNewsletterFamilyIds] = useState<Record<string, string>>({});
 
   const {
     campaign,
@@ -86,6 +88,7 @@ const {
   handleSendAll,
   handleTestRow,
   handleSendRow,
+  showSuccess
 } = useCampaignPush(campaign);
 
   const { handleGenerateAllSlugs } = useGenerateCampaign({
@@ -99,7 +102,11 @@ const {
     setCampaign,
     setActiveSlug,
     bumpVersion,
+     useOldNewsletterFamily, // Add this
+  oldNewsletterFamilyIds, // Add this
+   onShowSuccess: showSuccess,
   });
+
 
   const showOverlay = useCallback(() => setVisible(true), []);
   const hideOverlay = useCallback(() => setVisible(false), []);
@@ -157,6 +164,10 @@ const {
             closeConfirmation={closeConfirmation}
             confirmation={confirmation}
              sendAllProgress={sendAllProgress}
+  useOldNewsletterFamily={useOldNewsletterFamily}
+  oldNewsletterFamilyIds={oldNewsletterFamilyIds}
+  onUseOldNewsletterFamily={setUseOldNewsletterFamily}
+  onOldNewsletterIdsChange={setOldNewsletterFamilyIds}
           />
         )}
       </Overlay>
