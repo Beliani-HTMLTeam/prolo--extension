@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import Swal from 'sweetalert2';
 import type { StoredCampaign } from './useCustomOverrides';
 import { showErrorAlert } from '../Alerts';
-
 const OPTION_KEYS = ["[name='shop']", "[name='template']", "[name='language[]']", "[name='cta_lang']"] as const;
 const INPUT_KEYS = [
   "[name='title']",
@@ -43,7 +42,6 @@ const escKeyEvent = new KeyboardEvent('keydown', {
   bubbles: true,
 });
 
-// Confirmation state interface
 export interface ConfirmationState {
   isOpen: boolean;
   slug: string | null;
@@ -58,9 +56,6 @@ export interface SuccessState {
   onClose: () => void;
 }
 
-/**
- * Populates the host form from campaign row data and triggers Test / Send actions.
- */
 export function useCampaignPush(campaign: StoredCampaign | null) {
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [busySlug, setBusySlug] = useState<string | null>(null);
@@ -74,7 +69,7 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     onConfirm: null,
     onCancel: null,
   });
-   const [success, setSuccess] = useState<SuccessState>({
+  const [success, setSuccess] = useState<SuccessState>({
     isOpen: false,
     title: '',
     message: '',
@@ -121,51 +116,67 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     [campaign],
   );
 
+  // Click the Test button
+  const clickTestButton = useCallback(async (): Promise<boolean> => {
+    const button = document.querySelector<HTMLElement>("input#test[value='Test']");
+    if (!button) {
+      await showErrorAlert('Nie znaleziono przycisku test.');
+      return false;
+    }
+    button.click();
+    await delay(1000);
+    return true;
+  }, []);
+
+  // Click the Send button
+  const clickSendButton = useCallback(async (): Promise<boolean> => {
+    const button = document.querySelector<HTMLElement>("input[type='submit'][name='submit'][value='Send']");
+    if (!button) {
+      await showErrorAlert('Nie znaleziono przycisku Send.');
+      return false;
+    }
+    button.click();
+    await delay(1000);
+    return true;
+  }, []);
+
+  // Click the Send button without waiting for reload (for Send All)
+  const clickSendButtonNoWait = useCallback(async (): Promise<void> => {
+    const button = document.querySelector<HTMLElement>("input[type='submit'][name='submit'][value='Send']");
+    if (!button) {
+      await showErrorAlert('Nie znaleziono przycisku Send.');
+      return;
+    }
+    button.click();
+    // Don't wait for reload - just click and continue
+  }, []);
+
   const runPushForSlug = useCallback(
     async (slug: string, isTest: boolean): Promise<boolean> => {
       const populated = await populateRow(slug);
       if (!populated) return false;
 
       await delay(800);
-      
-      // Find the form and prevent its default submission
-      const form = document.querySelector<HTMLFormElement>("[action='/push_notifications.php']");
-      let preventSubmit = false;
-      
-      const handleSubmit = (e: Event) => {
-        if (preventSubmit) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-      
-      if (form) {
-        form.addEventListener('submit', handleSubmit);
-      }
-      
-      try {
-        const buttonSelector = isTest ? "input#test[value='Test']" : "input[type='submit'][name='submit'][value='Send']";
-        const button = document.querySelector<HTMLElement>(buttonSelector);
-        if (!button) {
-          await showErrorAlert('Nie znaleziono przycisku akcji.');
-          return false;
-        }
 
-        preventSubmit = true;
-        button.click();
-        await delay(500);
-        document.dispatchEvent(escKeyEvent);
-        await delay(500);
-        
-        return true;
-      } finally {
-        preventSubmit = false;
-        if (form) {
-          form.removeEventListener('submit', handleSubmit);
-        }
+      if (isTest) {
+        return await clickTestButton();
+      } else {
+        return await clickSendButton();
       }
     },
-    [populateRow],
+    [populateRow, clickTestButton, clickSendButton],
+  );
+
+  const runPushForSlugNoWait = useCallback(
+    async (slug: string): Promise<void> => {
+      const populated = await populateRow(slug);
+      if (!populated) return;
+
+      await delay(800);
+      await clickSendButtonNoWait();
+      // Don't wait for reload
+    },
+    [populateRow, clickSendButtonNoWait],
   );
 
   const handleTest3Random = useCallback(async () => {
@@ -192,12 +203,8 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     setTestProgress(null);
   }, [campaign, isRandomTesting, runPushForSlug]);
 
-  // Show confirmation dialog
   const showConfirmation = useCallback((slug: string, onConfirm: () => void) => {
-    console.log('🔔 Showing confirmation for:', slug);
-    
     const onCancel = () => {
-      console.log('❌ Confirmation cancelled');
       setConfirmation({
         isOpen: false,
         slug: null,
@@ -210,7 +217,6 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
       isOpen: true,
       slug,
       onConfirm: () => {
-        console.log('✅ Confirmation confirmed for:', slug);
         onConfirm();
         setConfirmation({
           isOpen: false,
@@ -223,9 +229,27 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     });
   }, []);
 
+  const showSuccess = useCallback((title: string, message: string): Promise<void> => {
+    return new Promise<void>((resolve) => {
+      setSuccess({
+        isOpen: true,
+        title,
+        message,
+        onClose: () => {
+          setSuccess({
+            isOpen: false,
+            title: '',
+            message: '',
+            onClose: () => {},
+          });
+          resolve();
+        },
+      });
+    });
+  }, []);
+
   const handleSendAll = useCallback(async () => {
     if (!campaign || isSendingAll) return;
-    console.log('📤 Send All clicked');
 
     showConfirmation('ALL ROWS', async () => {
       console.log('🚀 Sending all rows...');
@@ -235,24 +259,22 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
       setSendAllProgress({ current: 0, total: slugs.length });
       
       try {
+        // Send each notification without waiting for page reload
         for (let i = 0; i < slugs.length; i++) {
           const slug = slugs[i];
           setActiveSlug(slug);
           setSendAllProgress({ current: i + 1, total: slugs.length });
-          await runPushForSlug(slug, false);
-          await delay(1500);
+          await runPushForSlugNoWait(slug);
+          await delay(1500); // Wait between sends to avoid overwhelming the server
         }
         
         console.log('✅ All rows sent successfully!');
         
-        // Show completion message
-        await Swal.fire({
-          icon: 'success',
-          title: 'All Sent!',
-          text: `✅ All ${slugs.length} notifications sent successfully!`,
-          timer: 2000,
-          showConfirmButton: true,
-        });
+        // Show success message
+        await showSuccess(
+          'All Sent! 🎉',
+          `All ${slugs.length} notifications sent successfully!`
+        );
         
         // Reset states
         setIsSendingAll(false);
@@ -272,12 +294,11 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
         setSendAllProgress(null);
       }
     });
-  }, [campaign, runPushForSlug, isSendingAll, showConfirmation]);
+  }, [campaign, runPushForSlugNoWait, isSendingAll, showConfirmation, showSuccess]);
 
   const handleTestRow = useCallback(
     async (slug: string) => {
       if (isRandomTesting || isSendingAll || busySlug) return;
-      console.log('🧪 Test row clicked for:', slug);
       setBusySlug(slug);
       await runPushForSlug(slug, true);
       setBusySlug(null);
@@ -288,21 +309,22 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
   const handleSendRow = useCallback(
     async (slug: string) => {
       if (isRandomTesting || isSendingAll || busySlug) return;
-      console.log('📤 Send row clicked for:', slug);
 
       showConfirmation(slug, async () => {
-        console.log('🚀 Sending row:', slug);
         setBusySlug(slug);
         await runPushForSlug(slug, false);
         setBusySlug(null);
+        
+        await showSuccess(
+          'Sent! ✅',
+          `Notification sent to ${slug.toUpperCase()} successfully!`
+        );
       });
     },
-    [runPushForSlug, isRandomTesting, isSendingAll, busySlug, showConfirmation],
+    [runPushForSlug, isRandomTesting, isSendingAll, busySlug, showConfirmation, showSuccess],
   );
 
-  // Close confirmation
   const closeConfirmation = useCallback(() => {
-    console.log('🔚 Closing confirmation');
     if (confirmation.onCancel) {
       confirmation.onCancel();
     } else {
@@ -315,26 +337,7 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     }
   }, [confirmation]);
 
-   const showSuccess = useCallback((title: string, message: string): Promise<void> => {
-    return new Promise<void>((resolve) => {
-      setSuccess({
-        isOpen: true,
-        title,
-        message,
-        onClose: () => {
-          setSuccess({
-            isOpen: false,
-            title: '',
-            message: '',
-            onClose: () => {},
-          });
-          resolve();
-        },
-      });
-    });
-  }, []);
-
-    const closeSuccess = useCallback(() => {
+  const closeSuccess = useCallback(() => {
     setSuccess({
       isOpen: false,
       title: '',
@@ -353,14 +356,14 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     sendAllProgress,
     confirmation,
     closeConfirmation,
+    success,
+    closeSuccess,
+    showSuccess,
     populateRow,
     runPushForSlug,
     handleTest3Random,
     handleSendAll,
     handleTestRow,
     handleSendRow,
-      success,
-    closeSuccess,
-    showSuccess,
   };
 }

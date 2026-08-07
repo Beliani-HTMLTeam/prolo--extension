@@ -189,13 +189,43 @@ const getTemplateIdFromSequence = (
   // CHDE is at position 0, so use the position as offset
   return calculateTemplateId(chdeTemplateId, position);
 };
+// Helper to extract campaign name from full name (for UTM)
+const extractCampaignName = (fullName: string): string => {
+  const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2,4})/;
+  const match = fullName.match(datePattern);
+
+  if (match) {
+    const dateIndex = match.index || 0;
+    const dateEndIndex = dateIndex + match[0].length;
+    let afterDate = fullName.substring(dateEndIndex).trim();
+    afterDate = afterDate.replace(/^[\s\-]+/, '');
+    if (afterDate) {
+      return afterDate;
+    }
+    const beforeDate = fullName.substring(0, dateIndex).trim();
+    return beforeDate.replace(/[\s\-]+$/, '');
+  }
+  return fullName;
+};
+
+// Get UTM campaign value (lowercase, replace spaces with +)
+const getUtmCampaign = (fullName: string): string => {
+  const campaign = extractCampaignName(fullName);
+  return campaign.toLowerCase().replace(/\s+/g, '+');
+};
 
 // URL generation functions
-export function generateClickAction(slug: string, domain: string, campaignName: string, lpPath?: string): string {
-  const domainPart = domain.replace('.', '-');
+export function generateClickAction(
+  slug: string, 
+  domain: string, 
+  campaignName: string, 
+  lpPath?: string
+): string {
   const path = lpPath || generateLpPath(campaignName);
-  return `https://www.beliani.${domain}/content/${path}/?utm_source=PUSH&utm_medium=${path}&utm_campaign=garden+storage`;
+  const utmCampaign = getUtmCampaign(campaignName);
+  return `https://www.beliani.${domain}/content/${path}/?utm_source=PUSH&utm_medium=${path}&utm_campaign=${utmCampaign}`;
 }
+
 
 export function generateIconUrl(): string {
   return 'https://pictureserver.net/static/2025/domainIcon_transparent.png';
