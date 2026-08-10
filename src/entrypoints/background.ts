@@ -131,9 +131,9 @@ export default defineBackground(() => {
   let currentQueueIndex: number = 0;
   let pendingUploadData: any = null;
 
-  setTimeout(() => {
-    initUpdateChecker();
-  }, 50);
+  // setTimeout(() => {
+  //   initUpdateChecker();
+  // }, 50);
 
   browser.action.onClicked.addListener(tab => {
     console.log('Extension icon clicked');
