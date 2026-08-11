@@ -6,6 +6,8 @@ type CampaignActionsProps = {
   hasCampaignData: boolean;
   testProgress?: { current: number; total: number } | null;
   sendAllProgress?: { current: number; total: number } | null;
+    activeSlug?: string | null;
+
   onTest3Random: () => void;
   onSendAll: () => void;
 };
@@ -16,6 +18,7 @@ export const CampaignActions = ({
   hasCampaignData,
   testProgress,
   sendAllProgress,
+  activeSlug,
   onTest3Random,
   onSendAll,
 }: CampaignActionsProps) => {
@@ -23,7 +26,7 @@ export const CampaignActions = ({
   const getTestButtonText = () => {
     if (!isRandomTesting) return '🚀 Test 3 Random';
     if (testProgress) {
-      return `Testing ${testProgress.current}/${testProgress.total}...`;
+      return `Testing ${testProgress.current}/${testProgress.total}...: ${activeSlug}`;
     }
     return 'Testing 3 Random...';
   };

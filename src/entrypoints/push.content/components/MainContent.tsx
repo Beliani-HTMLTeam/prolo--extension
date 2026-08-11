@@ -140,6 +140,7 @@ export const MainContent = ({
             sendAllProgress={sendAllProgress}
             onTest3Random={onTest3Random}
             onSendAll={onSendAll}
+            activeSlug={activeSlug}
           />
 
           <CampaignTable
