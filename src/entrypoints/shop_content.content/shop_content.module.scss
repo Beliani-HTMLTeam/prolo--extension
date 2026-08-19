@@ -1,0 +1,52 @@
+%fixed-button {
+  position: fixed;
+  right: 120px;
+  z-index: 9999;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s, transform 0.1s;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.deactivateButton {
+  @extend %fixed-button;
+  top: 20px;
+  background-color: #dc3545;
+
+  &:hover:not(:disabled) {
+    background-color: #c82333;
+  }
+}
+
+.realUpdateButton {
+  @extend %fixed-button;
+  top: 80px;
+  background-color: #28a745;
+
+  &:hover:not(:disabled) {
+    background-color: #218838;
+  }
+
+  &:disabled {
+    background-color: #6c757d;
+  }
+}
+
+.purgeButton {
+  margin-left: 8px;
+  padding: 4px 12px;
+  cursor: pointer;
+}

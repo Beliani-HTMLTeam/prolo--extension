@@ -1,9 +1,5 @@
 import styles from '../push.module.scss';
-
-type FooterInfoProps = {
-  totalRows: number;
-  campaignTitle: string;
-};
+import { FooterInfoProps } from '../types/push';
 
 export const FooterInfo = ({ totalRows, campaignTitle }: FooterInfoProps) => {
   return (

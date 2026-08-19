@@ -1,16 +1,5 @@
 import styles from '../push.module.scss';
-
-type CampaignActionsProps = {
-  isRandomTesting: boolean;
-  isSendingAll: boolean;
-  hasCampaignData: boolean;
-  testProgress?: { current: number; total: number } | null;
-  sendAllProgress?: { current: number; total: number } | null;
-    activeSlug?: string | null;
-
-  onTest3Random: () => void;
-  onSendAll: () => void;
-};
+import { CampaignActionsProps } from '../types/push';
 
 export const CampaignActions = ({
   isRandomTesting,
@@ -22,9 +11,8 @@ export const CampaignActions = ({
   onTest3Random,
   onSendAll,
 }: CampaignActionsProps) => {
-  // Get button text based on progress
   const getTestButtonText = () => {
-    if (!isRandomTesting) return '🚀 Test 3 Random';
+    if (!isRandomTesting) return 'Test 3 Random';
     if (testProgress) {
       return `Testing ${testProgress.current}/${testProgress.total}...: ${activeSlug}`;
     }
@@ -32,7 +20,7 @@ export const CampaignActions = ({
   };
 
   const getSendAllButtonText = () => {
-    if (!isSendingAll) return '⚠️ Send All';
+    if (!isSendingAll) return 'Send All';
     if (sendAllProgress) {
       return `Sending ${sendAllProgress.current}/${sendAllProgress.total}...`;
     }
@@ -49,8 +37,8 @@ export const CampaignActions = ({
         {getTestButtonText()}
         {isRandomTesting && testProgress && (
           <span className={styles.progressBar}>
-            <span 
-              className={styles.progressFill} 
+            <span
+              className={styles.progressFill}
               style={{ width: `${(testProgress.current / testProgress.total) * 100}%` }}
             />
           </span>
@@ -64,8 +52,8 @@ export const CampaignActions = ({
         {getSendAllButtonText()}
         {isSendingAll && sendAllProgress && (
           <span className={styles.progressBar}>
-            <span 
-              className={styles.progressFill} 
+            <span
+              className={styles.progressFill}
               style={{ width: `${(sendAllProgress.current / sendAllProgress.total) * 100}%` }}
             />
           </span>

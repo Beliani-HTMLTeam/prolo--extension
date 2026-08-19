@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import Swal from 'sweetalert2';
-import type { StoredCampaign } from './useCustomOverrides';
 import { showErrorAlert } from '../Alerts';
+import { ConfirmationState, StoredCampaign, SuccessState } from '../../types/push';
+
 const OPTION_KEYS = ["[name='shop']", "[name='template']", "[name='language[]']", "[name='cta_lang']"] as const;
 const INPUT_KEYS = [
   "[name='title']",
@@ -34,27 +34,6 @@ function setInputValue({ selector, value }: { selector: string; value: string })
 }
 
 const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
-
-const escKeyEvent = new KeyboardEvent('keydown', {
-  key: 'Escape',
-  keyCode: 27,
-  which: 27,
-  bubbles: true,
-});
-
-export interface ConfirmationState {
-  isOpen: boolean;
-  slug: string | null;
-  onConfirm: (() => void) | null;
-  onCancel: (() => void) | null;
-}
-
-export interface SuccessState {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  onClose: () => void;
-}
 
 export function useCampaignPush(campaign: StoredCampaign | null) {
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
@@ -140,15 +119,47 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     return true;
   }, []);
 
-  // Click the Send button without waiting for reload (for Send All)
   const clickSendButtonNoWait = useCallback(async (): Promise<void> => {
-    const button = document.querySelector<HTMLElement>("input[type='submit'][name='submit'][value='Send']");
+    const button = document.querySelector<HTMLInputElement>("input[type='submit'][name='submit'][value='Send']");
     if (!button) {
       await showErrorAlert('Nie znaleziono przycisku Send.');
       return;
     }
+
+    const form = button.closest('form');
+    if (!form) {
+      await showErrorAlert('Nie znaleziono formularza.');
+      return;
+    }
+
+    // Re-use (or create) a hidden iframe
+    let iframe = document.getElementById('push-submit-iframe') as HTMLIFrameElement | null;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'push-submit-iframe';
+      iframe.name = 'push-submit-iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    // Point the form at the iframe → main page will NOT reload
+    const originalTarget = form.getAttribute('target') || '';
+    form.setAttribute('target', 'push-submit-iframe');
+
+    // Click the real button so the name/value "submit=Send" is included
     button.click();
-    // Don't wait for reload - just click and continue
+
+    // Restore the original target after a short moment
+    // (so single-row "Send" later still works normally)
+    setTimeout(() => {
+      if (originalTarget) {
+        form.setAttribute('target', originalTarget);
+      } else {
+        form.removeAttribute('target');
+      }
+    }, 150);
+
+    await delay(400);
   }, []);
 
   const runPushForSlug = useCallback(
@@ -230,7 +241,7 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
   }, []);
 
   const showSuccess = useCallback((title: string, message: string): Promise<void> => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       setSuccess({
         isOpen: true,
         title,
@@ -254,10 +265,10 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
     showConfirmation('ALL ROWS', async () => {
       console.log('🚀 Sending all rows...');
       setIsSendingAll(true);
-      
+
       const slugs = Object.keys(campaign.data);
       setSendAllProgress({ current: 0, total: slugs.length });
-      
+
       try {
         // Send each notification without waiting for page reload
         for (let i = 0; i < slugs.length; i++) {
@@ -267,25 +278,22 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
           await runPushForSlugNoWait(slug);
           await delay(1500); // Wait between sends to avoid overwhelming the server
         }
-        
+
         console.log('✅ All rows sent successfully!');
-        
-        // Show success message
-        await showSuccess(
-          'All Sent! 🎉',
-          `All ${slugs.length} notifications sent successfully!`
-        );
-        
+
         // Reset states
         setIsSendingAll(false);
         setActiveSlug(null);
         setSendAllProgress(null);
-        
+
+        await showSuccess(
+  'All sent! ✅',
+  'All notifications were sent successfully.\nThe page will reload shortly...',
+);
         // Reload the page after a short delay
         setTimeout(() => {
           window.location.reload();
-        }, 500);
-        
+        }, 10000);
       } catch (error) {
         console.error('Error sending all rows:', error);
         await showErrorAlert('Error sending notifications. Please try again.');
@@ -314,11 +322,8 @@ export function useCampaignPush(campaign: StoredCampaign | null) {
         setBusySlug(slug);
         await runPushForSlug(slug, false);
         setBusySlug(null);
-        
-        await showSuccess(
-          'Sent! ✅',
-          `Notification sent to ${slug.toUpperCase()} successfully!`
-        );
+
+        await showSuccess('Sent! ✅', `Notification sent to ${slug.toUpperCase()} successfully!`);
       });
     },
     [runPushForSlug, isRandomTesting, isSendingAll, busySlug, showConfirmation, showSuccess],

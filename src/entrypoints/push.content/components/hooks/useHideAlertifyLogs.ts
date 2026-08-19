@@ -1,9 +1,5 @@
 import { useEffect } from 'react';
 
-/**
- * Hides persistent alertify danger logs on the host page
- * and keeps them hidden via a MutationObserver.
- */
 export function useHideAlertifyLogs() {
   useEffect(() => {
     const hideAlert = () => {

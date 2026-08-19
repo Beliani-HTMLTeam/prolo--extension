@@ -1,78 +1,7 @@
-import { Dispatch, SetStateAction } from 'react';
 import styles from '../push.module.scss';
 import { MainContent } from './MainContent';
 import { Sidebar } from './Sidebar';
-
-type CampaignRowData = {
-  [selector: string]: string;
-};
-
-type StoredCampaign = {
-  id: number;
-  title: string;
-  data: Record<string, CampaignRowData>;
-};
-
-type CustomImage = { enabled: boolean; url: string; isEditing: boolean };
-type CustomTemplate = { value: string; isEditing: boolean };
-type CustomLpPath = { value: string; isEditing: boolean };
-
-type DashboardContentProps = {
-  visible: boolean;
-  campaign: StoredCampaign | null;
-  campaignVersion?: number;
-  activeSlug: string | null;
-  busySlug: string | null;
-  isRandomTesting: boolean;
-  isSendingAll: boolean;
-  campaignName: string;
-  chdeTemplateId: string;
-  pushTranslations: unknown;
-  selectedSlugs: string[];
-  previewImage: { src: string; alt: string } | null;
-  customImages: Record<string, CustomImage>;
-  customTemplates: Record<string, CustomTemplate>;
-  customLpPaths: Record<string, CustomLpPath>;
-  dateWarning?: string | null;
-  isLoadingTranslations?: boolean;
-  isGenerating?: boolean;
-  isLoadingTabs?: boolean;
-  availableTabs?: string[];
-  onHideOverlay: () => void;
-  onSetCampaignName: (name: string) => void;
-  onSetChdeTemplateId: (id: string) => void;
-  onGenerateAll: () => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
-  onToggleSlug: (slug: string) => void;
-  onSetPreviewImage: Dispatch<SetStateAction<{ src: string; alt: string } | null>>;
-  onToggleCustomImage: (slug: string) => void;
-  onUpdateCustomImageUrl: (slug: string, url: string) => void;
-  onSaveCustomImage: (slug: string) => void;
-  onToggleCustomTemplate: (slug: string) => void;
-  onUpdateCustomTemplateValue: (slug: string, value: string) => void;
-  onSaveCustomTemplate: (slug: string) => void;
-  onToggleCustomLpPath: (slug: string) => void;
-  onUpdateCustomLpPath: (slug: string, value: string) => void;
-  onSaveCustomLpPath: (slug: string) => void;
-  onTest3Random: () => void;
-  onSendAll: () => void;
-  onTestRow: (slug: string) => void;
-  onSendRow: (slug: string) => void;
-  testProgress?: { current: number; total: number } | null;
-  sendAllProgress?: { current: number; total: number } | null;
-  onAddCustomTemplate: (slug: string, value: string) => void;
-  onRemoveCustomTemplate: (slug: string) => void;
-  confirmation?: { isOpen: boolean; slug: string | null; onConfirm: (() => void) | null; onCancel: (() => void) | null };
-  closeConfirmation?: () => void;
-  success?: { isOpen: boolean; title: string; message: string; onClose: () => void };
-  closeSuccess?: () => void;
-  // Add these new props
-  useOldNewsletterFamily?: boolean;
-  oldNewsletterFamilyIds?: Record<string, string>;
-  onUseOldNewsletterFamily?: (useOld: boolean) => void;
-  onOldNewsletterIdsChange?: (ids: Record<string, string>) => void;
-};
+import { DashboardContentProps } from '../types/push';
 
 export const DashboardContent = ({
   campaign,
@@ -123,8 +52,8 @@ export const DashboardContent = ({
   closeConfirmation,
   success,
   closeSuccess,
-  useOldNewsletterFamily = false, 
-    oldNewsletterFamilyIds,
+  useOldNewsletterFamily = false,
+  oldNewsletterFamilyIds,
   onUseOldNewsletterFamily,
   onOldNewsletterIdsChange,
 }: DashboardContentProps) => {
@@ -155,10 +84,10 @@ export const DashboardContent = ({
           onAddCustomTemplate={onAddCustomTemplate}
           onRemoveCustomTemplate={onRemoveCustomTemplate}
           customTemplates={customTemplates}
-         useOldNewsletterFamily={useOldNewsletterFamily}
-  oldNewsletterFamilyIds={oldNewsletterFamilyIds}
-  onUseOldNewsletterFamily={onUseOldNewsletterFamily}
-  onOldNewsletterIdsChange={onOldNewsletterIdsChange}
+          useOldNewsletterFamily={useOldNewsletterFamily}
+          oldNewsletterFamilyIds={oldNewsletterFamilyIds}
+          onUseOldNewsletterFamily={onUseOldNewsletterFamily}
+          onOldNewsletterIdsChange={onOldNewsletterIdsChange}
         />
 
         <MainContent

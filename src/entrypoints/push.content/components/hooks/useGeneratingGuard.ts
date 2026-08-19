@@ -1,18 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { showErrorAlert } from '../Alerts';
-
+import { useEffect, useRef, useState } from 'react';
 
 export function useGeneratingGuard(timeoutMs: number = 60000) {
   const [isGenerating, setIsGenerating] = useState(false);
   const isGeneratingRef = useRef(false);
 
-  // Safety timeout to reset isGenerating if stuck
   useEffect(() => {
     if (!isGenerating) return;
 
     const timeoutId = setTimeout(() => {
       if (isGeneratingRef.current) {
-        console.warn('⚠️ Generation timeout after', timeoutMs / 1000, 's');
+        console.warn('Generation timeout after', timeoutMs / 1000, 's');
         isGeneratingRef.current = false;
         setIsGenerating(false);
       }
@@ -23,7 +20,7 @@ export function useGeneratingGuard(timeoutMs: number = 60000) {
 
   const startGenerating = () => {
     if (isGeneratingRef.current) {
-      console.warn('⚠️ Already generating, ignoring start');
+      console.warn('Already generating, ignoring start');
       return false;
     }
     isGeneratingRef.current = true;
@@ -40,7 +37,7 @@ export function useGeneratingGuard(timeoutMs: number = 60000) {
 
   return {
     isGenerating,
-    setIsGenerating, // Expose this for compatibility
+    setIsGenerating,
     isGeneratingRef,
     startGenerating,
     stopGenerating,

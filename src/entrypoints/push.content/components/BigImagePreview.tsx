@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from '../push.module.scss';
-
-type BigImagePreviewProps = {
-  src: string | null;
-  alt: string;
-  onClose: () => void;
-};
+import { BigImagePreviewProps } from '../types/push';
 
 export const BigImagePreview = ({ src, alt, onClose }: BigImagePreviewProps) => {
   const [error, setError] = useState(false);
@@ -21,7 +16,7 @@ export const BigImagePreview = ({ src, alt, onClose }: BigImagePreviewProps) => 
   return (
     <div className={styles.bigImageContainer}>
       <div className={styles.header}>
-        <span className={styles.title}>🖼️ Image Preview: {alt}</span>
+        <span className={styles.title}>Image Preview: {alt}</span>
         <button onClick={onClose} className={styles.btnClose}>
           ✕ Close
         </button>
@@ -49,7 +44,7 @@ export const BigImagePreview = ({ src, alt, onClose }: BigImagePreviewProps) => 
           </div>
         )}
       </div>
-      {!error && <div className={styles.urlText}>📍 {src}</div>}
+      {!error && <div className={styles.urlText}>{src}</div>}
     </div>
   );
 };

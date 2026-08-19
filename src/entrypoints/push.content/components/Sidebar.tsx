@@ -1,39 +1,9 @@
-import { BigImagePreview } from "./BigImagePreview";
-import { CampaignSelector } from "./CampaignSelector";
-import { ChdeTemplateInput } from "./ChdeTemplateInput";
-import { SlugSelector } from "./SlugSelector";
-import { TemplatePreview } from "./TemplatePreview";
+import { BigImagePreview } from './BigImagePreview';
+import { CampaignSelector } from './CampaignSelector';
+import { ChdeTemplateInput } from './ChdeTemplateInput';
+import { SlugSelector } from './SlugSelector';
 import styles from '../push.module.scss';
-
-type SidebarProps = {
-  campaign: any;
-  campaignName: string;
-  chdeTemplateId: string;
-  selectedSlugs: string[];
-  previewImage: { src: string; alt: string } | null;
-  dateWarning?: string | null;
-  isLoadingTranslations?: boolean;
-  isGenerating?: boolean;
-  isLoadingTabs?: boolean;
-  availableTabs?: string[];
-  customTemplates?: Record<string, { value: string; isEditing: boolean }>;
-  oldNewsletterFamilyIds?: Record<string, string>;
-  useOldNewsletterFamily?: boolean;
-  onSetCampaignName: (name: string) => void;
-  onSetChdeTemplateId: (id: string) => void;
-  onGenerateAll: () => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
-  onToggleSlug: (slug: string) => void;
-  onSetPreviewImage: (value: any) => void;
-  onToggleCustomTemplate?: (slug: string) => void;
-  onUpdateCustomTemplateValue?: (slug: string, value: string) => void;
-  onSaveCustomTemplate?: (slug: string) => void;
-  onAddCustomTemplate?: (slug: string, value: string) => void;
-  onRemoveCustomTemplate?: (slug: string) => void;
-  onOldNewsletterIdsChange?: (ids: Record<string, string>) => void;
-  onUseOldNewsletterFamily?: (useOld: boolean) => void;
-};
+import { SidebarProps } from '../types/push';
 
 export const Sidebar = ({
   campaign,
@@ -68,12 +38,10 @@ export const Sidebar = ({
   const [hrTemplateId, setHrTemplateId] = useState(oldNewsletterFamilyIds?.HR || '');
   const [siTemplateId, setSiTemplateId] = useState(oldNewsletterFamilyIds?.SI || '');
 
-  // Initialize from props if available
   useEffect(() => {
     setLocalUseOldFamily(useOldNewsletterFamily);
   }, [useOldNewsletterFamily]);
 
-  // Initialize from props if available
   useEffect(() => {
     if (oldNewsletterFamilyIds?.HR) {
       setHrTemplateId(oldNewsletterFamilyIds.HR);
@@ -90,7 +58,7 @@ export const Sidebar = ({
     }
   };
 
- const handleOldNewsletterChange = (slug: string, value: string) => {
+  const handleOldNewsletterChange = (slug: string, value: string) => {
     const ids: Record<string, string> = {};
     if (slug === 'HR') {
       setHrTemplateId(value);
@@ -101,13 +69,13 @@ export const Sidebar = ({
       if (hrTemplateId) ids.HR = hrTemplateId;
       if (value) ids.SI = value;
     }
-    
+
     if (onOldNewsletterIdsChange) {
       onOldNewsletterIdsChange(ids);
     }
   };
 
- return (
+  return (
     <div className={styles.sidebar}>
       <CampaignSelector
         campaignName={campaignName}
@@ -168,7 +136,7 @@ export const Sidebar = ({
       {localUseOldFamily && (
         <div className={styles.oldNewsletterSection}>
           <div className={styles.oldNewsletterHeader}>
-            <span className={styles.oldNewsletterTitle}>📜 Old Newsletter Family</span>
+            <span className={styles.oldNewsletterTitle}>Old Newsletter Family</span>
             <span className={styles.oldNewsletterHint}>HR and SI - manual IDs</span>
           </div>
           <div className={styles.oldNewsletterRow}>
@@ -203,6 +171,6 @@ export const Sidebar = ({
         onSelectAll={onSelectAll}
         onDeselectAll={onDeselectAll}
       />
-      </div>
+    </div>
   );
 };

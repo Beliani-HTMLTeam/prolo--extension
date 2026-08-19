@@ -2,48 +2,10 @@ import { Dispatch, memo, SetStateAction } from 'react';
 import { BASE_SLUG_CONFIG } from '../helpers/slugMapper';
 import { ImagePreview } from './ImagePreview';
 import styles from '../push.module.scss';
-import { showErrorAlert } from './Alerts';
+import { CampaignRowData, CampaignTableProps, CustomImage, CustomLpPath, CustomTemplate } from '../types/push';
 
 
-type CampaignRowData = {
-  [selector: string]: string;
-};
 
-type StoredCampaign = {
-  id: number;
-  title: string;
-  data: Record<string, CampaignRowData>;
-};
-
-type CustomImage = { enabled: boolean; url: string; isEditing: boolean };
-type CustomTemplate = { value: string; isEditing: boolean };
-type CustomLpPath = { value: string; isEditing: boolean };
-
-type CampaignTableProps = {
-  campaign: StoredCampaign | null;
-  activeSlug: string | null;
-  busySlug: string | null;
-  isRandomTesting: boolean;
-  isSendingAll: boolean;
-  campaignName: string;
-  customImages: Record<string, CustomImage>;
-  customTemplates: Record<string, CustomTemplate>;
-  customLpPaths: Record<string, CustomLpPath>;
-  onToggleCustomImage: (slug: string) => void;
-  onUpdateCustomImageUrl: (slug: string, url: string) => void;
-   onSaveCustomImage: (slug: string, url?: string) => void;
-  onToggleCustomTemplate: (slug: string) => void;
-  onUpdateCustomTemplateValue: (slug: string, value: string) => void;
-  onSaveCustomTemplate: (slug: string) => void;
-  onToggleCustomLpPath: (slug: string) => void;
-  onUpdateCustomLpPath: (slug: string, value: string) => void;
-  onSaveCustomLpPath: (slug: string, value?: string) => void;
-  onSetPreviewImage: Dispatch<SetStateAction<{ src: string; alt: string } | null>>;
-  onTestRow: (slug: string) => void;
-  onSendRow: (slug: string) => void;
-};
-
-// Helper function to extract campaign name from full name
 const extractCampaignName = (fullName: string): string => {
   const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2,4})/;
   const match = fullName.match(datePattern);
@@ -62,18 +24,15 @@ const extractCampaignName = (fullName: string): string => {
   return fullName;
 };
 
-// Helper function to get UTM campaign value (lowercase, replace spaces with +)
 const getUtmCampaign = (fullName: string): string => {
   const campaign = extractCampaignName(fullName);
   return campaign.toLowerCase().replace(/\s+/g, '+');
 };
 
-// Helper component for translation missing warning
 const TranslationWarning = ({ type }: { type: 'title' | 'message' }) => {
   return <span className={styles.translationMissing}>⚠️ {type === 'title' ? 'Title' : 'Message'} not found</span>;
 };
 
-// Helper to check if translation is missing
 const isTranslationMissing = (value: string): boolean => {
   return !value || value.trim() === '' || value.trim() === 'TRANSLATION NOT FOUND';
 };
@@ -87,21 +46,16 @@ const hasValidTranslations = (rowData: CampaignRowData): boolean => {
   return hasTitle && hasMessage;
 };
 
-// Helper function to extract domain and path from URL
 const extractDomainAndPath = (url: string): string => {
   try {
-    // Remove protocol (http:// or https://)
     let cleaned = url.replace(/^https?:\/\//, '');
-    // Remove www. if present
     cleaned = cleaned.replace(/^www\./, '');
-    // Return the domain + path (everything up to ?)
     return cleaned.split('?')[0];
   } catch {
     return url;
   }
 };
 
-// Memoized row component
 const CampaignRow = memo(
   ({
     slug,
@@ -161,7 +115,6 @@ const CampaignRow = memo(
     const customLpPath = customLpPaths[slug];
     const isLpEditing = customLpPath?.isEditing || false;
 
-    // Local state for LP and image inputs
     const [lpEditValue, setLpEditValue] = useState(customLpPath?.value || rowData["[name='lp_path']"] || '');
     const [imageEditValue, setImageEditValue] = useState(customImage?.url || '');
 
@@ -169,35 +122,27 @@ const CampaignRow = memo(
   setImageEditValue(customImage?.url || '');
 }, [customImage]);
 
-    // Handle LP save
     const handleLpSave = useCallback(() => {
       if (lpEditValue.trim()) {
         onSaveCustomLpPath(slug, lpEditValue);
       }
     }, [slug, lpEditValue, onSaveCustomLpPath]);
 
-    // Handle image save
 const handleImageSave = useCallback(() => {
   const trimmedUrl = imageEditValue.trim();
-  console.log('🔄 handleImageSave called for:', slug, 'value:', trimmedUrl);
   
   if (trimmedUrl) {
-    // Directly call onSaveCustomImage with the value
-    // This bypasses the stale state issue
     onSaveCustomImage(slug, trimmedUrl);
   }
 }, [slug, imageEditValue, onSaveCustomImage]);
 
-    // Check if title and message exist
     const titleValue = rowData["[name='title']"] || '';
     const bodyValue = rowData["[name='body']"] || '';
     const hasTitle = !isTranslationMissing(titleValue);
     const hasMessage = !isTranslationMissing(bodyValue);
 
-    // Get UTM campaign value
     const utmCampaign = getUtmCampaign(campaignName);
 
-    // Get language and CTA language values
     const language = rowData["[name='language[]']"] || '';
     const ctaLang = rowData["[name='cta_lang']"] || '';
 
@@ -219,7 +164,6 @@ const handleImageSave = useCallback(() => {
           const isCtaLang = key === "[name='cta_lang']";
           const isShop = key === "[name='shop']";
 
-          // Skip Shop, Language, and CTA Lang columns - they're handled separately
           if (isShop || isLanguage || isCtaLang) {
             return null;
           }
@@ -229,7 +173,6 @@ const handleImageSave = useCallback(() => {
             displayValue = customImage.url;
           }
 
-          // Template column - display only as link (no editing)
           if (isTemplate) {
             const templateId = customTemplate?.value || value;
             const prologisticsUrl = `https://www.prologistics.info/news_email.php?id=${templateId}`;
@@ -247,7 +190,6 @@ const handleImageSave = useCallback(() => {
             );
           }
 
-          // LP Path column
           if (isLpPath) {
             return (
               <td key={key} className={styles.colPath}>
@@ -298,7 +240,6 @@ const handleImageSave = useCallback(() => {
             );
           }
 
-          // Click Action column
           if (isClickAction) {
             const domain = BASE_SLUG_CONFIG[slug]?.domain || '';
             const currentLpPath = customLpPaths[slug]?.value || rowData["[name='lp_path']"] || campaignName;
@@ -320,7 +261,6 @@ const handleImageSave = useCallback(() => {
             );
           }
 
-          // Title column - show warning if missing
           if (isTitle) {
             return (
               <td key={key} className={styles.colText}>
@@ -329,7 +269,6 @@ const handleImageSave = useCallback(() => {
             );
           }
 
-          // Body/Message column - show warning if missing
           if (isBody) {
             return (
               <td key={key} className={styles.colText}>
@@ -367,7 +306,6 @@ const handleImageSave = useCallback(() => {
           );
         })}
 
-        {/* Combined Languages column - always shows both languages */}
         <td key="languages" className={styles.colLanguages}>
           <div className={styles.languagesContainer}>
             <span className={styles.languageItem}>{language || '-'}</span>
@@ -375,7 +313,6 @@ const handleImageSave = useCallback(() => {
           </div>
         </td>
 
-        {/* Custom Image Column */}
        <td className={styles.colCustomImage}>
   <div className={styles.cellWrapper}>
     <div className={styles.customImageContainer}>
@@ -385,7 +322,6 @@ const handleImageSave = useCallback(() => {
           checked={isCustomEnabled}
           onChange={() => {
             if (!isCustomEnabled) {
-              // When enabling, set the current image URL from rowData
               const currentImageUrl = rowData["[name='image']"] || '';
               setImageEditValue(currentImageUrl);
               onToggleCustomImage(slug);
@@ -424,7 +360,6 @@ const handleImageSave = useCallback(() => {
   </div>
 </td>
 
-        {/* Actions Column */}
         <td className={styles.colActions}>
           <div className={styles.tableActionBtns}>
             <button
@@ -450,7 +385,6 @@ const handleImageSave = useCallback(() => {
 
 CampaignRow.displayName = 'CampaignRow';
 
-// Main CampaignTable component
 export const CampaignTable = memo(
   ({
     campaign,
@@ -479,17 +413,12 @@ export const CampaignTable = memo(
       return null;
     }
 
-    // Filter out slugs that don't have valid translations
     const filteredEntries = Object.entries(campaign.data)
       .filter(([slug, rowData]) => {
         const hasValid = hasValidTranslations(rowData);
-        if (!hasValid) {
-          console.log(`🔍 Filtering out ${slug} - missing translations`);
-        }
         return hasValid;
       });
 
-    // If no entries have valid translations, show a message
     if (filteredEntries.length === 0) {
       return (
         <div className={styles.emptyTranslations}>
@@ -512,7 +441,6 @@ export const CampaignTable = memo(
                   let displayName = header;
                   let colClass = styles.colDefault;
 
-                  // Skip Shop, Language, and CTA Lang columns
                   if (header === "[name='shop']" || header === "[name='language[]']" || header === "[name='cta_lang']") {
                     return null;
                   }
@@ -549,7 +477,6 @@ export const CampaignTable = memo(
                     </th>
                   );
                 })}
-                {/* Combined Languages column header */}
                 <th className={styles.colLanguages}>Languages</th>
                 <th className={styles.colCustomImage}>Custom Image</th>
                 <th className={styles.colActions}>Actions</th>
@@ -585,7 +512,6 @@ export const CampaignTable = memo(
               ))}
             </tbody>
           </table>
-          {/* Show count of filtered out slugs */}
           {Object.keys(campaign.data).length !== filteredEntries.length && (
             <div className={styles.filteredNotice}>
               <span>

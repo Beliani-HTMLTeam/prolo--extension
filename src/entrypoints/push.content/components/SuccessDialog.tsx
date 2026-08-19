@@ -1,11 +1,6 @@
 import styles from '../push.module.scss';
+import { SuccessDialogProps } from '../types/push';
 
-type SuccessDialogProps = {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  onClose: () => void;
-};
 
 export const SuccessDialog = ({
   isOpen,

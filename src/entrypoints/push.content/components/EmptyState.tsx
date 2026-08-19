@@ -1,9 +1,7 @@
 import styles from '../push.module.scss';
+import { EmptyStateProps } from '../types/push';
 
-type EmptyStateProps = {
-  isGenerating?: boolean;
-  isLoadingTranslations?: boolean;
-};
+
 
 export const EmptyState = ({ isGenerating, isLoadingTranslations }: EmptyStateProps) => {
   let message = 'Select a campaign name and click "Generate All".';

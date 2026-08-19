@@ -24,8 +24,8 @@ export default function App() {
 
   const generating = useGeneratingGuard(60_000);
   const { availableTabs, isLoadingTabs } = useAvailableTabs();
-const [useOldNewsletterFamily, setUseOldNewsletterFamily] = useState(false);
-const [oldNewsletterFamilyIds, setOldNewsletterFamilyIds] = useState<Record<string, string>>({});
+  const [useOldNewsletterFamily, setUseOldNewsletterFamily] = useState(false);
+  const [oldNewsletterFamilyIds, setOldNewsletterFamilyIds] = useState<Record<string, string>>({});
 
   const {
     campaign,
@@ -74,22 +74,24 @@ const [oldNewsletterFamilyIds, setOldNewsletterFamilyIds] = useState<Record<stri
     removeCustomTemplate,
   } = useCustomOverrides(campaign, setCampaign, campaignName, bumpVersion);
 
-const {
-  activeSlug,
-  setActiveSlug,
-  busySlug,
-  isRandomTesting,
-  isSendingAll,
-  testProgress,
-  confirmation,
-  closeConfirmation,
-  handleTest3Random,
-  sendAllProgress,
-  handleSendAll,
-  handleTestRow,
-  handleSendRow,
-  showSuccess
-} = useCampaignPush(campaign);
+  const {
+    activeSlug,
+    setActiveSlug,
+    busySlug,
+    isRandomTesting,
+    isSendingAll,
+    testProgress,
+    confirmation,
+    closeConfirmation,
+    handleTest3Random,
+    sendAllProgress,
+    handleSendAll,
+    handleTestRow,
+    handleSendRow,
+    showSuccess,
+    success,
+    closeSuccess
+  } = useCampaignPush(campaign);
 
   const { handleGenerateAllSlugs } = useGenerateCampaign({
     campaignName,
@@ -102,11 +104,10 @@ const {
     setCampaign,
     setActiveSlug,
     bumpVersion,
-     useOldNewsletterFamily, // Add this
-  oldNewsletterFamilyIds, // Add this
-   onShowSuccess: showSuccess,
+    useOldNewsletterFamily, // Add this
+    oldNewsletterFamilyIds, // Add this
+    onShowSuccess: showSuccess,
   });
-
 
   const showOverlay = useCallback(() => setVisible(true), []);
   const hideOverlay = useCallback(() => setVisible(false), []);
@@ -151,8 +152,8 @@ const {
             onToggleCustomTemplate={toggleCustomTemplate}
             onUpdateCustomTemplateValue={updateCustomTemplateValue}
             onSaveCustomTemplate={saveCustomTemplate}
-             onAddCustomTemplate={addCustomTemplate}
-  onRemoveCustomTemplate={removeCustomTemplate}
+            onAddCustomTemplate={addCustomTemplate}
+            onRemoveCustomTemplate={removeCustomTemplate}
             onToggleCustomLpPath={toggleCustomLpPath}
             onUpdateCustomLpPath={updateCustomLpPath}
             onSaveCustomLpPath={saveCustomLpPath}
@@ -163,11 +164,13 @@ const {
             testProgress={testProgress}
             closeConfirmation={closeConfirmation}
             confirmation={confirmation}
-             sendAllProgress={sendAllProgress}
-  useOldNewsletterFamily={useOldNewsletterFamily}
-  oldNewsletterFamilyIds={oldNewsletterFamilyIds}
-  onUseOldNewsletterFamily={setUseOldNewsletterFamily}
-  onOldNewsletterIdsChange={setOldNewsletterFamilyIds}
+            sendAllProgress={sendAllProgress}
+            useOldNewsletterFamily={useOldNewsletterFamily}
+            oldNewsletterFamilyIds={oldNewsletterFamilyIds}
+            onUseOldNewsletterFamily={setUseOldNewsletterFamily}
+            onOldNewsletterIdsChange={setOldNewsletterFamilyIds}
+            closeSuccess={closeSuccess}
+            success={success}
           />
         )}
       </Overlay>

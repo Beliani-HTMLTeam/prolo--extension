@@ -1,13 +1,6 @@
 import styles from '../push.module.scss';
 import { SLUG_ORDER } from '../helpers/slugMapper';
-
-type SlugSelectorProps = {
-  selectedSlugs: string[];
-  campaign: { data: Record<string, any> } | null;
-  onToggleSlug: (slug: string) => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
-};
+import { SlugSelectorProps } from '../types/push';
 
 export const SlugSelector = ({
   selectedSlugs,
@@ -36,19 +29,10 @@ export const SlugSelector = ({
         {SLUG_ORDER.map(slug => {
           const templateId = getTemplateIdForSlug(slug);
           return (
-            <label
-              key={slug}
-              className={`${styles.slugChip} ${selectedSlugs.includes(slug) ? styles.selected : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedSlugs.includes(slug)}
-                onChange={() => onToggleSlug(slug)}
-              />
+            <label key={slug} className={`${styles.slugChip} ${selectedSlugs.includes(slug) ? styles.selected : ''}`}>
+              <input type="checkbox" checked={selectedSlugs.includes(slug)} onChange={() => onToggleSlug(slug)} />
               <span className={styles.slugName}>{slug}</span>
-              {templateId && (
-                <span className={styles.slugTemplateId}>→ {templateId}</span>
-              )}
+              {templateId && <span className={styles.slugTemplateId}>→ {templateId}</span>}
             </label>
           );
         })}

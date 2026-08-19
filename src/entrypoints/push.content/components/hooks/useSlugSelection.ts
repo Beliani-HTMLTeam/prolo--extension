@@ -1,9 +1,6 @@
 import { useCallback, useState } from 'react';
 import { SLUG_ORDER } from '../../helpers/slugMapper';
 
-/**
- * Manages which market slugs are selected for generation / sending.
- */
 export function useSlugSelection(initialSlugs: string[] = SLUG_ORDER) {
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>(initialSlugs);
 

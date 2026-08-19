@@ -1,10 +1,6 @@
 import { fetchCachedTabs } from '@/entrypoints/issue.content/api/issueData';
 import { useEffect, useState } from 'react';
 
-/**
- * Loads available campaign tabs (spreadsheet sheet names) for the current year.
- * Does NOT auto-select a tab — campaign name stays empty until the user picks one.
- */
 export function useAvailableTabs() {
   const [availableTabs, setAvailableTabs] = useState<string[]>([]);
   const [isLoadingTabs, setIsLoadingTabs] = useState(false);

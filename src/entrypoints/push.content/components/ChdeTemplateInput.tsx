@@ -1,20 +1,6 @@
 import styles from '../push.module.scss';
 import { isValidTemplateId, SLUG_ORDER } from '../helpers/slugMapper';
-
-type ChdeTemplateInputProps = {
-  chdeTemplateId: string;
-  isGenerating?: boolean;
-  isLoadingTranslations?: boolean;
-  campaignName?: string;
-  onSetChdeTemplateId: (id: string) => void;
-  onGenerateAll: () => void;
-  customTemplates?: Record<string, { value: string; isEditing: boolean }>;
-  onToggleCustomTemplate?: (slug: string) => void;
-  onUpdateCustomTemplateValue?: (slug: string, value: string) => void;
-  onSaveCustomTemplate?: (slug: string) => void;
-  onAddCustomTemplate?: (slug: string, value: string) => void;
-  onRemoveCustomTemplate?: (slug: string) => void;
-};
+import { ChdeTemplateInputProps } from '../types/push';
 
 export const ChdeTemplateInput = ({
   chdeTemplateId,
@@ -36,28 +22,29 @@ export const ChdeTemplateInput = ({
   const [newTemplateValue, setNewTemplateValue] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // Log when customTemplates changes
-  useEffect(() => {
-    console.log('🔄 ChdeTemplateInput - customTemplates updated:', customTemplates);
-  }, [customTemplates]);
-
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
   }, []);
 
-  const handleToggleTemplate = useCallback((slug: string) => {
-    if (onToggleCustomTemplate) {
-      onToggleCustomTemplate(slug);
-      setEditingSlug(slug);
-    }
-  }, [onToggleCustomTemplate]);
+  const handleToggleTemplate = useCallback(
+    (slug: string) => {
+      if (onToggleCustomTemplate) {
+        onToggleCustomTemplate(slug);
+        setEditingSlug(slug);
+      }
+    },
+    [onToggleCustomTemplate],
+  );
 
-  const handleSaveTemplate = useCallback((slug: string) => {
-    if (onSaveCustomTemplate) {
-      onSaveCustomTemplate(slug);
-      setEditingSlug(null);
-    }
-  }, [onSaveCustomTemplate]);
+  const handleSaveTemplate = useCallback(
+    (slug: string) => {
+      if (onSaveCustomTemplate) {
+        onSaveCustomTemplate(slug);
+        setEditingSlug(null);
+      }
+    },
+    [onSaveCustomTemplate],
+  );
 
   const handleCancelEdit = useCallback(() => {
     setEditingSlug(null);
@@ -65,7 +52,6 @@ export const ChdeTemplateInput = ({
 
   const handleAddTemplate = useCallback(() => {
     if (newTemplateSlug && newTemplateValue && onAddCustomTemplate) {
-      console.log('📝 Adding template:', newTemplateSlug, newTemplateValue);
       onAddCustomTemplate(newTemplateSlug, newTemplateValue);
       setNewTemplateSlug('');
       setNewTemplateValue('');
@@ -73,17 +59,17 @@ export const ChdeTemplateInput = ({
     }
   }, [newTemplateSlug, newTemplateValue, onAddCustomTemplate]);
 
-  const handleRemoveTemplate = useCallback((slug: string) => {
-    if (onRemoveCustomTemplate) {
-      console.log('🗑️ Removing template:', slug);
-      onRemoveCustomTemplate(slug);
-    }
-  }, [onRemoveCustomTemplate]);
+  const handleRemoveTemplate = useCallback(
+    (slug: string) => {
+      if (onRemoveCustomTemplate) {
+        onRemoveCustomTemplate(slug);
+      }
+    },
+    [onRemoveCustomTemplate],
+  );
 
-  // Get all slugs that don't have overrides yet
   const availableSlugs = SLUG_ORDER.filter(slug => !customTemplates[slug]);
 
-  // Check if there are any custom templates
   const hasCustomTemplates = Object.keys(customTemplates).length > 0;
 
   return (
@@ -112,7 +98,6 @@ export const ChdeTemplateInput = ({
         </button>
       </div>
 
-      {/* Expandable section for slug template overrides */}
       <div className={styles.templateOverridesSection}>
         <div className={styles.overridesHeader}>
           <button
@@ -122,9 +107,7 @@ export const ChdeTemplateInput = ({
           >
             {isExpanded ? '▼' : '▶'} Slug Template Overrides
             {hasCustomTemplates && (
-              <span className={styles.overrideCount}>
-                ({Object.keys(customTemplates).length})
-              </span>
+              <span className={styles.overrideCount}>({Object.keys(customTemplates).length})</span>
             )}
           </button>
           {isExpanded && (
@@ -140,7 +123,6 @@ export const ChdeTemplateInput = ({
 
         {isExpanded && (
           <div className={styles.templateOverridesList}>
-            {/* Add new override form */}
             {showAddForm && (
               <div className={styles.addOverrideForm}>
                 <select
@@ -185,9 +167,7 @@ export const ChdeTemplateInput = ({
             )}
 
             {Object.keys(customTemplates).length === 0 && !showAddForm && (
-              <div className={styles.noOverrides}>
-                No template overrides yet. Click "Add" to create one.
-              </div>
+              <div className={styles.noOverrides}>No template overrides yet. Click "Add" to create one.</div>
             )}
 
             {Object.entries(customTemplates).map(([slug, template]) => (

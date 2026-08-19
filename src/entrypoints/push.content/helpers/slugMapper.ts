@@ -10,7 +10,6 @@ export interface SlugConfig {
   lpPath: string;
 }
 
-// Base configuration without template IDs (they'll be calculated)
 export interface BaseSlugConfig {
   shop: string;
   templateOffset: number;
@@ -18,10 +17,9 @@ export interface BaseSlugConfig {
   ctaLang: string;
   domain: string;
   lpPath?: string;
-  isOldNewsletter?: boolean; // Flag for old newsletter family
+  isOldNewsletter?: boolean; 
 }
 
-// Base mapping with template offsets instead of hardcoded IDs
 const BASE_SLUG_CONFIG: Record<string, BaseSlugConfig> = {
   'CHDE': { shop: '1', templateOffset: 0, language: 'german', ctaLang: 'german', domain: 'ch' },
   'CHFR': { shop: '1', templateOffset: 1, language: 'french', ctaLang: 'french', domain: 'ch' },
@@ -48,14 +46,11 @@ const BASE_SLUG_CONFIG: Record<string, BaseSlugConfig> = {
   'UK': { shop: '2', templateOffset: 22, language: 'english', ctaLang: 'english', domain: 'co.uk' },
 };
 
-// OLD newsletter family - HR and SI with their own offsets but still user input required
-// These are not incremented from CHDE, they have their own starting point
 const OLD_NEWSLETTER_OFFSETS: Record<string, number> = {
   'HR': 0,
   'SI': 1,
 };
 
-// Helper to get current date in YYYYMMDD format
 export function getCurrentDate(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -64,7 +59,6 @@ export function getCurrentDate(): string {
   return `${year}${month}${day}`;
 }
 
-// Parse result with warning flag
 export interface ParseResult {
   date: string;
   version: string;
@@ -75,16 +69,13 @@ export interface ParseResult {
   warning?: string;
 }
 
-// Generate LP path from campaign name with warning
 export function generateLpPath(campaignName: string): string {
   const result = parseCampaignName(campaignName);
   const shortYear = result.year.slice(-2);
   return `lp${shortYear}-${result.month}-${result.day}`;
 }
 
-// Enhanced parse campaign name to extract date and version
 export function parseCampaignName(campaignName: string): ParseResult {
-  // Default values
   let date = getCurrentDate();
   let day = '26';
   let month = '07';
@@ -93,7 +84,6 @@ export function parseCampaignName(campaignName: string): ParseResult {
   let hasDate = false;
   let warning: string | undefined;
 
-  // Try multiple date patterns in order of specificity
   
   // Pattern 1: DD.MM.YY (e.g., 24.07.26) - most common
   let dateMatch = campaignName.match(/(\d{2})[\.](\d{2})[\.](\d{2})(?!\d)/);
@@ -148,7 +138,6 @@ export function parseCampaignName(campaignName: string): ParseResult {
   // Construct YYYYMMDD date
   date = `${year}${month}${day}`;
   
-  // Try to extract version from campaign name (e.g., ver=14 or ver14 or v14)
   const versionMatch = campaignName.match(/ver[=\s]*(\d+)/i) || campaignName.match(/v(\d+)/i);
   if (versionMatch) {
     version = versionMatch[1];
@@ -164,12 +153,10 @@ const getTemplateIdFromSequence = (
 ): string => {
   const upperSlug = slug.toUpperCase();
   
-  // If it's HR or SI and has manual ID, use it
   if ((upperSlug === 'HR' || upperSlug === 'SI') && oldNewsletterFamilyIds?.[upperSlug]) {
     return oldNewsletterFamilyIds[upperSlug];
   }
   
-  // Get the increment sequence (excluding HR and SI if they have manual IDs)
   const incrementSlugs = SLUG_ORDER.filter(s => {
     if (s === 'HR' || s === 'SI') {
       return !(oldNewsletterFamilyIds && oldNewsletterFamilyIds[s]);
@@ -177,19 +164,16 @@ const getTemplateIdFromSequence = (
     return true;
   });
   
-  // Find the position of this slug in the increment sequence
   const position = incrementSlugs.indexOf(upperSlug);
   
   if (position === -1) {
-    // Fallback: use the original templateOffset
     const baseConfig = BASE_SLUG_CONFIG[upperSlug];
     return calculateTemplateId(chdeTemplateId, baseConfig?.templateOffset || 0);
   }
   
-  // CHDE is at position 0, so use the position as offset
   return calculateTemplateId(chdeTemplateId, position);
 };
-// Helper to extract campaign name from full name (for UTM)
+
 const extractCampaignName = (fullName: string): string => {
   const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2,4})/;
   const match = fullName.match(datePattern);
@@ -208,13 +192,11 @@ const extractCampaignName = (fullName: string): string => {
   return fullName;
 };
 
-// Get UTM campaign value (lowercase, replace spaces with +)
 const getUtmCampaign = (fullName: string): string => {
   const campaign = extractCampaignName(fullName);
   return campaign.toLowerCase().replace(/\s+/g, '+');
 };
 
-// URL generation functions
 export function generateClickAction(
   slug: string, 
   domain: string, 
@@ -238,7 +220,6 @@ export function generateImageUrl(campaignName: string): string {
   return `https://pictureserver.net/static/${year}/${fullDate}push.png?ver=${version}`;
 }
 
-// Generate dynamic image with custom parameters
 export function generateCustomImageUrl(
   campaignName: string,
   customParams?: {
@@ -260,7 +241,6 @@ export function generateCustomImageUrl(
   return `${baseUrl}/${year}/${fullDate}${imageName}.${extension}?ver=${ver}`;
 }
 
-// Get full config with calculated template IDs and URLs
 const shouldUseOldNewsletterFamily = (
   slug: string, 
   oldNewsletterFamilyIds?: Record<string, string>
@@ -272,7 +252,6 @@ const shouldUseOldNewsletterFamily = (
   return false;
 };
 
-// Get the list of slugs that should be in the increment sequence
 const getIncrementSlugs = (oldNewsletterFamilyIds?: Record<string, string>): string[] => {
   return SLUG_ORDER.filter(slug => {
     // Skip HR and SI if they're using old newsletter family (manual IDs)
@@ -283,7 +262,6 @@ const getIncrementSlugs = (oldNewsletterFamilyIds?: Record<string, string>): str
   });
 };
 
-// Update getSlugConfig function
 export function getSlugConfig(
   slug: string, 
   chdeTemplateId: string, 
@@ -296,10 +274,8 @@ export function getSlugConfig(
   
   if (!baseConfig) return null;
   
-  // Use the helper to get the template ID
   const templateId = getTemplateIdFromSequence(upperSlug, chdeTemplateId, oldNewsletterFamilyIds);
   
-  // Use custom LP path if provided, otherwise generate from campaign name
   const lpPath = customLpPath || generateLpPath(campaignName);
   
   return {
@@ -314,19 +290,16 @@ export function getSlugConfig(
   };
 }
 
-// Order for display
 export const SLUG_ORDER = [
   'CHDE', 'CHFR', 'AT', 'BENL', 'BEFR', 'CZ', 'DE', 'DK', 'FI', 'FR', 
   'HR', 'HU', 'IT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SE', 'SI', 
   'SK', 'ES', 'UK'
 ];
 
-// Calculate template ID based on CHDE ID and offset
 export function calculateTemplateId(chdeTemplateId: string, offset: number): string {
   return (parseInt(chdeTemplateId) + offset).toString();
 }
 
-// Get push translations for a slug
 export function getPushTranslationsForSlug(
   slug: string, 
   translations: PushTranslations | null
@@ -342,7 +315,6 @@ export function getPushTranslationsForSlug(
   return { title, message };
 }
 
-// Build complete row data from slug
 export function buildRowDataFromSlug(
   slug: string,
   chdeTemplateId: string,
@@ -375,7 +347,6 @@ export function buildRowDataFromSlug(
   return rowData;
 }
 
-// Generate campaign data from all slugs with dynamic template IDs
 export function generateCampaignData(
   slugs: string[],
   chdeTemplateId: string,
@@ -428,12 +399,10 @@ export function generateCampaignData(
   return data;
 }
 
-// Get list of all available slugs in order
 export function getAllSlugs(): string[] {
   return SLUG_ORDER;
 }
 
-// Validate CHDE template ID format
 export function isValidTemplateId(templateId: string): boolean {
   return /^\d+$/.test(templateId) && parseInt(templateId) > 0;
 }

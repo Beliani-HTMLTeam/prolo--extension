@@ -2,26 +2,9 @@ import { useCallback, useState } from 'react';
 import Swal from 'sweetalert2';
 import { showErrorAlert } from '../Alerts';
 import { BASE_SLUG_CONFIG } from '../../helpers/slugMapper';
+import { CustomFieldState, CustomImageState, StoredCampaign } from '../../types/push';
 
 
-export interface StoredCampaign {
-  id: number;
-  title: string;
-  data: Record<string, Record<string, string>>;
-}
-
-export interface CustomImageState {
-  enabled: boolean;
-  url: string;
-  isEditing: boolean;
-}
-
-export interface CustomFieldState {
-  value: string;
-  isEditing: boolean;
-}
-
-/** Extract campaign name from full name (strip date prefix/suffix). */
 export const extractCampaignName = (fullName: string): string => {
   const datePattern = /(\d{2}[\.\-]\d{2}[\.\-]\d{2,4})/;
   const match = fullName.match(datePattern);
@@ -40,16 +23,12 @@ export const extractCampaignName = (fullName: string): string => {
   return fullName;
 };
 
-/** UTM campaign value: lowercase, spaces → + */
 export const getUtmCampaign = (fullName: string): string => {
   const campaign = extractCampaignName(fullName);
   return campaign.toLowerCase().replace(/\s+/g, '+');
 };
 
-/**
- * Manages per-slug custom image, template ID, and LP path overrides,
- * including persistence back into the stored campaign.
- */
+
 export function useCustomOverrides(
   campaign: StoredCampaign | null,
   setCampaign: (c: StoredCampaign | null) => void,
@@ -60,7 +39,6 @@ export function useCustomOverrides(
   const [customTemplates, setCustomTemplates] = useState<Record<string, CustomFieldState>>({});
   const [customLpPaths, setCustomLpPaths] = useState<Record<string, CustomFieldState>>({});
 
-  // ---- Image ----
   const toggleCustomImage = useCallback(
     (slug: string) => {
       setCustomImages(prev => {
@@ -81,7 +59,6 @@ export function useCustomOverrides(
   );
 
 const updateCustomImageUrl = useCallback((slug: string, url: string) => {
-  console.log('📝 updateCustomImageUrl called for:', slug, url);
   setCustomImages(prev => {
     const newState = {
       ...prev,
@@ -91,26 +68,21 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
         isEditing: prev[slug]?.isEditing || true,
       },
     };
-    console.log('📝 New customImages state:', newState);
     return newState;
   });
 }, []);
 
  const saveCustomImage = useCallback(
   async (slug: string, newUrl?: string) => {
-    console.log('💾 saveCustomImage called for:', slug, 'newUrl:', newUrl);
-    console.log('📝 customImages state:', customImages);
     
     if (!campaign) {
       await showErrorAlert('No campaign loaded.');
       return;
     }
     
-    // Use the passed URL directly, or fall back to the state
     const customImage = customImages[slug];
     const urlToSave = newUrl || customImage?.url;
     
-    console.log('📝 URL to save:', urlToSave);
     
     if (!customImage?.enabled && !newUrl) {
       await showErrorAlert('Please enable custom image first.');
@@ -122,9 +94,6 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
       return;
     }
 
-    console.log('💾 Saving custom image for:', slug, urlToSave);
-
-    // Create a deep copy of the campaign data
     const updatedData = JSON.parse(JSON.stringify(campaign.data));
     if (updatedData[slug]) {
       updatedData[slug] = {
@@ -138,13 +107,10 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
       data: updatedData,
     };
     
-    // Save to storage
     await browser.storage.local.set({ push_campaign: updatedCampaign });
     
-    // Update campaign state
     setCampaign(updatedCampaign);
     
-    // Update customImages state to hide editing and store the new URL
     setCustomImages(prev => ({ 
       ...prev, 
       [slug]: { 
@@ -154,7 +120,6 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
       } 
     }));
 
-    // Bump version to force re-render of the table
     bumpVersion();
 
     await Swal.fire({
@@ -167,7 +132,6 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
   },
   [campaign, customImages, setCampaign, bumpVersion],
 );
-  // ---- Template ----
   const toggleCustomTemplate = useCallback(
     (slug: string) => {
       setCustomTemplates(prev => {
@@ -219,7 +183,6 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
     [campaign, customTemplates, setCampaign, bumpVersion],
   );
 
-  // ---- LP Path ----
   const toggleCustomLpPath = useCallback(
     (slug: string) => {
       setCustomLpPaths(prev => {
@@ -293,7 +256,6 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
     [campaign, customLpPaths, campaignName, setCampaign, bumpVersion],
   );
 
-  // ---- Add/Remove Template ----
   const addCustomTemplate = useCallback((slug: string, value: string) => {
     setCustomTemplates(prev => ({
       ...prev,
@@ -312,7 +274,6 @@ const updateCustomImageUrl = useCallback((slug: string, url: string) => {
     });
   }, []);
 
-  /** Apply in-memory custom overrides onto freshly generated campaign data. */
   const applyOverridesToData = useCallback(
     (campaignData: Record<string, Record<string, string>>): Record<string, Record<string, string>> => {
       const slugs = Object.keys(campaignData);

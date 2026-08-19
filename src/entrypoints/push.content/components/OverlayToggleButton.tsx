@@ -1,13 +1,10 @@
 import styles from '../push.module.scss';
-
-type OverlayToggleButtonProps = {
-  onClick: () => void;
-};
+import { OverlayToggleButtonProps } from '../types/push';
 
 export const OverlayToggleButton = ({ onClick }: OverlayToggleButtonProps) => {
   return (
     <button onClick={onClick} className={styles.overlayToggleButton}>
-      📊 Dashboard
+      Push Dashboard
     </button>
   );
 };

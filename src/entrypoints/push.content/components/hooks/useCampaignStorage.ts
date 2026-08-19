@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { StoredCampaign } from './useCustomOverrides';
+import { StoredCampaign } from '../../types/push';
 
-/**
- * Owns campaign state, version counter (for forced re-renders),
- * and clears stale storage on mount.
- */
 export function useCampaignStorage() {
   const [campaign, setCampaign] = useState<StoredCampaign | null>(null);
   const [campaignVersion, setCampaignVersion] = useState(0);

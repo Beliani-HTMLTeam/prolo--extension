@@ -1,14 +1,6 @@
-import { generateImageUrl, generateLpPath, parseCampaignName } from "../helpers/slugMapper";
+import { generateImageUrl, generateLpPath, parseCampaignName } from '../helpers/slugMapper';
 import styles from '../push.module.scss';
-
-type CampaignSelectorProps = {
-  campaignName: string;
-  availableTabs: string[];
-  isLoadingTabs?: boolean;
-  isLoadingTranslations?: boolean;
-  dateWarning?: string | null;
-  onSetCampaignName: (name: string) => void;
-};
+import { CampaignSelectorProps } from '../types/push';
 
 export const CampaignSelector = ({
   campaignName,
@@ -43,11 +35,11 @@ export const CampaignSelector = ({
       {dateWarning && <div className={styles.dateWarning}>{dateWarning}</div>}
       {campaignName && parsedDate && (
         <div className={styles.metaRowInfo}>
-          <span>📅 Date: {parsedDate.date}</span>
-          <span>🔢 Version: {parsedDate.version}</span>
-          <span>🖼️ Image: {generateImageUrl(campaignName)}</span>
-          <span>🔗 LP Path: {generateLpPath(campaignName)}</span>
-          {!parsedDate.hasDate && <span>⚠️ No date in name</span>}
+          <span>Date: {parsedDate.date}</span>
+          <span>Version: {parsedDate.version}</span>
+          <span>Image: {generateImageUrl(campaignName)}</span>
+          <span>LP Path: {generateLpPath(campaignName)}</span>
+          {!parsedDate.hasDate && <span>No date in name</span>}
         </div>
       )}
       {isLoadingTranslations && <div className={styles.loadingIndicator}>Loading translations...</div>}
