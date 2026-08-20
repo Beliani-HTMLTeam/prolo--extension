@@ -21,6 +21,8 @@ export type ChecklistTableRow = {
   nsltAId: string | null;
   nsltBId: string | null;
   lpId: string | null;
+  lpAId: string | null;
+  lpBId: string | null;
   translations: ChecklistStatus;
   testRequest: ChecklistStatus;
   timerDone: ChecklistStatus;
@@ -30,6 +32,8 @@ export type ChecklistTableRow = {
   nsltAAccepted: ChecklistStatus;
   nsltBAccepted: ChecklistStatus;
   lpAccepted: ChecklistStatus;
+  lpAAccepted: ChecklistStatus;
+  lpBAccepted: ChecklistStatus;
   bannersApproved: ChecklistStatus;
   bannersCheckedMobile: ChecklistStatus;
   bannersCheckedDesktop: ChecklistStatus;
@@ -46,6 +50,8 @@ export type ChecklistTableRow = {
     nsltAAccepted?: ChecklistCheckpointRef;
     nsltBAccepted?: ChecklistCheckpointRef;
     lpAccepted?: ChecklistCheckpointRef;
+    lpAAccepted?: ChecklistCheckpointRef;
+    lpBAccepted?: ChecklistCheckpointRef;
     bannersApproved?: ChecklistCheckpointRef;
     bannersCheckedMobile?: ChecklistCheckpointRef;
     bannersCheckedDesktop?: ChecklistCheckpointRef;
@@ -58,6 +64,7 @@ export type ChecklistTableData = {
   columns: ChecklistColumn[];
   rows: ChecklistTableRow[];
   hasGroupedNslt?: boolean;
+  hasGroupedLp?: boolean;
 };
 
 export type ChecklistApiResponse = {

@@ -16,6 +16,7 @@ export const TableRow = ({
   hasPT,
   deactivateDate,
   lp,
+  lpB,
   fdMode,
   mdMode,
   isSLSelected,
@@ -31,6 +32,7 @@ export const TableRow = ({
   onFDModeChange,
   onMDModeChange,
   onLPChange,
+  onLPBChange,
   onDeactivateDateChange,
   isUpdating = false,
   isSuccess = false,
@@ -87,6 +89,44 @@ export const TableRow = ({
     return links.length > 0 ? links : null;
   };
 
+    const renderLandingPageIds = () => {
+    if (!landingPageId) return null;
+
+    const links: JSX.Element[] = [];
+
+    if (landingPageId.aId) {
+      links.push(
+        <a
+          key={`a-${landingPageId.aId}`}
+          href={getLpLink(landingPageId.aId, slug) || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={updaterStyles.idLink}
+        >
+          {landingPageId.aId}
+        </a>,
+      );
+    }
+
+    if (landingPageId.bId) {
+      links.push(
+        <React.Fragment key={`b-${landingPageId.bId}`}>
+          {links.length > 0 && <span className={updaterStyles.idSeparator}> | </span>}
+          <a
+            href={getLpLink(landingPageId.bId, slug) || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={updaterStyles.idLink}
+          >
+            {landingPageId.bId}
+          </a>
+        </React.Fragment>,
+      );
+    }
+
+    return links.length > 0 ? links : null;
+  };
+
   const isTranslationNotFound = (text: string) => {
     return text === 'TRANSLATION NOT FOUND';
   };
@@ -118,6 +158,7 @@ export const TableRow = ({
   };
 
   const flagUrl = getFlagUrl(slug);
+  const hasABLp = !!(landingPageId?.aId && landingPageId?.bId);
 
   return (
     <div className={rowClass}>
@@ -166,18 +207,7 @@ export const TableRow = ({
       </div>
 
       <div className={updaterStyles.landingPageId}>
-        {landingPageId ? (
-          <a
-            href={getLpLink(landingPageId, slug) || '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={updaterStyles.idLink}
-          >
-            {landingPageId}
-          </a>
-        ) : (
-          <span className={updaterStyles.idText}>-</span>
-        )}
+        {renderLandingPageIds() || <span className={updaterStyles.idText}>-</span>}
       </div>
 
       {/* Page Title Column */}
@@ -230,9 +260,19 @@ export const TableRow = ({
             value={lp || ''}
             onChange={e => onLPChange(e.target.value)}
             disabled={loading}
-            placeholder="lp26-04-05"
+            placeholder={hasABLp ? 'lp26-04-05 (A)' : 'lp26-04-05'}
             className={updaterStyles.lpInput}
           />
+          {hasABLp && (
+            <input
+              type="text"
+              value={lpB || ''}
+              onChange={e => onLPBChange?.(e.target.value)}
+              disabled={loading}
+              placeholder="lp26-04-05 (B)"
+              className={updaterStyles.lpInput}
+            />
+          )}
         </div>
       )}
 
@@ -252,3 +292,4 @@ export const TableRow = ({
     </div>
   );
 };
+ 

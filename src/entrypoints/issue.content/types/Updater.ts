@@ -8,10 +8,10 @@ export interface UpdaterProps {
   rows: ChecklistTableRow[];
   issueId: number;
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
-  landingPageIds?: Record<string, string>;
+  landingPageIds?: Record<string, { aId?: string; bId?: string }>;
   onClose: () => void;
 }
-
+ 
 export interface UpdaterButtonProps {
   isPrimary: boolean;
   onClick: () => void;
@@ -19,7 +19,7 @@ export interface UpdaterButtonProps {
   icon?: string;
   label: string;
 }
-
+ 
 export interface UpdaterButtonsProps {
   updateStarted: boolean;
   selectedSLCount: number;
@@ -38,26 +38,26 @@ export interface UpdaterButtonsProps {
   hasVerified?: boolean;
   verifyProgress?: { completed: number; total: number };
 }
-
+ 
 export interface UpdaterSelectedItem {
   slug: string;
   type: 'subjectLine' | 'pageTitle';
   content: string;
 }
-
+ 
 export interface UpdaterDateConfig {
   activateDate: Date;
   deactivateDate: Date;
 }
-
+ 
 export interface UpdaterSlugDateConfig {
   [slug: string]: UpdaterDateConfig;
 }
-
+ 
 export interface UpdaterSlugLPConfig {
   [slug: string]: string;
 }
-
+ 
 export interface UpdateResult {
   slug: string;
   type: 'newsletter' | 'landing-page';
@@ -65,7 +65,7 @@ export interface UpdateResult {
   status?: number;
   error?: string;
 }
-
+ 
 export interface DateSectionProps {
   loading: boolean;
   useGlobalDate: boolean;
@@ -74,21 +74,26 @@ export interface DateSectionProps {
   onActivateDateChange: (date: Date | null) => void;
   onDeactivateDateChange: (date: Date | null) => void;
 }
-
+ 
 export interface LPSectionProps {
   loading: boolean;
   useGlobalLP: boolean;
   globalLP: string;
   onToggleGlobalLP: (checked: boolean) => void;
   onGlobalLPChange: (lp: string) => void;
+  hasABLandingPages?: boolean;
+  globalLPB?: string;
+  onGlobalLPBChange?: (lp: string) => void;
 }
-
+ 
 export interface MenuContentProps {
   loading: boolean;
   useGlobalDate: boolean;
   useGlobalLP: boolean;
   globalDateConfig: { activateDate: Date; deactivateDate: Date };
   globalLP: string;
+  globalLPB?: string;
+  hasABLandingPages?: boolean;
   selectedSLCount: number;
   selectedPTCount: number;
   isUpdating: boolean;
@@ -97,6 +102,7 @@ export interface MenuContentProps {
   onDeactivateDateChange: (date: Date | null) => void;
   onToggleGlobalLP: (checked: boolean) => void;
   onGlobalLPChange: (lp: string) => void;
+  onGlobalLPBChange?: (lp: string) => void;
   onUpdateAllSL: () => void;
   onUpdateSelectedSL: () => void;
   onUpdateAllPT: () => void;
@@ -111,7 +117,7 @@ export interface MenuContentProps {
   hasVerified?: boolean;
   verifyProgress?: { completed: number; total: number };
 }
-
+ 
 export interface SundayButtonsProps {
   hasSelection: boolean;
   onUpdate: () => void;
@@ -119,7 +125,7 @@ export interface SundayButtonsProps {
   loading: boolean;
   isUpdating?: boolean;
 }
-
+ 
 export interface SundayTableProps {
   subjectLines: Record<number, Record<string, string>> | null;
   selectedIndex: number | null;
@@ -131,16 +137,16 @@ export interface SundayTableProps {
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
   onRetry?: () => void;
 }
-
+ 
 export interface SundayTableSkeletonProps {
   rowsCount?: number;
 }
-
+ 
 export interface SundayTableUpdateSkeletonProps {
   rowsCount: number;
   availableSlugs?: string[];
 }
-
+ 
 export interface TableHeaderProps {
   useGlobalLP: boolean;
   useGlobalDates: boolean;
@@ -152,7 +158,7 @@ export interface TableHeaderProps {
   onSelectAllSL: (checked: boolean) => void;
   onSelectAllPT: (checked: boolean) => void;
 }
-
+ 
 export interface TableRowProps {
   slug: string;
   subjectLine: string;
@@ -161,6 +167,7 @@ export interface TableRowProps {
   hasPT: boolean;
   deactivateDate: Date;
   lp: string;
+  lpB?: string;
   fdMode: boolean;
   mdMode: boolean;
   isSLSelected: boolean;
@@ -169,13 +176,14 @@ export interface TableRowProps {
   useGlobalLP: boolean;
   useGlobalDates: boolean;
   newsletterId?: { aId?: string; bId?: string };
-  landingPageId?: string;
+  landingPageId?: { aId?: string; bId?: string };
   onToggleCountry: (checked: boolean) => void;
   onToggleSL: (checked: boolean) => void;
   onTogglePT: (checked: boolean) => void;
   onFDModeChange: (checked: boolean) => void;
   onMDModeChange: (checked: boolean) => void;
   onLPChange: (value: string) => void;
+  onLPBChange?: (value: string) => void;
   onDeactivateDateChange: (date: Date | null) => void;
   isUpdating?: boolean;
   isSuccess?: boolean;
@@ -184,21 +192,23 @@ export interface TableRowProps {
   getInitialActivateDate?: (slug: string) => Date;
   getInitialDeactivateDate?: (slug: string) => Date;
   getInitialLP?: (slug: string) => string;
+  getInitialLPB?: (slug: string) => string;
   onSlugActivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
   onSlugDeactivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
   onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
+  onSlugLPBChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
   disableSelections?: boolean;
   verificationResult?: VerificationResult;
   verifying?: boolean;
 }
-
+ 
 export interface TableRowSkeletonProps {
   useGlobalLP: boolean;
   useGlobalDates: boolean;
   slug?: string;
 }
-
+ 
 export interface TableSkeletonProps {
   useGlobalLP: boolean;
   useGlobalDates: boolean;
@@ -206,13 +216,13 @@ export interface TableSkeletonProps {
   skeletonRowsCount?: number;
   showSlugs?: boolean;
 }
-
+ 
 export interface UpdateResultsProps {
   results: UpdateResult[];
   onClose: () => void;
   onRetry?: () => void;
 }
-
+ 
 export interface UpdaterTableProps {
   translations: LineTitleTranslations | null;
   loading?: boolean;
@@ -223,8 +233,10 @@ export interface UpdaterTableProps {
   onSlugActivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
   onSlugDeactivateDateChange?: (slug: string, date: Date | null, skipAutoSelect?: boolean) => void;
   getDateForSlug?: (slug: string, type: 'activate' | 'deactivate') => Date;
-  getLPForSlug?: (slug: string) => string;
+  getLPForSlug?: (slug: string, variant?: 'a' | 'b') => string;
+  getLPBForSlug?: (slug: string) => string;
   onSlugLPChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
+  onSlugLPBChange?: (slug: string, lp: string, skipAutoSelect?: boolean) => void;
   useGlobalLP?: boolean;
   globalLP?: string;
   initialGlobalLP?: string;
@@ -232,17 +244,18 @@ export interface UpdaterTableProps {
   onSlugFMDModeChange?: (slug: string, mode: 'fd' | 'md', checked: boolean) => void;
   availableSlugs?: string[];
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
-  landingPageIds?: Record<string, string>;
+  landingPageIds?: Record<string, { aId?: string; bId?: string }>;
   updatingSlugs?: Set<string>;
   updateResults?: UpdateResult[];
   getInitialActivateDate?: (slug: string) => Date;
   getInitialDeactivateDate?: (slug: string) => Date;
   getInitialLP?: (slug: string) => string;
+  getInitialLPB?: (slug: string) => string;
    verificationResults?: Record<string, VerificationResult>;
   verifying?: boolean;
   hasVerified?: boolean;
 }
-
+ 
 export interface ActivationResult {
   slug: string;
   lpId: string;
@@ -251,3 +264,4 @@ export interface ActivationResult {
   activated: boolean;
   error?: string;
 }
+ 

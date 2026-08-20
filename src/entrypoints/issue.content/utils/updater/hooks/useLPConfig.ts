@@ -9,7 +9,9 @@ interface UseLPConfigProps {
 export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) => {
   const [useGlobalLP, setUseGlobalLP] = useState(true);
   const [globalLP, setGlobalLP] = useState(initialGlobalLP);
+  const [globalLPB, setGlobalLPB] = useState(initialGlobalLP);
   const [slugLPConfig, setSlugLPConfig] = useState<UpdaterSlugLPConfig>({});
+  const [slugLPBConfig, setSlugLPBConfig] = useState<UpdaterSlugLPConfig>({});
   const [slugFMDModes, setSlugFMDModes] = useState<Record<string, { fd: boolean; md: boolean }>>({});
 
   const initializedRef = useRef(false);
@@ -19,11 +21,31 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
     setGlobalLP(lp);
   }, []);
 
+  const setGlobalLPBValue = useCallback((lp: string) => {
+    setGlobalLPB(lp);
+  }, []);
+
   const handleGlobalLPChange = useCallback(
     (lp: string) => {
       setGlobalLP(lp);
       if (useGlobalLP) {
         setSlugLPConfig(prev => {
+          const updated: UpdaterSlugLPConfig = {};
+          Object.keys(prev).forEach(slug => {
+            updated[slug] = lp;
+          });
+          return updated;
+        });
+      }
+    },
+    [useGlobalLP],
+  );
+
+  const handleGlobalLPBChange = useCallback(
+    (lp: string) => {
+      setGlobalLPB(lp);
+      if (useGlobalLP) {
+        setSlugLPBConfig(prev => {
           const updated: UpdaterSlugLPConfig = {};
           Object.keys(prev).forEach(slug => {
             updated[slug] = lp;
@@ -47,6 +69,14 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
           return updated;
         });
 
+        setSlugLPBConfig(prev => {
+          const updated: UpdaterSlugLPConfig = {};
+          Object.keys(prev).forEach(slug => {
+            updated[slug] = globalLPB;
+          });
+          return updated;
+        });
+
         setSlugFMDModes(prev => {
           const reset: Record<string, { fd: boolean; md: boolean }> = {};
           Object.keys(prev).forEach(slug => {
@@ -56,7 +86,7 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
         });
       }
     },
-    [globalLP],
+    [globalLP, globalLPB],
   );
 
   const handleSlugFMDModeChange = useCallback((slug: string, type: 'fd' | 'md', checked: boolean) => {
@@ -129,21 +159,55 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
     }
   }, [onAutoSelect]);
 
-  const getLPForSlug = useCallback(
-    (slug: string): string => {
-      if (useGlobalLP) return globalLP || initialGlobalLP;
+  const handleSlugLPBChange = useCallback((slug: string, lp: string, skipAutoSelect?: boolean) => {
+    setSlugLPBConfig(prev => {
+      const updates: UpdaterSlugLPConfig = {
+        ...prev,
+        [slug]: lp,
+      }
 
-      let perSlugLP = slugLPConfig[slug];
+      const pairedSlug = getPairedSlug(slug);
+      if (pairedSlug) {
+        updates[pairedSlug] = lp;
+      }
+
+      return updates;
+    });
+
+    if (!skipAutoSelect && onAutoSelect) {
+      if (autoSelectTimeoutRef.current) {
+        clearTimeout(autoSelectTimeoutRef.current);
+      }
+
+      autoSelectTimeoutRef.current = setTimeout(() => {
+        onAutoSelect(slug);
+        const pairedSlug = getPairedSlug(slug);
+        if (pairedSlug) {
+          onAutoSelect(pairedSlug);
+        }
+      }, 50);
+    }
+  }, [onAutoSelect]);
+
+  const getLPForSlug = useCallback(
+    (slug: string, variant: 'a' | 'b' = 'a'): string => {
+      const isVariantB = variant === 'b';
+      const global = isVariantB ? globalLPB : globalLP;
+      const slugConfig = isVariantB ? slugLPBConfig : slugLPConfig;
+
+      if (useGlobalLP) return global || initialGlobalLP;
+
+      let perSlugLP = slugConfig[slug];
 
       if (!perSlugLP) {
         const pairedSlug = getPairedSlug(slug);
         if (pairedSlug) {
-          perSlugLP = slugLPConfig[pairedSlug];
+          perSlugLP = slugConfig[pairedSlug];
         }
       }
 
       if (!perSlugLP) {
-        return globalLP || initialGlobalLP;
+        return global || initialGlobalLP;
       }
 
       let baseLP = perSlugLP.replace(/fd|md$/, '');
@@ -154,28 +218,32 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
 
       return baseLP;
     },
-    [useGlobalLP, globalLP, slugLPConfig, slugFMDModes],
+    [useGlobalLP, globalLP, globalLPB, slugLPConfig, slugLPBConfig, slugFMDModes, initialGlobalLP],
   );
 
-  const initializeSlugLPs = useCallback((slugs: string[], lp: string) => {
+  const initializeSlugLPs = useCallback((slugs: string[], lp: string, lpB?: string) => {
     if (initializedRef.current && Object.keys(slugLPConfig).length > 0) return;
 
-
     const initialLPs: UpdaterSlugLPConfig = {};
+    const initialLPBs: UpdaterSlugLPConfig = {};
     const initialModes: Record<string, { fd: boolean; md: boolean }> = {};
+    const resolvedLPB = lpB ?? lp;
 
     slugs.forEach(slug => {
       initialLPs[slug] = lp;
+      initialLPBs[slug] = resolvedLPB;
       initialModes[slug] = { fd: false, md: false };
 
       const pairedSlug = getPairedSlug(slug);
       if (pairedSlug && slugs.includes(pairedSlug)) {
         initialLPs[pairedSlug] = lp;
+        initialLPBs[pairedSlug] = resolvedLPB;
         initialModes[pairedSlug] = { fd: false, md: false };
       }
     });
 
     setSlugLPConfig(initialLPs);
+    setSlugLPBConfig(initialLPBs);
     setSlugFMDModes(initialModes);
     initializedRef.current = true;
   }, []);
@@ -187,14 +255,19 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
   return {
     useGlobalLP,
     globalLP,
+    globalLPB,
     slugFMDModes,
     handleGlobalLPChange,
+    handleGlobalLPBChange,
     handleUseGlobalLPToggle,
     handleSlugFMDModeChange,
     handleSlugLPChange,
+    handleSlugLPBChange,
     getLPForSlug,
     initializeSlugLPs,
     setGlobalLP: setGlobalLPValue,
+    setGlobalLPB: setGlobalLPBValue,
     resetInitialization,
   };
 };
+ 

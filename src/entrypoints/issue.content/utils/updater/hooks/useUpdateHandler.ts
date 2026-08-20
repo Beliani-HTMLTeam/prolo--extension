@@ -6,7 +6,10 @@ import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
 import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';
 import { encodeEmojiToHtmlEntities, trimAllLineBreaks } from '../stringUtils';
 import { normalizeSlugForSlug } from '../../planning/slugNormalization';
-import { checkAndActivateMultipleShopContents, fetchNsltIdFromLandingPage } from '@/entrypoints/issue.content/api/shopContentService';
+import {
+  checkAndActivateMultipleShopContents,
+  fetchNsltIdFromLandingPage,
+} from '@/entrypoints/issue.content/api/shopContentService';
 
 interface FormattedUpdateRecord {
   slug: string;
@@ -21,39 +24,43 @@ interface FormattedUpdateRecord {
   lang?: string;
   servers?: number[];
   shopId?: string;
+  variant: 'a' | 'b';
 }
 
 interface UseUpdateHandlerProps {
-  getLPForSlug: (slug: string) => string;
+  getLPForSlug: (slug: string, variant?: 'a' | 'b') => string;
   getDateForSlug: (slug: string, type: 'activate' | 'deactivate') => Date;
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
-  landingPageIds?: Record<string, string>;
+  landingPageIds?: Record<string, { aId?: string; bId?: string }>;
   onClearSelections?: () => void;
 }
 
 const enrichMissingNsltIds = async (
-  updatesBySlug: Record<string, {
-    slug: string;
-    subjectLine?: string;
-    pageTitle?: string;
-    landingPage?: string;
-    activateDate: Date;
-    deactivateDate: Date;
-    lpId?: string;
-  }>,
-  existingNewsletterIds: Record<string, { aId?: string; bId?: string }> = {}
+  updatesBySlug: Record<
+    string,
+    {
+      slug: string;
+      subjectLine?: string;
+      pageTitle?: string;
+      landingPage?: string;
+      activateDate: Date;
+      deactivateDate: Date;
+      lpId?: string;
+    }
+  >,
+  existingNewsletterIds: Record<string, { aId?: string; bId?: string }> = {},
 ): Promise<Record<string, { aId?: string; bId?: string }>> => {
   const enrichedIds: Record<string, { aId?: string; bId?: string }> = { ...existingNewsletterIds };
-  
+
   for (const [slug, update] of Object.entries(updatesBySlug)) {
     // Check if we already have nsltData
     const existingNsltData = existingNewsletterIds?.[slug];
-    
+
     // If NSLT ID already exists, use it
     if (existingNsltData?.aId || existingNsltData?.bId) {
       continue;
     }
-    
+
     // If no NSLT ID but we have page title and lpId, try to fetch
     if (update.pageTitle && update.lpId) {
       const shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
@@ -70,7 +77,7 @@ const enrichMissingNsltIds = async (
       }
     }
   }
-  
+
   return enrichedIds;
 };
 
@@ -112,31 +119,34 @@ export const useUpdateHandler = ({
     const slugsToUpdate = new Set(selectedItems.map(item => item.slug));
     setUpdatingSlugs(slugsToUpdate);
 
-    
     try {
       const formattedUpdates: FormattedUpdateRecord[] = [];
-      
+
       const updatesBySlug: Record<
-      string,
-      {
-        slug: string;
-        subjectLine?: string;
-        pageTitle?: string;
-        landingPage?: string;
-        activateDate: Date;
-        deactivateDate: Date;
-        lpId?: string;
-      }
+        string,
+        {
+          slug: string;
+          subjectLine?: string;
+          pageTitle?: string;
+          landingPageA?: string;
+          landingPageB?: string;
+          activateDate: Date;
+          deactivateDate: Date;
+          lpAId?: string;
+          lpBId?: string;
+        }
       > = {};
-      
+
       selectedItems.forEach(item => {
         if (!updatesBySlug[item.slug]) {
           updatesBySlug[item.slug] = {
             slug: item.slug,
-            landingPage: getLPForSlug(item.slug),
+            landingPageA: getLPForSlug(item.slug, 'a'),
+            landingPageB: getLPForSlug(item.slug, 'b'),
             activateDate: getDateForSlug(item.slug, 'activate'),
             deactivateDate: getDateForSlug(item.slug, 'deactivate'),
-            lpId: landingPageIds?.[item.slug],
+            lpAId: landingPageIds?.[item.slug]?.aId,
+            lpBId: landingPageIds?.[item.slug]?.bId,
           };
         }
 
@@ -146,9 +156,9 @@ export const useUpdateHandler = ({
           updatesBySlug[item.slug].pageTitle = item.content;
         }
       });
-      
+
       const enrichedNewsletterIds = await enrichMissingNsltIds(updatesBySlug, newsletterIds);
-      
+
       Object.values(updatesBySlug).forEach(update => {
         const nsltData = enrichedNewsletterIds?.[update.slug] || newsletterIds?.[update.slug];
 
@@ -168,14 +178,15 @@ export const useUpdateHandler = ({
           const recordA: FormattedUpdateRecord = {
             slug: update.slug,
             nsltId: nsltData.aId,
-            lpId: update.lpId,
-            landingPage: update.landingPage!,
+            lpId: update.lpAId,
+            landingPage: update.landingPageA!,
             activateDate: formatDateForAPI(update.activateDate),
             deactivateDate: formatDateForAPI(update.deactivateDate),
             seller,
             lang,
             servers,
             shopId,
+            variant: 'a',
           };
           if (update.subjectLine !== undefined) recordA.subjectLine = trimAllLineBreaks(update.subjectLine);
           if (update.pageTitle !== undefined) recordA.pageTitle = trimAllLineBreaks(update.pageTitle);
@@ -184,13 +195,15 @@ export const useUpdateHandler = ({
           const recordB: FormattedUpdateRecord = {
             slug: update.slug,
             nsltId: nsltData.bId,
-            landingPage: update.landingPage!,
+            lpId: update.lpBId,
+            landingPage: update.landingPageB!,
             activateDate: formatDateForAPI(update.activateDate),
             deactivateDate: formatDateForAPI(update.deactivateDate),
             seller,
             lang,
             servers,
             shopId,
+            variant: 'b',
           };
           if (update.subjectLine !== undefined) recordB.subjectLine = trimAllLineBreaks(update.subjectLine);
           if (update.pageTitle !== undefined) recordB.pageTitle = trimAllLineBreaks(update.pageTitle);
@@ -199,37 +212,38 @@ export const useUpdateHandler = ({
           const record: FormattedUpdateRecord = {
             slug: update.slug,
             nsltId: nsltData.aId,
-            lpId: update.lpId,
-            ...(update.landingPage && update.landingPage !== 'lp00-00-00' && { landingPage: update.landingPage }),
+            lpId: update.lpAId,
+            ...(update.landingPageA && update.landingPageA !== 'lp00-00-00' && { landingPage: update.landingPageA }),
             activateDate: formatDateForAPI(update.activateDate),
             deactivateDate: formatDateForAPI(update.deactivateDate),
             seller,
             lang,
             servers,
             shopId,
+            variant: 'a',
+          };
+          if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
+          if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
+          formattedUpdates.push(record);
+        } else {
+          // No NSLT ID exists - still allow page title update
+          const record: FormattedUpdateRecord = {
+            slug: update.slug,
+            nsltId: '', // Empty string for missing NSLT ID
+            lpId: update.lpAId,
+            ...(update.landingPageA && update.landingPageA !== 'lp00-00-00' && { landingPage: update.landingPageA }),
+            activateDate: formatDateForAPI(update.activateDate),
+            deactivateDate: formatDateForAPI(update.deactivateDate),
+            seller,
+            lang,
+            servers,
+            shopId,
+            variant: 'a',
           };
           if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
           if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
           formattedUpdates.push(record);
         }
-        else {
-        // No NSLT ID exists - still allow page title update
-        const record: FormattedUpdateRecord = {
-          slug: update.slug,
-          nsltId: '', // Empty string for missing NSLT ID
-          lpId: update.lpId,
-          ...(update.landingPage && update.landingPage !== 'lp00-00-00' && { landingPage: update.landingPage }),
-          activateDate: formatDateForAPI(update.activateDate),
-          deactivateDate: formatDateForAPI(update.deactivateDate),
-          seller,
-          lang,
-          servers,
-          shopId,
-        };
-        if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
-        if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
-        formattedUpdates.push(record);
-      }
       });
 
       if (formattedUpdates.length === 0) {
@@ -237,16 +251,16 @@ export const useUpdateHandler = ({
         return;
       }
 
-      const updatesToSend: Array<{ type: 'newsletter' | 'landing-page'; data: any; slug: string }> = [];
+      const updatesToSend: Array<{ type: 'newsletter' | 'landing-page'; data: any; slug: string; variant: 'a' | 'b' }> =
+        [];
 
-            const slugsWithSubjectLineUpdates = new Set<string>();
-
+      const slugsWithSubjectLineUpdates = new Set<string>();
 
       for (const update of formattedUpdates) {
         const hasSubjectLine = !!update.subjectLine;
         const hasPageTitle = !!update.pageTitle;
 
-         if (hasSubjectLine && update.nsltId) {
+        if (hasSubjectLine && update.nsltId) {
           slugsWithSubjectLineUpdates.add(update.slug);
         }
 
@@ -254,6 +268,7 @@ export const useUpdateHandler = ({
           updatesToSend.push({
             type: 'newsletter',
             slug: update.slug,
+            variant: update.variant,
             data: {
               activate_from_date: update.activateDate.date,
               activate_from_time: update.activateDate.time,
@@ -278,14 +293,22 @@ export const useUpdateHandler = ({
           if (update.slug === 'CHFR' || update.slug === 'CHDE') {
             // Use CHDE's newsletter ID (which is the primary one)
             const chdeNsltData = newsletterIds?.['CHDE'];
-            newsletterTemplateId = chdeNsltData?.aId || update.nsltId;
+            if (update.variant === 'b') {
+              newsletterTemplateId = chdeNsltData?.bId || update.nsltId;
+            } else {
+              newsletterTemplateId = chdeNsltData?.aId || update.nsltId;
+            }
           }
 
           // If this is BEFR, use BENL's nsltId
           if (update.slug === 'BEFR' || update.slug === 'BENL') {
             // Use BENL's newsletter ID (which is the primary one)
             const benlNsltData = newsletterIds?.['BENL'];
-            newsletterTemplateId = benlNsltData?.aId || update.nsltId;
+            if (update.variant === 'b') {
+              newsletterTemplateId = benlNsltData?.bId || update.nsltId;
+            } else {
+              newsletterTemplateId = benlNsltData?.aId || update.nsltId;
+            }
           }
 
           if (update.slug === 'CHIT') {
@@ -296,6 +319,7 @@ export const useUpdateHandler = ({
           updatesToSend.push({
             type: 'landing-page',
             slug: update.slug,
+            variant: update.variant,
             data: {
               activate_from_date: update.activateDate.date,
               activate_from_time: update.activateDate.time,
@@ -316,8 +340,8 @@ export const useUpdateHandler = ({
       }
 
       if (updatesToSend.length === 0) {
-        console.log("formatterLog", formattedUpdates);
-        
+        console.log('formatterLog', formattedUpdates);
+
         console.warn('No updates to send');
         return;
       }
@@ -328,10 +352,30 @@ export const useUpdateHandler = ({
       const slugsToUpdate = new Set(selectedItems.map(item => item.slug));
       setUpdatingSlugs(slugsToUpdate);
 
-      const results = await sendBatchUpdates(updatesToSend, (completed, total, result) => {
-        setUpdateProgress({ completed, total });
-        setUpdateResults(prev => [...prev, result]);
-      });
+      // Family A (nsltA/lpA) must fully complete before family B (nsltB/lpB) starts.
+      const familyAUpdates = updatesToSend.filter(u => u.variant === 'a');
+      const familyBUpdates = updatesToSend.filter(u => u.variant === 'b');
+
+      const results: UpdateResult[] = [];
+      let completedSoFar = 0;
+
+      if (familyAUpdates.length > 0) {
+        const resultsA = await sendBatchUpdates(familyAUpdates, (completed, total, result) => {
+          setUpdateProgress({ completed: completedSoFar + completed, total: totalUpdates });
+          setUpdateResults(prev => [...prev, result]);
+        });
+        results.push(...resultsA);
+        completedSoFar += resultsA.length;
+      }
+
+      if (familyBUpdates.length > 0) {
+        const resultsB = await sendBatchUpdates(familyBUpdates, (completed, total, result) => {
+          setUpdateProgress({ completed: completedSoFar + completed, total: totalUpdates });
+          setUpdateResults(prev => [...prev, result]);
+        });
+        results.push(...resultsB);
+        completedSoFar += resultsB.length;
+      }
 
       const successCount = results.filter(r => r.success).length;
       const failureCount = results.filter(r => !r.success).length;
@@ -340,14 +384,14 @@ export const useUpdateHandler = ({
 
       console.log(`Update complete! Success: ${successCount}, Failed: ${failureCount}`);
       const successfullyUpdatedNewsletters = results.filter(
-        r => r.success && r.type === 'newsletter' && slugsWithSubjectLineUpdates.has(r.slug)
+        r => r.success && r.type === 'newsletter' && slugsWithSubjectLineUpdates.has(r.slug),
       );
       if (successfullyUpdatedNewsletters.length > 0) {
         // Get shop IDs for each updated item
         const itemsToActivate = successfullyUpdatedNewsletters
           .map(result => {
             const update = updatesBySlug[result.slug];
-            if (!update || !update.lpId) return null;
+            if (!update || !update.lpAId) return null;
 
             const normalizedSlug = normalizeSlugForSlug(result.slug);
             let shopId = SLUG_ID_MAP[result.slug as keyof typeof SLUG_ID_MAP];
@@ -362,10 +406,10 @@ export const useUpdateHandler = ({
             const newsletterTemplateId = nsltData?.aId || nsltData?.bId || '';
 
             return {
-              lpId: update.lpId,
+              lpId: update.lpAId,
               shopId: String(shopId),
               slug: result.slug,
-              landingPage: update.landingPage || '',
+              landingPage: update.landingPageA || '',
               activateDate: {
                 date: update.activateDate ? formatDateForAPI(update.activateDate).date : '',
                 time: update.activateDate ? formatDateForAPI(update.activateDate).time : '',

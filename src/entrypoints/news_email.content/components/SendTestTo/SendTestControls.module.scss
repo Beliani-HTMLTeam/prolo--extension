@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  align-items: center;
+  background: rgb(210, 210, 210);
+  gap: 0.5rem;
+  padding: 1rem;
+  box-shadow: 2px 2px black;
+  border-radius: 0.5rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+}
+
+.label {
+  font-weight: 500;
+}
+
+.select {
+  min-width: 200px;
+}
+
+.selfButton {
+  cursor: pointer;
+}

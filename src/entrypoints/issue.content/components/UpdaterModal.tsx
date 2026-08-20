@@ -27,6 +27,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   const [initialSlugDates, setInitialSlugDates] = useState<Record<string, { activate: Date; deactivate: Date }>>({});
   const [initialSlugLPs, setInitialSlugLPs] = useState<Record<string, string>>({});
+  const [initialSlugLPBs, setInitialSlugLPBs] = useState<Record<string, string>>({});
 
   const [verificationResults, setVerificationResults] = useState<Record<string, VerificationResult>>({});
   const [verifying, setVerifying] = useState(false);
@@ -119,15 +120,24 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   const {
     useGlobalLP,
     globalLP,
+    globalLPB,
     slugFMDModes,
     handleGlobalLPChange,
+    handleGlobalLPBChange,
     handleUseGlobalLPToggle,
     handleSlugFMDModeChange,
     handleSlugLPChange,
+    handleSlugLPBChange,
     getLPForSlug,
     initializeSlugLPs,
     setGlobalLP: setHookGlobalLP,
+    setGlobalLPB: setHookGlobalLPB,
   } = useLPConfig({ initialGlobalLP, onAutoSelect: autoSelectSlug });
+
+  const hasABLandingPages = useMemo(
+    () => Object.values(landingPageIds || {}).some(ids => !!ids?.aId && !!ids?.bId),
+    [landingPageIds],
+  );
 
   const {
     isUpdating,
@@ -153,8 +163,9 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   useEffect(() => {
     if (initialGlobalLP) {
       setHookGlobalLP(initialGlobalLP);
+      setHookGlobalLPB(initialGlobalLP);
     }
-  }, [initialGlobalLP, setHookGlobalLP]);
+  }, [initialGlobalLP, setHookGlobalLP, setHookGlobalLPB]);
 
   useEffect(() => {
     if (isComplete && !isUpdating) {
@@ -189,10 +200,11 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
       if (slugArray.length > 0) {
         initializeSlugDates(slugArray);
-        initializeSlugLPs(slugArray, initialGlobalLP);
+        initializeSlugLPs(slugArray, initialGlobalLP, initialGlobalLP);
 
         const initialDates: Record<string, { activate: Date; deactivate: Date }> = {};
         const initialLPs: Record<string, string> = {};
+        const initialLPBs: Record<string, string> = {};
 
         slugArray.forEach(slug => {
           initialDates[slug] = {
@@ -200,10 +212,12 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
             deactivate: deactivateDate || getTodayAtMidnight(),
           };
           initialLPs[slug] = initialGlobalLP;
+          initialLPBs[slug] = initialGlobalLP;
         });
 
         setInitialSlugDates(initialDates);
         setInitialSlugLPs(initialLPs);
+        setInitialSlugLPBs(initialLPBs);
       }
     }
   }, [translations]);
@@ -227,6 +241,13 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       return initialSlugLPs[slug];
     },
     [initialSlugLPs],
+  );
+
+  const getInitialLPB = useCallback(
+    (slug: string) => {
+      return initialSlugLPBs[slug];
+    },
+    [initialSlugLPBs],
   );
 
   const handleGlobalActivateDateChangeWithAutoSelect = (date: Date | null) => {
@@ -270,6 +291,46 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
         }
 
         // Select page title if exists and valid
+        if (pageTitle) {
+          const isAlreadySelected = selectedItems.some(item => item.slug === slug && item.type === 'pageTitle');
+          if (!isAlreadySelected) {
+            handleTogglePT(slug, true, pageTitle);
+          }
+        }
+      });
+      setTimeout(() => {
+        isResettingRef.current = false;
+        if (typeof window !== 'undefined') {
+          (window as any).__isResetting = false;
+        }
+      }, 200);
+    }
+  };
+
+  const handleGlobalLPBChangeWithAutoSelect = (lp: string) => {
+    handleGlobalLPBChange(lp);
+
+    if (translations) {
+      isResettingRef.current = true;
+      if (typeof window !== 'undefined') {
+        (window as any).__isResetting = true;
+      }
+
+      const allSlugs = new Set([
+        ...(translations.subjectLine ? Object.keys(translations.subjectLine) : []),
+        ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
+      ]);
+      allSlugs.forEach(slug => {
+        const subjectLine = translations.subjectLine?.[slug];
+        const pageTitle = translations.pageTitle?.[slug];
+
+        if (subjectLine) {
+          const isAlreadySelected = selectedItems.some(item => item.slug === slug && item.type === 'subjectLine');
+          if (!isAlreadySelected) {
+            handleToggleSL(slug, true, subjectLine);
+          }
+        }
+
         if (pageTitle) {
           const isAlreadySelected = selectedItems.some(item => item.slug === slug && item.type === 'pageTitle');
           if (!isAlreadySelected) {
@@ -366,7 +427,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       const subjectLine = translations.subjectLine?.[slug] || null;
       const pageTitle = translations.pageTitle?.[slug] || null;
       const nsltId = newsletterIds?.[slug]?.aId || newsletterIds?.[slug]?.bId || null;
-      const lpId = landingPageIds?.[slug] || null;
+      const lpId = landingPageIds?.[slug]?.aId || landingPageIds?.[slug]?.bId || null;
 
       if (nsltId || lpId) {
         itemsToVerify.push({
@@ -558,6 +619,8 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               useGlobalLP={useGlobalLP}
               globalDateConfig={globalDateConfig}
               globalLP={globalLP}
+              globalLPB={globalLPB}
+              hasABLandingPages={hasABLandingPages}
               selectedSLCount={selectedSLCount}
               selectedPTCount={selectedPTCount}
               isUpdating={isUpdating}
@@ -566,6 +629,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               onDeactivateDateChange={handleGlobalDeactivateDateChangeWithAutoSelect}
               onToggleGlobalLP={handleUseGlobalLPToggle}
               onGlobalLPChange={handleGlobalLPChangeWithAutoSelect}
+              onGlobalLPBChange={handleGlobalLPBChangeWithAutoSelect}
               onUpdateAllSL={handleUpdateAllSL}
               onUpdateSelectedSL={handleUpdateSelectedSL}
               onUpdateAllPT={handleUpdateAllPT}
@@ -644,9 +708,11 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
                 selectedItems={selectedItems}
                 getDateForSlug={getDateForSlug}
                 getLPForSlug={getLPForSlug}
+                getLPBForSlug={slug => getLPForSlug(slug, 'b')}
                 onSlugActivateDateChange={handleSlugActivateDateChange}
                 onSlugDeactivateDateChange={handleSlugDeactivateDateChange}
                 onSlugLPChange={handleSlugLPChange}
+                onSlugLPBChange={handleSlugLPBChange}
                 useGlobalDates={useGlobalDate}
                 useGlobalLP={useGlobalLP}
                 globalLP={globalLP}
@@ -661,6 +727,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
                 getInitialActivateDate={getInitialActivateDate}
                 getInitialDeactivateDate={getInitialDeactivateDate}
                 getInitialLP={getInitialLP}
+                getInitialLPB={getInitialLPB}
                 verificationResults={verificationResults}
                 verifying={verifying}
               />
@@ -673,7 +740,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 
   // Now in the return, check for valid rows first
   // Check if there are any valid rows with newsletter IDs or landing page IDs
-  const hasValidRows = rows.some(row => row.nsltId || row.nsltAId || row.nsltBId || row.lpId);
+  const hasValidRows = rows.some(row => row.nsltId || row.nsltAId || row.nsltBId || row.lpId || row.lpAId || row.lpBId);
 
   // If no valid rows and not a Sunday newsletter, show empty state
   if (!hasValidRows && !isSundayNewsletter && !loading && !sundayLoading) {
@@ -727,3 +794,4 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 };
 
 export default UpdaterModal;
+ 

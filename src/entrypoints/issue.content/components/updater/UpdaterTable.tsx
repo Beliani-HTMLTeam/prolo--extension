@@ -15,7 +15,9 @@ const UpdaterTable = ({
   onSlugDeactivateDateChange,
   getDateForSlug,
   getLPForSlug,
+  getLPBForSlug,
   onSlugLPChange,
+  onSlugLPBChange,
   useGlobalLP = true,
   globalLP = '',
   initialGlobalLP = '',
@@ -29,6 +31,7 @@ const UpdaterTable = ({
   getInitialActivateDate,
   getInitialDeactivateDate,
   getInitialLP,
+  getInitialLPB,
   verificationResults = {},
   verifying = false,
   hasVerified = false,
@@ -129,6 +132,7 @@ const UpdaterTable = ({
         const hasPT = !!pageTitle;
         const deactivateDate = getDateForSlug?.(slug, 'deactivate');
         const lp = getLPForSlug?.(slug) || '';
+        const lpB = getLPBForSlug?.(slug) || '';
         const fdMode = slugFMDModes[slug]?.fd || false;
         const mdMode = slugFMDModes[slug]?.md || false;
 
@@ -167,6 +171,7 @@ const UpdaterTable = ({
             const initialActivateDate = getInitialActivateDate?.(slug);
             const initialDeactivateDate = getInitialDeactivateDate?.(slug);
             const initialLP = getInitialLP?.(slug);
+            const initialLPB = getInitialLPB?.(slug);
 
             if (initialActivateDate) {
               onSlugActivateDateChange?.(slug, initialActivateDate, true);
@@ -176,6 +181,9 @@ const UpdaterTable = ({
             }
             if (initialLP) {
               onSlugLPChange?.(slug, initialLP, true);
+            }
+            if (initialLPB) {
+              onSlugLPBChange?.(slug, initialLPB, true);
             }
 
             setTimeout(() => {
@@ -196,6 +204,7 @@ const UpdaterTable = ({
             hasPT={hasPT}
             deactivateDate={deactivateDate!}
             lp={lp}
+            lpB={lpB}
             fdMode={fdMode}
             mdMode={mdMode}
             isSLSelected={isSLSelected(slug)}
@@ -211,6 +220,7 @@ const UpdaterTable = ({
             onFDModeChange={checked => handleFMDModeChange(slug, 'fd', checked)}
             onMDModeChange={checked => handleFMDModeChange(slug, 'md', checked)}
             onLPChange={value => onSlugLPChange?.(slug, value)}
+            onLPBChange={value => onSlugLPBChange?.(slug, value)}
             onDeactivateDateChange={date => onSlugDeactivateDateChange?.(slug, date)}
             isUpdating={isUpdating}
             isSuccess={isSuccess}
@@ -233,3 +243,4 @@ const UpdaterTable = ({
   );
 };
 export default UpdaterTable;
+ 

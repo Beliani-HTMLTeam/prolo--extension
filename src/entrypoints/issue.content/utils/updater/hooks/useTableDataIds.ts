@@ -34,12 +34,22 @@ export const useTableDataIds = (rows: ChecklistTableRow[]) => {
     }, [rows]);
   
   const landingPageIds = useMemo(() => {
-    const ids: Record<string, string> = {};
+    const ids: Record<string, NewsletterIds> = {};
 
     rows.forEach(row => {
-      const slug = row.shop;
+       const slug = row.shop;
+      const idsForSlug: NewsletterIds = {};
       if (row.lpId) {
-        ids[slug] = row.lpId;
+        idsForSlug.aId = row.lpId;
+      }
+      if (row.lpAId) {
+        idsForSlug.aId = row.lpAId;
+      }
+      if (row.lpBId) {
+        idsForSlug.bId = row.lpBId;
+      }
+      if (Object.keys(idsForSlug).length > 0) {
+        ids[slug] = idsForSlug;
       }
     });
 

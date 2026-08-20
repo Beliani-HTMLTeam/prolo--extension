@@ -17,6 +17,10 @@ export const COLUMN_IDS = {
   NSLT_B_ACCEPTED: 'nsltBAccepted',
   LP_ID: 'lpId',
   LP_ACCEPTED: 'lpAccepted',
+  LP_A_ID: 'lpAId',
+  LP_A_ACCEPTED: 'lpAAccepted',
+  LP_B_ID: 'lpBId',
+  LP_B_ACCEPTED: 'lpBAccepted',
 } as const;
 
 export const TABLE_HEADERS = [
@@ -36,6 +40,7 @@ export const CGB_HEADERS = ['SHOP', 'Test Request'];
 
 export const createNewsletterColumns = (
   hasGroupedNslt: boolean,
+  hasGroupedLp: boolean,
   showTimer: boolean,
   showPush: boolean,
   options?: {
@@ -46,9 +51,7 @@ export const createNewsletterColumns = (
   const includeTranslations = options?.includeTranslations ?? true;
   const includeLp = options?.includeLp ?? true;
 
-  const columns: ChecklistColumn[] = [
-    { id: COLUMN_IDS.SHOP, label: 'SHOP', kind: 'shop' },
-  ];
+  const columns: ChecklistColumn[] = [{ id: COLUMN_IDS.SHOP, label: 'SHOP', kind: 'shop' }];
 
   if (includeTranslations) {
     columns.push({ id: COLUMN_IDS.TRANSLATIONS, label: 'Translations', kind: 'request' });
@@ -74,20 +77,26 @@ export const createNewsletterColumns = (
     columns.push({ id: COLUMN_IDS.NSLT_ACCEPTED, label: 'NSLT Accepted', kind: 'status' });
   }
 
-  if (includeLp) {
-    columns.push({ id: COLUMN_IDS.LP_ID, label: 'LP ID', kind: 'link', openAllLinks: true });
-    columns.push({ id: COLUMN_IDS.LP_ACCEPTED, label: 'LP Accepted', kind: 'status' });
+  if (hasGroupedLp) {
+    columns.push({ id: COLUMN_IDS.LP_A_ID, label: 'LP A ID', kind: 'link', openAllLinks: true });
+    columns.push({ id: COLUMN_IDS.LP_A_ACCEPTED, label: 'LP A Accepted', kind: 'status' });
+    columns.push({ id: COLUMN_IDS.LP_B_ID, label: 'LP B ID', kind: 'link', openAllLinks: true });
+    columns.push({ id: COLUMN_IDS.LP_B_ACCEPTED, label: 'LP B Accepted', kind: 'status' });
+  } else {
+    if (includeLp) {
+      columns.push({ id: COLUMN_IDS.LP_ID, label: 'LP ID', kind: 'link', openAllLinks: true });
+      columns.push({ id: COLUMN_IDS.LP_ACCEPTED, label: 'LP Accepted', kind: 'status' });
+    }
   }
+
   return columns;
 };
 
 export const createCgbColumns = (
   dynamicColumns: Array<{ id: string; label: string }>,
-  options?: { includeTranslations?: boolean; includeTestSent?: boolean }
+  options?: { includeTranslations?: boolean; includeTestSent?: boolean },
 ): ChecklistColumn[] => {
-  const columns: ChecklistColumn[] = [
-    { id: COLUMN_IDS.SHOP, label: 'SHOP', kind: 'shop' },
-  ];
+  const columns: ChecklistColumn[] = [{ id: COLUMN_IDS.SHOP, label: 'SHOP', kind: 'shop' }];
 
   if (options?.includeTranslations) {
     columns.push({ id: COLUMN_IDS.TRANSLATIONS, label: 'Translations', kind: 'status' });
@@ -187,6 +196,10 @@ export const createRow = (shop: string, order: number): ChecklistTableRow => ({
   nsltAId: null,
   nsltBId: null,
   lpId: null,
+  lpAId: null,
+  lpBId: null,
+  lpAAccepted: 0,
+  lpBAccepted: 0,
   translations: 0,
   testRequest: 0,
   timerDone: 0,

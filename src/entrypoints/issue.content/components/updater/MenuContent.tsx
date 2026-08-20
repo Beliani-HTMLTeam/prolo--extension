@@ -10,6 +10,8 @@ export const MenuContent = ({
   useGlobalLP,
   globalDateConfig,
   globalLP,
+  globalLPB,
+  hasABLandingPages,
   selectedSLCount,
   selectedPTCount,
   isUpdating,
@@ -18,6 +20,7 @@ export const MenuContent = ({
   onDeactivateDateChange,
   onToggleGlobalLP,
   onGlobalLPChange,
+  onGlobalLPBChange,
   onUpdateAllSL,
   onUpdateSelectedSL,
   onUpdateAllPT,
@@ -51,8 +54,11 @@ export const MenuContent = ({
           loading={loading}
           useGlobalLP={useGlobalLP}
           globalLP={globalLP}
+          globalLPB={globalLPB}
+          hasABLandingPages={hasABLandingPages}
           onToggleGlobalLP={onToggleGlobalLP}
           onGlobalLPChange={onGlobalLPChange}
+          onGlobalLPBChange={onGlobalLPBChange}
         />
     </div>
       <UpdaterButtons
@@ -76,3 +82,4 @@ export const MenuContent = ({
     </>
   )
 }
+ 

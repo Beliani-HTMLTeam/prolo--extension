@@ -3,8 +3,16 @@ import updaterStyles from '../../styles/updater.module.scss';
 import { LPSectionProps } from '@/entrypoints/issue.content/types/Updater';
 
 
-
-export const LPSection = ({ loading, useGlobalLP, globalLP, onToggleGlobalLP, onGlobalLPChange }: LPSectionProps) => {
+export const LPSection = ({
+  loading,
+  useGlobalLP,
+  globalLP,
+  onToggleGlobalLP,
+  onGlobalLPChange,
+  hasABLandingPages = false,
+  globalLPB = '',
+  onGlobalLPBChange,
+}: LPSectionProps) => {
   if (loading) {
     return (
       <div className={updaterStyles.lpSection}>
@@ -28,7 +36,7 @@ export const LPSection = ({ loading, useGlobalLP, globalLP, onToggleGlobalLP, on
         {!useGlobalLP && <span className={updaterStyles.warningText}>(FD/MD mode enabled - per-shop LP IDs)</span>}
       </div>
       <div className={updaterStyles.lpField}>
-        <label>Landing Page:</label>
+        <label>{hasABLandingPages ? 'Landing Page A:' : 'Landing Page:'}</label>
         <input
           type="text"
           value={globalLP}
@@ -38,6 +46,20 @@ export const LPSection = ({ loading, useGlobalLP, globalLP, onToggleGlobalLP, on
           placeholder="lp26-04-05"
         />
       </div>
+      {hasABLandingPages && (
+        <div className={updaterStyles.lpField}>
+          <label>Landing Page B:</label>
+          <input
+            type="text"
+            value={globalLPB}
+            onChange={e => onGlobalLPBChange?.(e.target.value)}
+            disabled={!useGlobalLP}
+            className={!useGlobalLP ? updaterStyles.lpInputDisabled : ''}
+            placeholder="lp26-04-05"
+          />
+        </div>
+      )}
     </div>
   );
 };
+ 
