@@ -59,6 +59,8 @@ const getLinkValue = (row: ChecklistTableRow, columnId: string): string | null =
   if (columnId === COLUMN_IDS.NSLT_A_ID) return row.nsltAId;
   if (columnId === COLUMN_IDS.NSLT_B_ID) return row.nsltBId;
   if (columnId === COLUMN_IDS.LP_ID) return row.lpId;
+  if (columnId === COLUMN_IDS.LP_A_ID) return row.lpAId;
+  if (columnId === COLUMN_IDS.LP_B_ID) return row.lpBId;
   return null;
 };
 
@@ -78,6 +80,8 @@ const shouldHideColumn = (columnId: string, row: ChecklistTableRow, isCgbView: b
   if (columnId === COLUMN_IDS.NSLT_A_ACCEPTED && !row.nsltAId) return true;
   if (columnId === COLUMN_IDS.NSLT_B_ACCEPTED && !row.nsltBId) return true;
   if (columnId === COLUMN_IDS.LP_ACCEPTED && !row.lpId) return true;
+  if (columnId === COLUMN_IDS.LP_A_ACCEPTED && !row.lpAId) return true;
+  if (columnId === COLUMN_IDS.LP_B_ACCEPTED && !row.lpBId) return true;
 
   return false;
 };
@@ -88,7 +92,7 @@ const renderLink = (row: ChecklistTableRow, columnId: string) => {
     return '';
   }
 
-  if (columnId === COLUMN_IDS.LP_ID) {
+  if (columnId === COLUMN_IDS.LP_ID || columnId === COLUMN_IDS.LP_A_ID || columnId === COLUMN_IDS.LP_B_ID) {
     const shopId = getShopId(row.shop);
     if (!shopId) {
       return value;

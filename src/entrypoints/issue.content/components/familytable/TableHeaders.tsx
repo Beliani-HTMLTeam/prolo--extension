@@ -19,6 +19,8 @@ const getLinkValue = (row: ChecklistTableRow, columnId: string): string | null =
   if (columnId === COLUMN_IDS.NSLT_A_ID) return row.nsltAId;
   if (columnId === COLUMN_IDS.NSLT_B_ID) return row.nsltBId;
   if (columnId === COLUMN_IDS.LP_ID) return row.lpId;
+  if (columnId === COLUMN_IDS.LP_A_ID) return row.lpAId;
+  if (columnId === COLUMN_IDS.LP_B_ID) return row.lpBId;
   return null;
 };
 
@@ -44,8 +46,17 @@ const openAllLinksFromColumn = (column: ChecklistColumn, rows: ChecklistTableRow
       urls.push(`${domain}/shop_content.php?id=${id}&shop_id=${shopId}`);
       return;
     }
+    if (column.id === COLUMN_IDS.LP_A_ID || column.id === COLUMN_IDS.LP_B_ID) {
+      const shopId = getShopId(row.shop);
+      if (!shopId) {
+        return;
+      }
+      urls.push(`${domain}/shop_content.php?id=${id}&shop_id=${shopId}`);
+    }
 
-    urls.push(`${domain}/news_email.php?id=${id}`);
+    if (column.id === COLUMN_IDS.NSLT_ID || column.id === COLUMN_IDS.NSLT_A_ID || column.id === COLUMN_IDS.NSLT_B_ID) {
+      urls.push(`${domain}/news_email.php?id=${id}`);
+    }
   });
 
   // Open all URLs in new tabs
