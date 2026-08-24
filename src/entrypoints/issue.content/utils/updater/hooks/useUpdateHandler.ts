@@ -42,45 +42,63 @@ const enrichMissingNsltIds = async (
       slug: string;
       subjectLine?: string;
       pageTitle?: string;
-      landingPage?: string;
+      landingPageA?: string;
+      landingPageB?: string;
       activateDate: Date;
       deactivateDate: Date;
-      lpId?: string;
+      lpAId?: string;
+      lpBId?: string;
     }
   >,
   existingNewsletterIds: Record<string, { aId?: string; bId?: string }> = {},
 ): Promise<Record<string, { aId?: string; bId?: string }>> => {
-  const enrichedIds: Record<string, { aId?: string; bId?: string }> = { ...existingNewsletterIds };
+  const enrichedIds: Record<string, { aId?: string; bId?: string }> = {};
+
+  // Start with existing IDs
+  for (const [slug, ids] of Object.entries(existingNewsletterIds)) {
+    enrichedIds[slug] = { ...ids };
+  }
 
   for (const [slug, update] of Object.entries(updatesBySlug)) {
-    // Check if we already have nsltData
-    const existingNsltData = existingNewsletterIds?.[slug];
+    const existingNsltData = enrichedIds[slug] || {};
 
-    // If NSLT ID already exists, use it
-    if (existingNsltData?.aId || existingNsltData?.bId) {
-      continue;
-    }
+    // Check what we have and what we need
+    const hasA = !!existingNsltData.aId;
+    const hasB = !!existingNsltData.bId;
+    
+    // If the slug has subject line updates but no NSLT IDs, try to fetch
+    if (update.subjectLine && (!hasA || !hasB)) {
+      console.log(`🔍 Trying to fetch NSLT IDs for ${slug}`);
+      
+      // Try to fetch A if missing and we have lpAId
+      if (!hasA && update.lpAId) {
+        const shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
+        if (shopId) {
+          const nsltId = await fetchNsltIdFromLandingPage(update.lpAId, String(shopId));
+          if (nsltId) {
+            enrichedIds[slug] = { ...enrichedIds[slug], aId: nsltId };
+            console.log(`✅ Enriched NSLT ID (A) for ${slug}: ${nsltId}`);
+          }
+        }
+      }
 
-    // If no NSLT ID but we have page title and lpId, try to fetch
-    if (update.pageTitle && update.lpId) {
-      const shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
-      if (shopId) {
-        const nsltId = await fetchNsltIdFromLandingPage(update.lpId, String(shopId));
-        if (nsltId) {
-          enrichedIds[slug] = { aId: nsltId };
-          console.log(`✅ Enriched NSLT ID for ${slug}: ${nsltId}`);
-        } else {
-          // No NSLT ID found, still allow page title update
-          console.log(`ℹ️ No NSLT ID found for ${slug}, will update page title without NSLT ID`);
-          enrichedIds[slug] = {};
+      // Try to fetch B if missing and we have lpBId
+      if (!hasB && update.lpBId) {
+        const shopId = SLUG_ID_MAP[slug as keyof typeof SLUG_ID_MAP];
+        if (shopId) {
+          const nsltId = await fetchNsltIdFromLandingPage(update.lpBId, String(shopId));
+          if (nsltId) {
+            enrichedIds[slug] = { ...enrichedIds[slug], bId: nsltId };
+            console.log(`✅ Enriched NSLT ID (B) for ${slug}: ${nsltId}`);
+          }
         }
       }
     }
   }
 
+  console.log('🔍 Enriched newsletter IDs:', enrichedIds);
   return enrichedIds;
 };
-
 export const useUpdateHandler = ({
   getLPForSlug,
   getDateForSlug,
@@ -174,76 +192,95 @@ export const useUpdateHandler = ({
         }
 
         if (nsltData?.aId && nsltData?.bId) {
-          // Both A and B exist - create two records
-          const recordA: FormattedUpdateRecord = {
-            slug: update.slug,
-            nsltId: nsltData.aId,
-            lpId: update.lpAId,
-            landingPage: update.landingPageA!,
-            activateDate: formatDateForAPI(update.activateDate),
-            deactivateDate: formatDateForAPI(update.deactivateDate),
-            seller,
-            lang,
-            servers,
-            shopId,
-            variant: 'a',
-          };
-          if (update.subjectLine !== undefined) recordA.subjectLine = trimAllLineBreaks(update.subjectLine);
-          if (update.pageTitle !== undefined) recordA.pageTitle = trimAllLineBreaks(update.pageTitle);
-          formattedUpdates.push(recordA);
+  // Both A and B exist - create two records
+  const recordA: FormattedUpdateRecord = {
+    slug: update.slug,
+    nsltId: nsltData.aId,
+    lpId: update.lpAId,
+    landingPage: update.landingPageA!,
+    activateDate: formatDateForAPI(update.activateDate),
+    deactivateDate: formatDateForAPI(update.deactivateDate),
+    seller,
+    lang,
+    servers,
+    shopId,
+    variant: 'a',
+  };
+  if (update.subjectLine !== undefined) recordA.subjectLine = trimAllLineBreaks(update.subjectLine);
+  if (update.pageTitle !== undefined) recordA.pageTitle = trimAllLineBreaks(update.pageTitle);
+  formattedUpdates.push(recordA);
 
-          const recordB: FormattedUpdateRecord = {
-            slug: update.slug,
-            nsltId: nsltData.bId,
-            lpId: update.lpBId,
-            landingPage: update.landingPageB!,
-            activateDate: formatDateForAPI(update.activateDate),
-            deactivateDate: formatDateForAPI(update.deactivateDate),
-            seller,
-            lang,
-            servers,
-            shopId,
-            variant: 'b',
-          };
-          if (update.subjectLine !== undefined) recordB.subjectLine = trimAllLineBreaks(update.subjectLine);
-          if (update.pageTitle !== undefined) recordB.pageTitle = trimAllLineBreaks(update.pageTitle);
-          formattedUpdates.push(recordB);
-        } else if (nsltData?.aId) {
-          const record: FormattedUpdateRecord = {
-            slug: update.slug,
-            nsltId: nsltData.aId,
-            lpId: update.lpAId,
-            ...(update.landingPageA && update.landingPageA !== 'lp00-00-00' && { landingPage: update.landingPageA }),
-            activateDate: formatDateForAPI(update.activateDate),
-            deactivateDate: formatDateForAPI(update.deactivateDate),
-            seller,
-            lang,
-            servers,
-            shopId,
-            variant: 'a',
-          };
-          if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
-          if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
-          formattedUpdates.push(record);
-        } else {
-          // No NSLT ID exists - still allow page title update
-          const record: FormattedUpdateRecord = {
-            slug: update.slug,
-            nsltId: '', // Empty string for missing NSLT ID
-            lpId: update.lpAId,
-            ...(update.landingPageA && update.landingPageA !== 'lp00-00-00' && { landingPage: update.landingPageA }),
-            activateDate: formatDateForAPI(update.activateDate),
-            deactivateDate: formatDateForAPI(update.deactivateDate),
-            seller,
-            lang,
-            servers,
-            shopId,
-            variant: 'a',
-          };
-          if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
-          if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
-          formattedUpdates.push(record);
-        }
+  const recordB: FormattedUpdateRecord = {
+    slug: update.slug,
+    nsltId: nsltData.bId,
+    lpId: update.lpBId,
+    landingPage: update.landingPageB!,
+    activateDate: formatDateForAPI(update.activateDate),
+    deactivateDate: formatDateForAPI(update.deactivateDate),
+    seller,
+    lang,
+    servers,
+    shopId,
+    variant: 'b',
+  };
+  if (update.subjectLine !== undefined) recordB.subjectLine = trimAllLineBreaks(update.subjectLine);
+  if (update.pageTitle !== undefined) recordB.pageTitle = trimAllLineBreaks(update.pageTitle);
+  formattedUpdates.push(recordB);
+} else if (nsltData?.aId) {
+  // Only A exists - create just A record
+  const record: FormattedUpdateRecord = {
+    slug: update.slug,
+    nsltId: nsltData.aId,
+    lpId: update.lpAId,
+    ...(update.landingPageA && update.landingPageA !== 'lp00-00-00' && { landingPage: update.landingPageA }),
+    activateDate: formatDateForAPI(update.activateDate),
+    deactivateDate: formatDateForAPI(update.deactivateDate),
+    seller,
+    lang,
+    servers,
+    shopId,
+    variant: 'a',
+  };
+  if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
+  if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
+  formattedUpdates.push(record);
+} else if (nsltData?.bId) {
+  // Only B exists - create just B record
+  const record: FormattedUpdateRecord = {
+    slug: update.slug,
+    nsltId: nsltData.bId,
+    lpId: update.lpBId,
+    ...(update.landingPageB && update.landingPageB !== 'lp00-00-00' && { landingPage: update.landingPageB }),
+    activateDate: formatDateForAPI(update.activateDate),
+    deactivateDate: formatDateForAPI(update.deactivateDate),
+    seller,
+    lang,
+    servers,
+    shopId,
+    variant: 'b',
+  };
+  if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
+  if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
+  formattedUpdates.push(record);
+} else {
+  // No NSLT ID exists - still allow page title update
+  const record: FormattedUpdateRecord = {
+    slug: update.slug,
+    nsltId: '', // Empty string for missing NSLT ID
+    lpId: update.lpAId,
+    ...(update.landingPageA && update.landingPageA !== 'lp00-00-00' && { landingPage: update.landingPageA }),
+    activateDate: formatDateForAPI(update.activateDate),
+    deactivateDate: formatDateForAPI(update.deactivateDate),
+    seller,
+    lang,
+    servers,
+    shopId,
+    variant: 'a',
+  };
+  if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
+  if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
+  formattedUpdates.push(record);
+}
       });
 
       if (formattedUpdates.length === 0) {

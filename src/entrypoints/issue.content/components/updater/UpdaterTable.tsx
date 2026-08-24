@@ -233,7 +233,7 @@ const UpdaterTable = ({
             onSlugDeactivateDateChange={onSlugDeactivateDateChange}
             onSlugLPChange={onSlugLPChange}
             onSlugFMDModeChange={onSlugFMDModeChange}
-            disableSelections={isGlobalLPModified}
+            disableSelections={false}
             verificationResult={verificationResult}
             verifying={verifying}
           />
