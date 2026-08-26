@@ -105,6 +105,10 @@ export const CreateButton = (elems: Elems, target: string) => {
             toast.error(`Failed to get ${elems.ckeTextArea} element.`, { duration: 2500 });
             return;
           }
+
+          // @ts-ignore:next-line
+          content = minifiedHTML(minifiedCSS(content));
+
           textArea.value = content;
           upd.click();
           toast.success('Updating...', { duration: 2500 });
