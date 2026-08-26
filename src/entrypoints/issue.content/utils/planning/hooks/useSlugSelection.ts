@@ -14,9 +14,9 @@ export const useSlugSelection = () => {
   }, []);
 
   const selectAll = useCallback(
-    (availableSlugs: string[], tableData: ChecklistTableData | null, isABTesting: boolean, mode: ChecklistMode) => {
+    (availableSlugs: string[], tableData: ChecklistTableData | null, isABTesting: boolean, isTwoLP: boolean, mode: ChecklistMode) => {
       const selectableSlugs = availableSlugs.filter(slug =>
-        isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
+        isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, isTwoLP || false, mode),
       );
       setSelectedSlugs(new Set(selectableSlugs));
     },

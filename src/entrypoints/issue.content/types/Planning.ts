@@ -20,6 +20,7 @@ export interface PlanningModalProps {
   onSuccess?: () => void;
   tableData?: ChecklistTableData | null;
   isABTesting?: boolean;
+  isTwoLP?: boolean;
   allowSelection?: boolean;
 }
 

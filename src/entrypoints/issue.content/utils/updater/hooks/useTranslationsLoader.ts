@@ -58,6 +58,7 @@ export const useTranslationsLoader = ({
         }
       }
 
+      // TODO: handle lp path resolvment and translations fatching in one go, to avoid multiple requests and improve performance
         const [rawTranslations, lpResult] = await Promise.all([
           fetchSubjectPageTranslations(issueItem),
           fetchLPPaths(issueItem),

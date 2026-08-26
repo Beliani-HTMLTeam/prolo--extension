@@ -78,6 +78,7 @@ const ActionsPanel = ({
   const shouldShowSLPTUpdater = mode === 'newsletter' || mode === 'sunday';
   const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
+  const hasGroupedLp = tableData?.hasGroupedLp ?? false;
   const rows = tableData?.rows ?? [];
   const origin = window.location.origin;
   const [showGenerateModal, setShowGenerateModal] = useState(false);
@@ -368,6 +369,7 @@ console.log('filteredRows', filteredRows);
           }}
           tableData={tableData}
           isABTesting={hasGroupedNslt}
+          isTwoLP={hasGroupedLp}
           allowSelection={true}
         />
       )}

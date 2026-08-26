@@ -20,7 +20,7 @@ import { PlanningResultsActions } from './planningmodal/PlanningResultsActions';
 import Skeleton from 'react-loading-skeleton';
 import { NEWSLETTER_SLUGS } from '../lib/planningConfig';
 
-const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting }: PlanningModalProps) => {
+const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, isABTesting, isTwoLP }: PlanningModalProps) => {
   const { newsletterTitle, loading: newsletterTitleLoading, error: newsletterTitleError } = useNewsletterTitle(issueId);
   const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
   const [planningStarted, setPlanningStarted] = useState(false);
@@ -85,7 +85,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
     }
 
     const invalidSlugs = Array.from(selectedSlugs).filter(
-      slug => !isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
+      slug => !isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, isTwoLP || false, mode),
     );
 
     if (invalidSlugs.length > 0) {
@@ -108,7 +108,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
 
     const allSlugs = availableSlugs;
     const allReady = allSlugs.every(slug =>
-      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
+      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, isTwoLP || false, mode),
     );
 
     if (!allReady) {
@@ -144,7 +144,7 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
 
   const selectAll = () => {
     const selectableSlugs = availableSlugs.filter(slug =>
-      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
+      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, isTwoLP || false, mode),
     );
     setSelectedSlugs(new Set(selectableSlugs));
   };
@@ -178,14 +178,14 @@ const PlanningModal = ({ issueId, mode, chdeId, onClose, onSuccess, tableData, i
 
   const totalCustomers = getTotalCustomers(results);
   const isReady = (slug: string) => {
-    return isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode);
+    return isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, isTwoLP || false, mode);
   };
 
   const hasManualSelection = useMemo(() => {
     if (selectedSlugs.size === 0) return false;
 
     const selectableSlugs = availableSlugs.filter(slug =>
-      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, mode),
+      isSlugReadyForPlanning(tableData || null, slug, isABTesting || false, isTwoLP || false, mode),
     );
 
     const allSelectableSelected = selectableSlugs.length > 0 && selectableSlugs.every(slug => selectedSlugs.has(slug));
