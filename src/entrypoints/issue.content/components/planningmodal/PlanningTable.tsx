@@ -27,6 +27,8 @@ export const PlanningTable = ({
       const customerCount = getCustomerCount(result, planningStarted, slug, aggregating, selectedSlugs);
       const subjectLine = getSubjectLine(result, planningStarted, slug, aggregating, selectedSlugs);
       const ids = newsletterIdMap.get(slug) ?? newsletterIdMap.get(normalizedSlug);
+      console.log("ids, hasAB", ids, ids?.length, (ids?.length ?? 0) > 1);
+      
       const hasAB = (ids?.length ?? 0) > 1;
 
       return (

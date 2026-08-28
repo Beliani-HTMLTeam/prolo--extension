@@ -24,13 +24,37 @@ export const getShopIdsMap = (tableData: ChecklistTableData, startId: number) =>
     
     const ids: Array<{ type: 'A' | 'B'; newsletterId: number }> = [];
 
-    ids.push({ type: 'A', newsletterId: row.nsltId ? parseInt(row.nsltId, 10) : row.nsltAId ? parseInt(row.nsltAId, 10) : currentId });
+    if (row.nsltId) {
+      ids.push({
+        type: 'A',
+        newsletterId: parseInt(row.nsltId, 10),
+      });
+    } else if (row.nsltAId) {
+      ids.push({
+        type: 'A',
+        newsletterId: parseInt(row.nsltAId, 10),
+      });
+    } else if (!row.nsltBId) {
+      // Generate A only when there is no saved
+      // newsletter ID of any type.
+      ids.push({
+        type: 'A',
+        newsletterId: currentId,
+      });
+    }
+
+    if (row.nsltBId) {
+      ids.push({
+        type: 'B',
+        newsletterId: parseInt(row.nsltBId, 10),
+      });
+    }
+
     currentId++;
 
-    if (row?.nsltBId) {
-      ids.push({ type: 'B', newsletterId: parseInt(row.nsltBId, 10) });
+    if (ids.length > 0) {
+      idMap.set(slug, ids);
     }
-    idMap.set(slug, ids);
   }
   return idMap;
 };
