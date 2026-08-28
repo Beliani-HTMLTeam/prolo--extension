@@ -107,9 +107,23 @@ const ActionsPanel = ({
   if (mode === 'sunday') {
     return rows.filter(row => row.nsltId);
   }
- return rows.filter(row => {
-    const hasNewsletterId = !!(row.nsltId || row.nsltAId || row.nsltBId);
-    const hasLandingPageOnly = !!(row.lpId && !row.nsltId && !row.nsltAId && !row.nsltBId);
+  return rows.filter(row => {
+    const hasNewsletterId = Boolean(
+      row.nsltId ||
+      row.nsltAId ||
+      row.nsltBId
+    );
+
+    const hasLandingPageId = Boolean(
+      row.lpId ||
+      row.lpAId ||
+      row.lpBId
+    );
+
+    const hasLandingPageOnly =
+      hasLandingPageId &&
+      !hasNewsletterId;
+
     return hasNewsletterId || hasLandingPageOnly;
   });
 }, [rows, mode]);
