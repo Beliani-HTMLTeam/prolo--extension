@@ -10,12 +10,8 @@ interface UseTranslationsLoaderProps {
   isSundayNewsletter?: boolean;
 }
 
-export const useTranslationsLoader = ({
-  issueId,
-  rows,
-  isSundayNewsletter = false,
-}: UseTranslationsLoaderProps) => {
-  console.log("rows", rows)
+export const useTranslationsLoader = ({ issueId, rows, isSundayNewsletter = false }: UseTranslationsLoaderProps) => {
+  console.log('rows', rows);
   const [translations, setTranslations] = useState<LineTitleTranslations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +21,10 @@ export const useTranslationsLoader = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const refreshInProgressRef = useRef(false);
 
-    const loadIssueData = useCallback(async (skipRefresh: boolean = false) => {
+  const loadIssueData = useCallback(
+    async (skipRefresh: boolean = false) => {
       setLoading(true);
-        setError(null);
+      setError(null);
       try {
         const issueData = await fetchIssueData(issueId);
         const issueItem = issueData.issue_list?.[0];
@@ -36,33 +33,31 @@ export const useTranslationsLoader = ({
           return;
         }
 
-         // Refresh spreadsheet data only for regular newsletters (not Sunday)
-      // and only on first load
-      if (!isSundayNewsletter && !skipRefresh && !refreshInProgressRef.current) {
-        refreshInProgressRef.current = true;
-        setIsRefreshing(true);
-        setIsRefreshed(false);
-        try {
-          const refreshed = await refreshSpreadsheetData(issueItem, issueId);
-          if (refreshed) {
-            console.log('✅ Spreadsheet data refreshed successfully');
-          } else {
-            console.warn('⚠️ Spreadsheet refresh failed, using cached data');
+        // Refresh spreadsheet data only for regular newsletters (not Sunday)
+        // and only on first load
+        if (!isSundayNewsletter && !skipRefresh && !refreshInProgressRef.current) {
+          refreshInProgressRef.current = true;
+          setIsRefreshing(true);
+          setIsRefreshed(false);
+          try {
+            const refreshed = await refreshSpreadsheetData(issueItem, issueId);
+            if (refreshed) {
+              console.log('✅ Spreadsheet data refreshed successfully');
+            } else {
+              console.warn('⚠️ Spreadsheet refresh failed, using cached data');
+            }
+          } catch (refreshError) {
+            console.warn('⚠️ Spreadsheet refresh error:', refreshError);
+          } finally {
+            refreshInProgressRef.current = false;
+            setIsRefreshed(true);
+            setIsRefreshing(false);
           }
-        } catch (refreshError) {
-          console.warn('⚠️ Spreadsheet refresh error:', refreshError);
-        } finally {
-          refreshInProgressRef.current = false;
-          setIsRefreshed(true);
-          setIsRefreshing(false);
         }
-      }
 
-      // TODO: handle lp path resolvment and translations fatching in one go, to avoid multiple requests and improve performance
-        const [rawTranslations, lpResult] = await Promise.all([
-          fetchSubjectPageTranslations(issueItem),
-          fetchLPPaths(issueItem),
-        ]);
+        // TODO: handle lp path resolvment and translations fatching in one go, to avoid multiple requests and improve performance
+        const rawTranslations = await fetchSubjectPageTranslations(issueItem);
+        const lpResult = await fetchLPPaths(issueItem, rawTranslations.tabName);
 
         setGlobalLP(lpResult.lp);
 
@@ -75,8 +70,7 @@ export const useTranslationsLoader = ({
 
         setDeactivateDate(calculatedDate);
 
-          const availableSlugsSet = new Set(rows.map(row => row.shop));
-
+        const availableSlugsSet = new Set(rows.map(row => row.shop));
 
         const filteredTranslations: LineTitleTranslations = {
           subjectLine: rawTranslations.subjectLine
@@ -104,25 +98,35 @@ export const useTranslationsLoader = ({
         };
 
         setTranslations(filteredTranslations);
-        console.log("filtered translations", filteredTranslations);
+        console.log('filtered translations', filteredTranslations);
       } catch (e) {
         console.error('Failed to load SL/PT translations: ', e);
         setError(e instanceof Error ? e.message : 'Failed to load translations');
       } finally {
         setLoading(false);
       }
-
-
-  }, [issueId, rows]);
+    },
+    [issueId, rows],
+  );
 
   useEffect(() => {
-        loadIssueData();
-
+    loadIssueData();
   }, [loadIssueData]);
 
   const retry = useCallback(() => {
     loadIssueData(true);
   }, [loadIssueData]);
 
-  return { translations, loading, error, globalLP, setGlobalLP, deactivateDate, retry , isRefreshed, isRefreshing, refreshSpreadsheet: () => loadIssueData(true)};
+  return {
+    translations,
+    loading,
+    error,
+    globalLP,
+    setGlobalLP,
+    deactivateDate,
+    retry,
+    isRefreshed,
+    isRefreshing,
+    refreshSpreadsheet: () => loadIssueData(true),
+  };
 };

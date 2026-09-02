@@ -138,8 +138,8 @@ export const fetchSpreadsheetTranslations = async (issueItem: IssueListItem): Pr
   }
 };
 
-export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Promise<LineTitleTranslations> => {
-  const empty: LineTitleTranslations = { subjectLine: null, pageTitle: null };
+export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Promise<LineTitleTranslations & { tabName: string | null }> => {
+  const empty: LineTitleTranslations & { tabName: string | null } = { subjectLine: null, pageTitle: null, tabName: null };
   try {
     const nsltFields = issueItem.additional_fields?.['Newsletter production'];
     const spreadsheetField = nsltFields?.find(f => f.name === 'Translation spreadsheet newsletter');
@@ -163,6 +163,8 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
     const tabJson = await tabRes.json();
     if (tabJson?.code !== 200) return empty;
 
+    const tabName = tabJson.tab || null;
+
     const dynRes = await withZrokTimeout(
       fetch(`${ZROK_BASE}/dynamic/${tabJson.year}/${tabJson.tab}`, {
         headers: ZROK_HEADERS,
@@ -171,7 +173,7 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
       }),
     );
     const dynJson = await dynRes.json();
-    if (dynJson?.code !== 200) return empty;
+    if (dynJson?.code !== 200) return {...empty, tabName};
 
     const data: Record<string, string[]> = dynJson.data ?? {};
     const keys: string[] = dynJson.keys ?? [];
@@ -211,6 +213,7 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
     return {
       subjectLine: Object.keys(subjectLine).length > 0 ? subjectLine : null,
       pageTitle: Object.keys(pageTitle).length > 0 ? pageTitle : null,
+      tabName,
     };
   } catch (e) {
     console.warn('[spreadsheet] Failed to fetch translations:', e);
@@ -443,29 +446,37 @@ export const fetchAllSundayTranslations = async (
     const spreadsheetId = SUNDAY_SPREADSHEET_ID;
     const gid = SUNDAY_GID;
 
-    const tabRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
-        headers: ZROK_HEADERS,
-        mode: 'cors',
-        credentials: 'omit',
-      }),
+    // Resolve tab name with retries
+    const tabRes = await withRetry(() =>
+      withLongTimeout(
+        fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+          headers: ZROK_HEADERS,
+          mode: 'cors',
+          credentials: 'omit',
+        }),
+        10000, // 10s per attempt
+      ),
     );
     const tabJson = await tabRes.json();
     if (tabJson?.code !== 200) return null;
 
-    const dynRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/dynamic/${tabJson.year}/${tabJson.tab}`, {
-        headers: ZROK_HEADERS,
-        mode: 'cors',
-        credentials: 'omit',
-      }),
+    // Fetch dynamic sheet data with retries
+    const dynRes = await withRetry(() =>
+      withLongTimeout(
+        fetch(`${ZROK_BASE}/dynamic/${tabJson.year}/${tabJson.tab}`, {
+          headers: ZROK_HEADERS,
+          mode: 'cors',
+          credentials: 'omit',
+        }),
+        30000, // 30s per attempt (same as push)
+      ),
     );
     const dynJson = await dynRes.json();
     if (dynJson?.code !== 200) return null;
 
     const data: Record<string, string[]> = dynJson.data ?? {};
 
-    const subjectLineIndices = [2,3,4,5,6,7];
+    const subjectLineIndices = [2, 3, 4, 5, 6, 7];
 
     const subjectLine: Record<number, Record<string, string>> = {};
 
@@ -488,7 +499,7 @@ export const fetchAllSundayTranslations = async (
 
     return { subjectLines: subjectLine };
   } catch (e) {
-    console.warn('[spreadsheet] Failed to fetch translations:', e);
+    console.warn('[spreadsheet] Failed to fetch Sunday translations after retries:', e);
     return null;
   }
 };
