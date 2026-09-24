@@ -1,4 +1,4 @@
-import { ReactElement, useState } from 'react';
+import { type ReactElement, useState } from 'react';
 import { getModal, SLUG_SHOP, mainURL, dev, mainURLprod } from '../assets';
 import JSZip from 'jszip';
 

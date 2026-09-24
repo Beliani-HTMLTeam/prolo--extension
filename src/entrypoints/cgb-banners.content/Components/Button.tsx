@@ -1,5 +1,5 @@
 import '../styles/style.scss';
-import { MouseEventHandler, ReactElement } from 'react';
+import { type MouseEventHandler, type ReactElement } from 'react';
 import Loader from './Loader';
 
 interface ButtonProps {

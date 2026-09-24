@@ -1,8 +1,8 @@
-import { ChangeEvent, ReactElement, useEffect, useState } from 'react';
+import { type ChangeEvent, type ReactElement, useEffect, useState } from 'react';
 import { checkedDeviceType, filledCashback, getCurrentShop } from '../assets';
 import { getModal } from '../assets';
 import ChooseZipBtn from './ChooseZipBtn';
-import JSZip, { JSZipObject } from 'jszip';
+import JSZip, { type JSZipObject } from 'jszip';
 
 type FileElement = HTMLInputElement;
 

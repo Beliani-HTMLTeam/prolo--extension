@@ -1,4 +1,4 @@
-import { Dispatch, memo, SetStateAction } from 'react';
+import { type Dispatch, memo, type SetStateAction } from 'react';
 import { BASE_SLUG_CONFIG } from '../helpers/slugMapper';
 import { ImagePreview } from './ImagePreview';
 import styles from '../push.module.scss';

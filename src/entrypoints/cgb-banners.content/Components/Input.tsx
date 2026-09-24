@@ -1,4 +1,4 @@
-import { ChangeEvent, ReactElement } from "react";
+import { type ChangeEvent, type ReactElement } from "react";
 
 // Type definitions
 interface InputProps {

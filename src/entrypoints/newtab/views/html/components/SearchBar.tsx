@@ -1,4 +1,4 @@
-import { KeyboardEvent, useEffect, useState } from 'react';
+import { type KeyboardEvent, useEffect, useState } from 'react';
 import styles from '@/entrypoints/newtab/views/html/styles/SearchBar.module.scss';
 import { Icon } from '@iconify/react';
 import { useRef } from 'react';

@@ -1,4 +1,4 @@
-import { Dispatch } from 'react';
+import { type Dispatch } from 'react';
 import { calculateCommitActivity } from './calculateCommitActivity';
 import { type ProjectData } from '../../types/ProjectData';
 

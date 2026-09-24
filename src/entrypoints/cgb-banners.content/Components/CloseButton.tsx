@@ -1,4 +1,4 @@
-import { MouseEventHandler, ReactElement } from 'react';
+import { type MouseEventHandler, type ReactElement } from 'react';
 import '../styles/style.scss';
 
 interface CloseButtonProps {

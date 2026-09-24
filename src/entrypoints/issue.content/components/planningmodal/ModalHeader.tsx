@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import formStyles from '@/assets/styles/forms.module.scss';
-import { JSX } from 'react';
+import { type JSX } from 'react';
 
 type ModalHeaderProps = {
   title: string | JSX.Element;

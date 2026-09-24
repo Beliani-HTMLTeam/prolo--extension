@@ -1,4 +1,4 @@
-import { ReactElement, useContext, useEffect, useState } from 'react';
+import { type ReactElement, useContext, useEffect, useState } from 'react';
 import { URLContext } from './App';
 import { bannerDEV, bannerPROD } from './assets/index';
 import ButtonsBlock from './ButtonsBlock';

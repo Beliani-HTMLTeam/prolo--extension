@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';

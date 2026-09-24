@@ -1,4 +1,4 @@
-import { JSX, useState } from 'react';
+import { type JSX, useState } from 'react';
 import { langSlugDesktop } from './assets';
 import { getModal } from './assets';
 import Swal from 'sweetalert2';
