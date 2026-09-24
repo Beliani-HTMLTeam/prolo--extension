@@ -1,5 +1,5 @@
 import pLimit from 'p-limit';
-import { IssueListItem } from '../lib/types';
+import { type IssueListItem } from '../lib/types';
 import { fetchSpreadsheetTranslationsTab } from './issueData';
 import { NEWSLETTER_ENDPOINT, SHOP_ENDPOINT } from '../utils/updater/constants';
 import axios from 'axios';

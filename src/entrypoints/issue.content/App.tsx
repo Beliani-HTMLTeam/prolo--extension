@@ -16,7 +16,7 @@ import {
   parseIssueInfo,
   extractIssueLinks,
 } from './api/issueData';
-import { ChecklistOwner, type ChecklistApiResponse, type ChecklistTableData, type IssueInfoViewModel, type IssueLink } from './lib/types';
+import { type ChecklistOwner, type ChecklistApiResponse, type ChecklistTableData, type IssueInfoViewModel, type IssueLink } from './lib/types';
 import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
 import { getIssueModePlugin } from './api/issueModePlugins';
 import { getChecklistOwner } from './api/issueParsing';

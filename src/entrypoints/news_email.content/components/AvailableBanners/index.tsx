@@ -1,5 +1,5 @@
 import { buildBannerUrl, buildBannerHref } from '../../utils/banner';
-import { BannerType } from '../../types';
+import { type BannerType } from '../../types';
 
 import styles from './AvailableBanners.module.scss';
 import ActionButton from '@/components/Button';

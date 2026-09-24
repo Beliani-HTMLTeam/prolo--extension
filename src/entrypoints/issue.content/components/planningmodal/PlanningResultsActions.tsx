@@ -1,4 +1,4 @@
-import { PlanningResultsActionsProps } from '@/entrypoints/issue.content/types/Planning';
+import { type PlanningResultsActionsProps } from '@/entrypoints/issue.content/types/Planning';
 import Skeleton from 'react-loading-skeleton';
 
 import styles from '../../styles/planning.module.scss';

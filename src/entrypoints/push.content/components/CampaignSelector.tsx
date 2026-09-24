@@ -1,6 +1,6 @@
 import { generateImageUrl, generateLpPath, parseCampaignName } from '../helpers/slugMapper';
 import styles from '../push.module.scss';
-import { CampaignSelectorProps } from '../types/push';
+import { type CampaignSelectorProps } from '../types/push';
 
 export const CampaignSelector = ({
   campaignName,

@@ -1,5 +1,5 @@
 import styles from '../push.module.scss';
-import { ConfirmationDialogProps } from '../types/push';
+import { type ConfirmationDialogProps } from '../types/push';
 
 export const ConfirmationDialog = ({ isOpen, slug, onConfirm, onCancel }: ConfirmationDialogProps) => {
   if (!isOpen) return null;

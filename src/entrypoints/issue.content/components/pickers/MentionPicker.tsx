@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import styles from './Picker.module.scss';
 import { fetchMentionableUsers } from '../../api/issueData';
-import { MentionUser } from '../../lib/types';
+import { type MentionUser } from '../../lib/types';
 
 type MentionPickerProps = {
   commentUsers: MentionUser[];

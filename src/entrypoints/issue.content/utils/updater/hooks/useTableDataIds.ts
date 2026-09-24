@@ -1,4 +1,4 @@
-import { ChecklistTableRow } from "@/entrypoints/issue.content/lib/types";
+import { type ChecklistTableRow } from "@/entrypoints/issue.content/lib/types";
 
 interface NewsletterIds {
   aId?: string;

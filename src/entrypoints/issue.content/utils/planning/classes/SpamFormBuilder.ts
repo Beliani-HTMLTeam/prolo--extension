@@ -1,4 +1,4 @@
-import { SendToSpamParams } from '../../../types/Planning';
+import { type SendToSpamParams } from '../../../types/Planning';
 
 const defaultParams: { [key: string]: string } = {
   'par[src][shop]': '1',

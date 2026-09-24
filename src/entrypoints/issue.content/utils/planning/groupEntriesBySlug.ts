@@ -1,4 +1,4 @@
-import { PlanningEntry } from '../../types/Planning';
+import { type PlanningEntry } from '../../types/Planning';
 
 export const groupEntriesBySlug = (allEntries: PlanningEntry[]): Map<string, PlanningEntry[]> => {
   const grouped = new Map<string, PlanningEntry[]>();

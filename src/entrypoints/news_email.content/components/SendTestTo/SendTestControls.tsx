@@ -1,4 +1,4 @@
-import { CustomerOption, extractEmailFromValue, fetchCustomerByEmail, getUserEmail, parseCustomerIdFromValue, SEND_TO_USERS, setTestCustomerAndSend } from '../../utils/sendTest';
+import { type CustomerOption, extractEmailFromValue, fetchCustomerByEmail, getUserEmail, parseCustomerIdFromValue, SEND_TO_USERS, setTestCustomerAndSend } from '../../utils/sendTest';
 import styles from './SendTestControls.module.scss';
 
 export default function SendTestControls() {

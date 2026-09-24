@@ -1,6 +1,6 @@
-import { BannerType } from '../types';
+import { type BannerType } from '../types';
 import { buildNewsletterPreviewHtml } from './banner';
-import { NewsletterDomData } from './dom';
+import { type NewsletterDomData } from './dom';
 import pLimit from 'p-limit';
 import pRetry from 'p-retry';
 

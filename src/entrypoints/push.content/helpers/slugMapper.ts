@@ -1,4 +1,4 @@
-import { PushTranslations } from "@/entrypoints/issue.content/lib/types";
+import { type PushTranslations } from "@/entrypoints/issue.content/lib/types";
 export interface SlugConfig {
   shop: string;
   template: string;

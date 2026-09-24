@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import styles from './CampaignPreview.module.scss';
 import newsletterTemplate from '../../template.html?raw';
-import { BannerType } from '../../types';
+import { type BannerType } from '../../types';
 import { buildNewsletterPreviewHtml } from '../../utils/banner';
 import Modal from '@/components/modal/Modal';
 

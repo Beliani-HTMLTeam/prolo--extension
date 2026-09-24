@@ -1,4 +1,4 @@
-import { PushTranslations } from '@/entrypoints/issue.content/lib/types';
+import { type PushTranslations } from '@/entrypoints/issue.content/lib/types';
 import { useCallback, useState } from 'react';
 import Swal from 'sweetalert2';
 import { parseCampaignName } from '../../helpers/slugMapper';

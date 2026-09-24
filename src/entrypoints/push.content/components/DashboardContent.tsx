@@ -1,7 +1,7 @@
 import styles from '../push.module.scss';
 import { MainContent } from './MainContent';
 import { Sidebar } from './Sidebar';
-import { DashboardContentProps } from '../types/push';
+import { type DashboardContentProps } from '../types/push';
 
 export const DashboardContent = ({
   campaign,

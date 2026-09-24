@@ -2,7 +2,7 @@ import { Dispatch, memo, SetStateAction } from 'react';
 import { BASE_SLUG_CONFIG } from '../helpers/slugMapper';
 import { ImagePreview } from './ImagePreview';
 import styles from '../push.module.scss';
-import { CampaignRowData, CampaignTableProps, CustomImage, CustomLpPath, CustomTemplate } from '../types/push';
+import { type CampaignRowData, type CampaignTableProps, type CustomImage, type CustomLpPath, type CustomTemplate } from '../types/push';
 
 
 

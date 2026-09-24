@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from '../push.module.scss';
-import { BigImagePreviewProps } from '../types/push';
+import { type BigImagePreviewProps } from '../types/push';
 
 export const BigImagePreview = ({ src, alt, onClose }: BigImagePreviewProps) => {
   const [error, setError] = useState(false);

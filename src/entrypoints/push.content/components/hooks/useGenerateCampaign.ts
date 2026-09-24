@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 
 import { generateCampaignData, getAllSlugs, isValidTemplateId } from '../../helpers/slugMapper';
 import { showErrorAlert } from '../Alerts';
-import { StoredCampaign, UseGenerateCampaignProps } from '../../types/push';
+import { type StoredCampaign, type UseGenerateCampaignProps } from '../../types/push';
 
 export function useGenerateCampaign({
   campaignName,

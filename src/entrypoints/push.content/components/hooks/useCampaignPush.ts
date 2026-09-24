@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { showErrorAlert } from '../Alerts';
-import { ConfirmationState, StoredCampaign, SuccessState } from '../../types/push';
+import { type ConfirmationState, type StoredCampaign, type SuccessState } from '../../types/push';
 
 const OPTION_KEYS = ["[name='shop']", "[name='template']", "[name='language[]']", "[name='cta_lang']"] as const;
 const INPUT_KEYS = [

@@ -3,7 +3,7 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '@iconify/react';
 import styles from './styles/RecentComments.module.scss';
-import { Comment } from '@/entrypoints/issue.content/api/comments';
+import { type Comment } from '@/entrypoints/issue.content/api/comments';
 
 export interface IssueWithComments {
   link: string;

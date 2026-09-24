@@ -1,5 +1,5 @@
 import styles from '../push.module.scss';
-import { CampaignActionsProps } from '../types/push';
+import { type CampaignActionsProps } from '../types/push';
 
 export const CampaignActions = ({
   isRandomTesting,

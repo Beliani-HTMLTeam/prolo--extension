@@ -1,6 +1,6 @@
 import Skeleton from 'react-loading-skeleton';
 import updaterStyles from '../../styles/updater.module.scss';
-import { LPSectionProps } from '@/entrypoints/issue.content/types/Updater';
+import { type LPSectionProps } from '@/entrypoints/issue.content/types/Updater';
 
 
 export const LPSection = ({

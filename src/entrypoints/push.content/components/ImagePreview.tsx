@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import styles from '../push.module.scss';
-import { ImagePreviewProps } from '../types/push';
+import { type ImagePreviewProps } from '../types/push';
 
 export const ImagePreview = ({ src, alt, size = 'small', onClick }: ImagePreviewProps) => {
   const [error, setError] = useState(false);

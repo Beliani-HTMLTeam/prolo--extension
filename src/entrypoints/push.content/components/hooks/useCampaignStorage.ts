@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { StoredCampaign } from '../../types/push';
+import { type StoredCampaign } from '../../types/push';
 
 export function useCampaignStorage() {
   const [campaign, setCampaign] = useState<StoredCampaign | null>(null);

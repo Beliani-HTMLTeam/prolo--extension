@@ -1,5 +1,5 @@
 import styles from '../push.module.scss';
-import { EmptyStateProps } from '../types/push';
+import { type EmptyStateProps } from '../types/push';
 
 
 

@@ -1,4 +1,4 @@
-import { ChecklistTableData, ChecklistTableRow, LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
+import { type ChecklistTableData, type ChecklistTableRow, type LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 
 export interface VerificationResult {
    subjectNeedsUpdate: boolean;

@@ -6,7 +6,7 @@ import layoutStyles from '../styles/layout.module.scss';
 import planningStyles from '../styles/planning.module.scss';
 import { getShopIdsMap } from '@/entrypoints/issue.content/utils/planning/getShopIdsMap';
 import { useNewsletterTitle } from '@/entrypoints/issue.content/utils/planning/hooks/useNewsletterTitle';
-import { NewsletterIdMap, PlanningModalProps } from '@/entrypoints/issue.content/types/Planning';
+import { type NewsletterIdMap, type PlanningModalProps } from '@/entrypoints/issue.content/types/Planning';
 import { usePlanning } from '@/entrypoints/issue.content/utils/planning/hooks/usePlanning';
 import { formatResultsForClipboard, getTotalCustomers } from '@/entrypoints/issue.content/utils/planning/resultHelpers';
 import { ModalHeader } from './planningmodal/ModalHeader';

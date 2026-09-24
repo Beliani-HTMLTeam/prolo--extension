@@ -1,5 +1,5 @@
 import styles from '../push.module.scss';
-import { SuccessDialogProps } from '../types/push';
+import { type SuccessDialogProps } from '../types/push';
 
 
 export const SuccessDialog = ({

@@ -1,6 +1,6 @@
 import { fetchIssueData, fetchSubjectPageTranslations } from '@/entrypoints/issue.content/api/issueData';
 import { fetchLPPaths } from '@/entrypoints/issue.content/api/updater';
-import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
+import { type LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { getDefaultDeactivateDate } from '../dates';
 import { refreshSpreadsheetData } from '@/entrypoints/issue.content/api/spreadsheetService';
 

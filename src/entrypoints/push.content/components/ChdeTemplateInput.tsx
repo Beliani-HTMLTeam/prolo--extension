@@ -1,6 +1,6 @@
 import styles from '../push.module.scss';
 import { isValidTemplateId, SLUG_ORDER } from '../helpers/slugMapper';
-import { ChdeTemplateInputProps } from '../types/push';
+import { type ChdeTemplateInputProps } from '../types/push';
 
 export const ChdeTemplateInput = ({
   chdeTemplateId,

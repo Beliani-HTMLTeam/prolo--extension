@@ -1,4 +1,4 @@
-import { UpdaterProps, UpdaterSelectedItem, VerificationResult } from '@/entrypoints/issue.content/types/Updater';
+import { type UpdaterProps, type UpdaterSelectedItem, type VerificationResult } from '@/entrypoints/issue.content/types/Updater';
 import { useEffect } from 'react';
 import clsx from 'clsx';
 import updaterStyles from '../styles/updater.module.scss';

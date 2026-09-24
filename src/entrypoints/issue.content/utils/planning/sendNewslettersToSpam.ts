@@ -1,5 +1,5 @@
 import { sendToSpam } from '@/entrypoints/issue.content/api/planning';
-import { PlanningEntry, PlanningResult } from '../../types/Planning';
+import { type PlanningEntry, type PlanningResult } from '../../types/Planning';
 import pLimit from 'p-limit';
 import { NEWSLETTER_SHOP_ORDER } from '@/entrypoints/issue.content/lib/shopConfig';
 

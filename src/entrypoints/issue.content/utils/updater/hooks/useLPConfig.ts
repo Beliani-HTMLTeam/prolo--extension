@@ -1,4 +1,4 @@
-import { UpdaterSlugLPConfig } from '@/entrypoints/issue.content/types/Updater';
+import { type UpdaterSlugLPConfig } from '@/entrypoints/issue.content/types/Updater';
 import { getPairedSlug } from '../shopPairs';
 
 interface UseLPConfigProps {

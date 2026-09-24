@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Comment } from '@/entrypoints/issue.content/api/comments';
+import { type Comment } from '@/entrypoints/issue.content/api/comments';
 
 export interface IssueWithComments {
   link: string;

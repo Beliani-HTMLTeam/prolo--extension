@@ -1,6 +1,6 @@
-import { ActivationResult, UpdateResult, UpdaterSelectedItem } from '@/entrypoints/issue.content/types/Updater';
+import { type ActivationResult, type UpdateResult, type UpdaterSelectedItem } from '@/entrypoints/issue.content/types/Updater';
 import { formatDateForAPI } from '../dates';
-import { LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
+import { type LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { DEFAULT_SERVERS, LANG_TO_SLUG, NL_SERVERS, SELLER_TO_SLUG } from '../constants';
 import { SLUG_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
 import { sendBatchUpdates } from '@/entrypoints/issue.content/api/updater';

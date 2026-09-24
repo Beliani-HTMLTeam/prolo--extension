@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import Swal from 'sweetalert2';
 import { showErrorAlert } from '../Alerts';
 import { BASE_SLUG_CONFIG } from '../../helpers/slugMapper';
-import { CustomFieldState, CustomImageState, StoredCampaign } from '../../types/push';
+import { type CustomFieldState, type CustomImageState, type StoredCampaign } from '../../types/push';
 
 
 export const extractCampaignName = (fullName: string): string => {

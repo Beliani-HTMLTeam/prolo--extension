@@ -1,4 +1,4 @@
-import { PlanningTableProps } from '@/entrypoints/issue.content/types/Planning';
+import { type PlanningTableProps } from '@/entrypoints/issue.content/types/Planning';
 import { getCustomerCount, getSubjectLine } from '@/entrypoints/issue.content/utils/planning/resultHelpers';
 import { normalizeSlugForSlug } from '@/entrypoints/issue.content/utils/planning/slugNormalization';
 import { Icon } from '@iconify/react';

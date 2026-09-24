@@ -6,9 +6,9 @@ import pRetry from 'p-retry';
 import pTimeout from 'p-timeout';
 import pMinDelay from 'p-min-delay';
 import pProps from 'p-props';
-import { ProductData } from '../newtab/types/ProductData';
-import { ProductWithShops } from '../newtab/types/ProductWithShops';
-import { ShopDetails } from '../newtab/types/ShopDetails';
+import { type ProductData } from '../newtab/types/ProductData';
+import { type ProductWithShops } from '../newtab/types/ProductWithShops';
+import { type ShopDetails } from '../newtab/types/ShopDetails';
 
 async function getOrigin(): Promise<string | undefined> {
   try {

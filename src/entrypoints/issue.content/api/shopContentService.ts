@@ -1,4 +1,4 @@
-import { ActivationResult } from '@/entrypoints/newtab/types/Updater';
+import { type ActivationResult } from '@/entrypoints/issue.content/types/Updater';
 import axios from 'axios';
 import pLimit from 'p-limit';
 

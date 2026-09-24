@@ -3,7 +3,7 @@ import { CampaignSelector } from './CampaignSelector';
 import { ChdeTemplateInput } from './ChdeTemplateInput';
 import { SlugSelector } from './SlugSelector';
 import styles from '../push.module.scss';
-import { SidebarProps } from '../types/push';
+import { type SidebarProps } from '../types/push';
 
 export const Sidebar = ({
   campaign,

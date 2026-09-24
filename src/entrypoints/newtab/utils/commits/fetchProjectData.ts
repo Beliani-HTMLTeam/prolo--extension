@@ -1,6 +1,6 @@
 import { Dispatch } from 'react';
 import { calculateCommitActivity } from './calculateCommitActivity';
-import { ProjectData } from '../../types/ProjectData';
+import { type ProjectData } from '../../types/ProjectData';
 
 export async function fetchProjectData(
   project: ProjectData,

@@ -1,7 +1,7 @@
 import appStyles from '../../App.module.scss';
 import styles from './NewsletterLayout.module.scss';
 
-import { BannerType } from '../../types';
+import { type BannerType } from '../../types';
 import TitVersionSelect from '../TitVersionSelect';
 
 import MobileBanner from './MobileBanner';

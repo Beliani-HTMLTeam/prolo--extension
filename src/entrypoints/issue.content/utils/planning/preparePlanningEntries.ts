@@ -1,5 +1,5 @@
 import { SLUG_ID_MAP, USERNAME_ID_MAP } from '@/entrypoints/issue.content/lib/planningConfig';
-import { PlanningEntry, PlanningResult } from '../../types/Planning';
+import { type PlanningEntry, type PlanningResult } from '../../types/Planning';
 
 export const preparePlanningEntries = (
   newsletterIdMap: Map<string, Array<{ type: 'A' | 'B'; newsletterId: number }>>,

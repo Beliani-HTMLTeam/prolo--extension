@@ -4,8 +4,8 @@ import AvailableBanners from './components/AvailableBanners';
 import CampaignPreview from './components/CampaignPreview';
 import NewsletterLayout from './components/NewsletterLayout';
 import { getNewsletterIdsMap } from './utils/dom';
-import { updateNewslettersBatch, UpdateResult } from './utils/api';
-import { BannerType, TimerConfig } from './types';
+import { updateNewslettersBatch, type UpdateResult } from './utils/api';
+import { type BannerType, type TimerConfig } from './types';
 import {
   getDaysBetweenInclusive,
   matchesBannerSearchTerm,

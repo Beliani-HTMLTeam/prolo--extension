@@ -1,4 +1,4 @@
-import { ChecklistMode, ChecklistTableData } from '@/entrypoints/issue.content/lib/types';
+import { type ChecklistMode, type ChecklistTableData } from '@/entrypoints/issue.content/lib/types';
 
 export const isSlugReadyForPlanning = (
   tableData: ChecklistTableData | null,

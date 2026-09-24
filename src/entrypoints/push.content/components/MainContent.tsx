@@ -1,5 +1,5 @@
 import styles from '../push.module.scss';
-import { MainContentProps } from '../types/push';
+import { type MainContentProps } from '../types/push';
 import { CampaignActions } from './CampaignActions';
 import { CampaignTable } from './CampaignTable';
 import { ConfirmationDialog } from './ConfirmationDialog';

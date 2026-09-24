@@ -1,6 +1,6 @@
 import { NUMBER_OF_NEWSLETTERS } from '@/entrypoints/issue.content/api/planning';
 import { NEWSLETTER_SLUGS } from '@/entrypoints/issue.content/lib/planningConfig';
-import { ChecklistTableData } from '@/entrypoints/issue.content/lib/types';
+import { type ChecklistTableData } from '@/entrypoints/issue.content/lib/types';
 import { normalizeSlugForSlug } from './slugNormalization';
 
 export const getShopIdsMap = (tableData: ChecklistTableData, startId: number) => {

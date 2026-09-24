@@ -1,4 +1,4 @@
-import { BannerType } from '../types';
+import { type BannerType } from '../types';
 
 const previewDomain = 'https://www.beliani.ch';
 const pictureServerLocaleSlug = 'uk';

@@ -1,6 +1,6 @@
 import styles from '../push.module.scss';
 import { SLUG_ORDER } from '../helpers/slugMapper';
-import { SlugSelectorProps } from '../types/push';
+import { type SlugSelectorProps } from '../types/push';
 
 export const SlugSelector = ({
   selectedSlugs,
