@@ -65,14 +65,13 @@ const getLinkValue = (row: ChecklistTableRow, columnId: string): string | null =
 };
 
 const shouldHideColumn = (columnId: string, row: ChecklistTableRow, isCgbView: boolean): boolean => {
-  const hasNewsletterID = !!(row.nsltId || row.nsltAId || row.nsltBId);
-  const hasLPID = !!row.lpId;
+  const hasTestSentCheckpoint = !!row.columnCheckpointRefs?.[COLUMN_IDS.TEST_SENT];
 
-  if (columnId === COLUMN_IDS.TEST_REQUEST && !isCgbView && !hasNewsletterID && !hasLPID) {
+  if (columnId === COLUMN_IDS.TEST_REQUEST && !isCgbView && !hasTestSentCheckpoint) {
     return true;
   }
 
-  if (columnId === COLUMN_IDS.TEST_SENT && !hasNewsletterID && !hasLPID) {
+  if (columnId === COLUMN_IDS.TEST_SENT && !hasTestSentCheckpoint) {
     return true;
   }
 
