@@ -63,7 +63,7 @@ export const CreateButton = (elems: Elems, target: string) => {
           const parser = new DOMParser();
           const doc = parser.parseFromString(content, 'text/html');
 
-          const linkSelector = doc.querySelectorAll<HTMLAnchorElement>('.newsletterRecommendationHeaderLink')[1];
+          const linkSelector = doc.querySelectorAll<HTMLAnchorElement>('.newsletterRecommendationHeaderLink')[1] ?? doc.querySelectorAll<HTMLAnchorElement>('a')[0];
           const domain = new URL(linkSelector.href).hostname.split('.').pop() ?? '';
           let lang = '';
 
