@@ -182,6 +182,32 @@ export const checkAndActivateMultipleShopContents = async (
   return results;
 };
 
+// get real lp urls
+export const fetchLandingPageAlias = async (lpId: string, shopId: string): Promise<string | null> => {
+  try {
+    const url = `${window.location.origin}/shop_content.php?id=${lpId}&shop_id=${shopId}`;
+    const response = await axios.get(url, { withCredentials: true });
+    const html: string = response.data;
+
+    const tdMatch = html.match(/<td[^>]*id=["']aliasForURL["'][^>]*>([\s\S]*?)<\/td>/i);
+    if (!tdMatch) return null;
+
+    const inputMatch = tdMatch[1].match(/<input[^>]*type=["']text["'][^>]*>/i);
+    if (!inputMatch) return null;
+
+    const valueMatch = inputMatch[0].match(/value=["']([^"']*)["']/i);
+    return valueMatch ? valueMatch[1] : null;
+  } catch (error) {
+    console.error(`Failed to fetch alias for landing page ${lpId} (shop ${shopId}):`, error);
+    return null;
+  }
+};
+
+export const fetchLandingPageAliases = async (
+  items: Array<{ lpId: string; shopId: string }>,
+): Promise<(string | null)[]> =>
+  Promise.all(items.map(item => limit(() => fetchLandingPageAlias(item.lpId, item.shopId))));
+
 export const fetchNsltIdFromLandingPage = async (lpId: string, shopId: string): Promise<string | null> => {
   try {
     const url = `https://www.prologistics.info/shop_content.php?id=${lpId}&shop_id=${shopId}`;
