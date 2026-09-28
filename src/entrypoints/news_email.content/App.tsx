@@ -14,6 +14,7 @@ import {
 } from './utils/banner';
 import newsletterTemplate from './template.html?raw';
 
+import { config } from '@/config/prolo';
 import AppProviders from '@/components/app/AppProviders';
 import Overlay from '@/components/overlay/Overlay';
 import OverlayToggleButton from '@/components/overlay/OverlayToggleButton';
@@ -209,9 +210,9 @@ const NewsEmailAppContent = () => {
     checkForSundayNewsletter();
 
     Promise.all([
-      fetch('https://tj31c889tzsk.share.zrok.io/api/sheets/static/header').then(r => r.json()),
-      fetch('https://tj31c889tzsk.share.zrok.io/api/sheets/static/footer').then(r => r.json()),
-      fetch('https://tj31c889tzsk.share.zrok.io/api/sheets/static/templates').then(r => r.json()),
+      fetch(`${config.zrokBase}/static/header`).then(r => r.json()),
+      fetch(`${config.zrokBase}/static/footer`).then(r => r.json()),
+      fetch(`${config.zrokBase}/static/templates`).then(r => r.json()),
     ])
       .then(([headerRes, footerRes, templatesRes]) => {
         setTranslations({

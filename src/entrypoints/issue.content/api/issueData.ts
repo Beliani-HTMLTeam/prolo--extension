@@ -9,6 +9,7 @@ import type {
 import { SHOP_ALIASES } from '../lib/shopConfig';
 import { trimAllLineBreaks } from '../utils/updater/stringUtils';
 import { SLUG_ORDER } from '@/entrypoints/push.content/helpers/slugMapper';
+import { config } from '@/config/prolo';
 export { extractIssueLinks } from './issueLinks';
 export { parseIssueInfo, getChecklistMode } from './issueParsing';
 export { fetchMentionableUsers } from './mentions';
@@ -26,11 +27,6 @@ export const fetchIssueData = async (issueId: number) => {
   }
 };
 
-const ZROK_BASE = 'https://tj31c889tzsk.share.zrok.io/api/sheets';
-const ZROK_HEADERS: Record<string, string> = {
-  Accept: 'application/json',
-  skip_zrok_interstitial: 'true',
-};
 const ZROK_TIMEOUT_MS = 6000;
 
 const SLUG_CANONICAL_ALIAS: Record<string, string> = SHOP_ALIASES;
@@ -83,8 +79,8 @@ export const fetchSpreadsheetTranslations = async (issueItem: IssueListItem): Pr
     if (!spreadsheetId || !gid) return empty;
 
     const tabRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
-        headers: ZROK_HEADERS,
+      fetch(`${config.zrokBase}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+        headers: config.zrokHeaders,
         mode: 'cors',
         credentials: 'omit',
       }),
@@ -94,8 +90,8 @@ export const fetchSpreadsheetTranslations = async (issueItem: IssueListItem): Pr
     if (tabJson?.code !== 200) return empty;
 
     const dynRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/dynamic/${tabJson.year}/${tabJson.tab}`, {
-        headers: ZROK_HEADERS,
+      fetch(`${config.zrokBase}/dynamic/${tabJson.year}/${tabJson.tab}`, {
+        headers: config.zrokHeaders,
         mode: 'cors',
         credentials: 'omit',
       }),
@@ -154,8 +150,8 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
     if (!spreadsheetId || !gid) return empty;
 
     const tabRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
-        headers: ZROK_HEADERS,
+      fetch(`${config.zrokBase}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+        headers: config.zrokHeaders,
         mode: 'cors',
         credentials: 'omit',
       }),
@@ -166,8 +162,8 @@ export const fetchSubjectPageTranslations = async (issueItem: IssueListItem): Pr
     const tabName = tabJson.tab || null;
 
     const dynRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/dynamic/${tabJson.year}/${tabJson.tab}`, {
-        headers: ZROK_HEADERS,
+      fetch(`${config.zrokBase}/dynamic/${tabJson.year}/${tabJson.tab}`, {
+        headers: config.zrokHeaders,
         mode: 'cors',
         credentials: 'omit',
       }),
@@ -225,8 +221,8 @@ export const fetchCachedTabs = async (year: string): Promise<{ tabs: string[] | 
   const empty: { tabs: string[] | null } = { tabs: null };
   try {
     const tabsRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/misc/getCachedTabs/${year}`, {
-        headers: ZROK_HEADERS,
+      fetch(`${config.zrokBase}/misc/getCachedTabs/${year}`, {
+        headers: config.zrokHeaders,
         mode: 'cors',
         credentials: 'omit',
       }),
@@ -263,8 +259,8 @@ export const fetchPushTranslations = async (
     // Fetch tab info
     const tabRes = await withRetry(() =>
       withLongTimeout(
-        fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
-          headers: ZROK_HEADERS,
+        fetch(`${config.zrokBase}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+          headers: config.zrokHeaders,
           mode: 'cors',
           credentials: 'omit',
         }),
@@ -277,8 +273,8 @@ export const fetchPushTranslations = async (
     console.log(`📊 Fetching dynamic sheet for: ${year}/${tabName}`);
     const dynRes = await withRetry(() =>
       withLongTimeout(
-        fetch(`${ZROK_BASE}/dynamic/${year}/${tabName}`, {
-          headers: ZROK_HEADERS,
+        fetch(`${config.zrokBase}/dynamic/${year}/${tabName}`, {
+          headers: config.zrokHeaders,
           mode: 'cors',
           credentials: 'omit',
         }),
@@ -413,8 +409,8 @@ export const fetchSpreadsheetTranslationsTab = async (issueItem: IssueListItem):
     if (!spreadsheetId || !gid) return null;
 
     const tabRes = await withZrokTimeout(
-      fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
-        headers: ZROK_HEADERS,
+      fetch(`${config.zrokBase}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+        headers: config.zrokHeaders,
         mode: 'cors',
         credentials: 'omit',
       }),
@@ -449,8 +445,8 @@ export const fetchAllSundayTranslations = async (
     // Resolve tab name with retries
     const tabRes = await withRetry(() =>
       withLongTimeout(
-        fetch(`${ZROK_BASE}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
-          headers: ZROK_HEADERS,
+        fetch(`${config.zrokBase}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+          headers: config.zrokHeaders,
           mode: 'cors',
           credentials: 'omit',
         }),
@@ -463,8 +459,8 @@ export const fetchAllSundayTranslations = async (
     // Fetch dynamic sheet data with retries
     const dynRes = await withRetry(() =>
       withLongTimeout(
-        fetch(`${ZROK_BASE}/dynamic/${tabJson.year}/${tabJson.tab}`, {
-          headers: ZROK_HEADERS,
+        fetch(`${config.zrokBase}/dynamic/${tabJson.year}/${tabJson.tab}`, {
+          headers: config.zrokHeaders,
           mode: 'cors',
           credentials: 'omit',
         }),
