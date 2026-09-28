@@ -133,7 +133,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   useEffect(() => {
     const handler = (e: Event) => {
       const text = (e as CustomEvent<{ text: string }>).detail?.text;
-      if (!text || !richInputRef.current) return;
+      if (text === undefined || !richInputRef.current) return;
       richInputRef.current.clear();
       richInputRef.current.insertText(text);
       richInputRef.current.focus();
@@ -320,6 +320,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
       }
       setMessageText('');
       richInputRef.current?.clear();
+      document.dispatchEvent(new CustomEvent('richchat:sent'));
       await loadComments();
     } else {
       console.warn('[comments] Failed to send message');

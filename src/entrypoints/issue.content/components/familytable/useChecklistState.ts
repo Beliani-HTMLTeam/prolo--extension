@@ -2,20 +2,9 @@ import { useCallback } from 'react';
 import { mentionToShopsMap, shopToMentionTagMap } from '../../lib/shopMaps';
 import type { ChecklistStatus, ChecklistTableRow } from '../../lib/types';
 import { COLUMN_IDS } from '../../api/checklistShared';
+import { STATUS_FIELD_BY_COLUMN_ID } from './cellHelpers';
 
 type SetRows = React.Dispatch<React.SetStateAction<ChecklistTableRow[]>>;
-
-const STATUS_FIELD_BY_COLUMN_ID: Record<string, keyof ChecklistTableRow> = {
-  [COLUMN_IDS.TRANSLATIONS]: 'translations',
-  [COLUMN_IDS.TEST_REQUEST]: 'testRequest',
-  [COLUMN_IDS.TIMER_DONE]: 'timerDone',
-  [COLUMN_IDS.PUSH_DONE]: 'pushDone',
-  [COLUMN_IDS.TEST_SENT]: 'testSent',
-  [COLUMN_IDS.NSLT_ACCEPTED]: 'nsltAccepted',
-  [COLUMN_IDS.NSLT_A_ACCEPTED]: 'nsltAAccepted',
-  [COLUMN_IDS.NSLT_B_ACCEPTED]: 'nsltBAccepted',
-  [COLUMN_IDS.LP_ACCEPTED]: 'lpAccepted',
-};
 
 const setRowStatus = (row: ChecklistTableRow, columnId: string, status: ChecklistStatus): ChecklistTableRow => {
   const statusField = STATUS_FIELD_BY_COLUMN_ID[columnId];
