@@ -1,27 +1,11 @@
 import styles from '../../styles/FamilyTable.module.scss';
 import { Icon } from '@iconify/react';
-import { getShopId } from '../../lib/shopIdMap';
+import { getLinkUrl, getLinkValue } from './cellHelpers';
 import type { ChecklistColumn, ChecklistTableRow } from '../../lib/types';
-import { COLUMN_IDS } from '../../api/checklistShared';
 
 type TableHeadersProps = {
   columns: ChecklistColumn[];
   rows: ChecklistTableRow[];
-};
-
-const getLinkValue = (row: ChecklistTableRow, columnId: string): string | null => {
-  const fromColumnMap = row.columnValues?.[columnId];
-  if (fromColumnMap) {
-    return fromColumnMap;
-  }
-
-  if (columnId === COLUMN_IDS.NSLT_ID) return row.nsltId;
-  if (columnId === COLUMN_IDS.NSLT_A_ID) return row.nsltAId;
-  if (columnId === COLUMN_IDS.NSLT_B_ID) return row.nsltBId;
-  if (columnId === COLUMN_IDS.LP_ID) return row.lpId;
-  if (columnId === COLUMN_IDS.LP_A_ID) return row.lpAId;
-  if (columnId === COLUMN_IDS.LP_B_ID) return row.lpBId;
-  return null;
 };
 
 const openAllLinksFromColumn = (column: ChecklistColumn, rows: ChecklistTableRow[]) => {
@@ -29,39 +13,16 @@ const openAllLinksFromColumn = (column: ChecklistColumn, rows: ChecklistTableRow
     return;
   }
 
-  const domain = window.location.origin;
-  const urls: string[] = [];
-
   rows.forEach(row => {
     const id = getLinkValue(row, column.id);
     if (!id) {
       return;
     }
 
-    if (column.id === COLUMN_IDS.LP_ID) {
-      const shopId = getShopId(row.shop);
-      if (!shopId) {
-        return;
-      }
-      urls.push(`${domain}/shop_content.php?id=${id}&shop_id=${shopId}`);
-      return;
+    const url = getLinkUrl(row, column.id, id);
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
-    if (column.id === COLUMN_IDS.LP_A_ID || column.id === COLUMN_IDS.LP_B_ID) {
-      const shopId = getShopId(row.shop);
-      if (!shopId) {
-        return;
-      }
-      urls.push(`${domain}/shop_content.php?id=${id}&shop_id=${shopId}`);
-    }
-
-    if (column.id === COLUMN_IDS.NSLT_ID || column.id === COLUMN_IDS.NSLT_A_ID || column.id === COLUMN_IDS.NSLT_B_ID) {
-      urls.push(`${domain}/news_email.php?id=${id}`);
-    }
-  });
-
-  // Open all URLs in new tabs
-  urls.forEach(url => {
-    window.open(url, '_blank', 'noopener,noreferrer');
   });
 };
 
