@@ -1,5 +1,6 @@
 import { initUpdateChecker, checkForUpdate } from './updater.content/checker';
 import { SHOP_ID_TO_CODE, COUNTRY_CASHBACK } from '@/config/shopMaps';
+import { config } from '@/config/prolo';
 
 import JSZip from 'jszip';
 
@@ -252,7 +253,8 @@ export default defineBackground(() => {
 
 if (message.action === 'openPurgeAndSubmit') {
   void (async () => {
-    const requestURL = 'https://www.prologistics.info/purge.php';
+    const origin = sender.tab?.url ? new URL(sender.tab.url).origin : config.prologisticsProdHost;
+    const requestURL = `${origin}${config.paths.purge}`;
     let tabId: number | undefined;
 
     try {

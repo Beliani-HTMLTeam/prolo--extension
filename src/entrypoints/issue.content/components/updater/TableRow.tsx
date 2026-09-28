@@ -60,7 +60,7 @@ export const TableRow = ({
       links.push(
         <a
           key={`a-${newsletterId.aId}`}
-          href={`https://www.prologistics.info/news_email.php?id=${newsletterId.aId}`}
+          href={`${window.location.origin}/news_email.php?id=${newsletterId.aId}`}
           target="_blank"
           rel="noopener noreferrer"
           className={updaterStyles.idLink}
@@ -75,7 +75,7 @@ export const TableRow = ({
         <React.Fragment key={`b-${newsletterId.bId}`}>
           {links.length > 0 && <span className={updaterStyles.idSeparator}> | </span>}
           <a
-            href={`https://www.prologistics.info/news_email.php?id=${newsletterId.bId}`}
+            href={`${window.location.origin}/news_email.php?id=${newsletterId.bId}`}
             target="_blank"
             rel="noopener noreferrer"
             className={updaterStyles.idLink}
@@ -154,7 +154,7 @@ export const TableRow = ({
     if (!landingPageId) return null;
     const shopId = SHOP_ID_MAP[slug as keyof typeof SHOP_ID_MAP];
     if (!shopId) return null;
-    return `https://www.prologistics.info/shop_content.php?id=${landingPageId}&shop_id=${shopId}`;
+    return `${window.location.origin}/shop_content.php?id=${landingPageId}&shop_id=${shopId}`;
   };
 
   const flagUrl = getFlagUrl(slug);

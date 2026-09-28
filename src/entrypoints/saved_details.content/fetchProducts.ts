@@ -2,17 +2,17 @@ import type { ProductRaw, SaId } from './types';
 
 const apiRoutes = {
   getProductName: (masterId: string) =>
-    `https://www.prologistics.info/api/condensedSA/get/?id=${masterId}&block=article_name`,
+    `${window.location.origin}/api/condensedSA/get/?id=${masterId}&block=article_name`,
   getShopDescription: (masterId: string) =>
-    `https://www.prologistics.info/api/condensedSA/get/?id=${masterId}&block=ShopDesription`,
+    `${window.location.origin}/api/condensedSA/get/?id=${masterId}&block=ShopDesription`,
   getSlavesForMasterId: (masterId: string) =>
-    `https://www.prologistics.info/api/condensedList/getList?saved_id=${masterId}`,
+    `${window.location.origin}/api/condensedList/getList?saved_id=${masterId}`,
   getPrice: (slaveId: string) =>
-    `https://www.prologistics.info/api/condensedSA/getSlave/?id=${slaveId}&block=saved_params`,
+    `${window.location.origin}/api/condensedSA/getSlave/?id=${slaveId}&block=saved_params`,
   getShopAliases: (masterId: string) =>
-    `https://www.prologistics.info/api/condensedSA/get/?id=${masterId}&block=ShopSAAlias`,
+    `${window.location.origin}/api/condensedSA/get/?id=${masterId}&block=ShopSAAlias`,
   getPriceAndIsActive: (slaveId: string) =>
-    `https://www.prologistics.info/api/condensedSA/getSlave/?id=${slaveId}&block=buttons`,
+    `${window.location.origin}/api/condensedSA/getSlave/?id=${slaveId}&block=buttons`,
 };
 
 async function parseResponse<T>(

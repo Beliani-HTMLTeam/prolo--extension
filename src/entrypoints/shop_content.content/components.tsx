@@ -1,5 +1,6 @@
 import { clickLanguageButtons, clickMainUpdateButton, getShopIdFromUrl } from "./realUpdate";
 import styles from "./shop_content.module.scss";
+import { config } from "@/config/prolo";
 
 export function FixedDeactivateButton() {
   const handleClick = () => {
@@ -83,7 +84,7 @@ export function PurgeButton() {
       formData.append("purge", "Purge");
 
       try {
-        await fetch("https://www.prologistics.info/purge.php", {
+        await fetch(`${window.location.origin}${config.paths.purge}`, {
           method: "POST",
           body: formData,
         });

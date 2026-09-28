@@ -147,7 +147,7 @@ export const SundayTable = ({
               <div className={sundayStyles.newsletterIdColumn}>
                 {nsltId ? (
                   <a
-                    href={`https://www.prologistics.info/news_email.php?id=${nsltId}`}
+                    href={`${window.location.origin}/news_email.php?id=${nsltId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={sundayStyles.idLink}

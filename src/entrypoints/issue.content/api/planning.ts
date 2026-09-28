@@ -2,6 +2,7 @@ import { type SendToSpamParams, type SpamPlanEntry } from '@/entrypoints/issue.c
 import { NEWSLETTER_SLUGS } from '../lib/planningConfig';
 import { SpamFormBuilder } from '../utils/planning/classes/SpamFormBuilder';
 import { parseSpamPlanHtml } from '../utils/planning/parseSpamPlan';
+import { config } from '@/config/prolo';
 
 export const NUMBER_OF_NEWSLETTERS = Object.keys(NEWSLETTER_SLUGS).length;
 
@@ -12,7 +13,7 @@ export async function sendToSpam(params: SendToSpamParams, options?: { signal?: 
   const formData = new SpamFormBuilder(params).build();
 
   // Make the POST request
-  const response = await fetch('https://www.prologistics.info/api/customerSpam/sendToSpam/', {
+  const response = await fetch(`${window.location.origin}/api/customerSpam/sendToSpam/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -30,7 +31,7 @@ export async function fetchCustomerCountsForNewsletters(
 ): Promise<Map<number, SpamPlanEntry>> {
   const { signal } = options || {};
 
-  const response = await fetch('https://www.prologistics.info/spam_plan.php', { signal });
+  const response = await fetch(`${window.location.origin}${config.paths.spamPlan}`, { signal });
   const html = await response.text();
 
   const targetIdsSet = new Set(targetNewsletterIds);

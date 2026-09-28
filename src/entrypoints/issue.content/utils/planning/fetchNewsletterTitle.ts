@@ -1,3 +1,5 @@
+import { config } from '@/config/prolo';
+
 export const fetchNewsletterTitle = async (
   issueId: number,
   setNewsletterTitle: (title: string | null) => void,
@@ -5,7 +7,7 @@ export const fetchNewsletterTitle = async (
   setError: (error: string) => void,
 ): Promise<void> => {
   try {
-    const response = await fetch(`https://www.prologistics.info/api/issueLog/list/?page_id=${issueId}`);
+    const response = await fetch(`${window.location.origin}${config.paths.issueLogList}?page_id=${issueId}`);
     const data = await response.json();
     const title = data?.issue_list?.[0]?.issue;
     setNewsletterTitle(title || null);

@@ -1,6 +1,7 @@
 import { type ActivationResult } from '@/entrypoints/issue.content/types/Updater';
 import axios from 'axios';
 import pLimit from 'p-limit';
+import { config } from '@/config/prolo';
 
 const limit = pLimit(5);
 
@@ -63,7 +64,7 @@ export const checkAndActivateShopContent = async (
 
   try {
     // Check the current status
-    const checkUrl = `https://www.prologistics.info/shop_content.php?id=${lpId}&shop_id=${shopId}`;
+    const checkUrl = `${window.location.origin}${config.paths.shopContent}?id=${lpId}&shop_id=${shopId}`;
     const checkResponse = await axios.get(checkUrl, {
       withCredentials: true,
     });
@@ -116,7 +117,7 @@ export const checkAndActivateShopContent = async (
     formData.append('newsletter_template_id', finalNewsletterTemplateId);
 
      await axios.post(
-      'https://www.prologistics.info/shop_content.php',
+      `${window.location.origin}${config.paths.shopContent}`,
       formData,
       {
         withCredentials: true,
@@ -184,7 +185,7 @@ export const checkAndActivateMultipleShopContents = async (
 
 export const fetchNsltIdFromLandingPage = async (lpId: string, shopId: string): Promise<string | null> => {
   try {
-    const url = `https://www.prologistics.info/shop_content.php?id=${lpId}&shop_id=${shopId}`;
+    const url = `${window.location.origin}${config.paths.shopContent}?id=${lpId}&shop_id=${shopId}`;
     const response = await axios.get(url, {
       withCredentials: true,
     });

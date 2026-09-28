@@ -52,7 +52,7 @@ export function getUserEmail(): string | null {
 
 export async function fetchCustomerByEmail(email: string): Promise<CustomerOption | null> {
   const res = await fetch(
-    `https://www.prologistics.info/getCustomer.php?input=${encodeURIComponent(email)}`,
+    `${window.location.origin}/getCustomer.php?input=${encodeURIComponent(email)}`,
     {
       method: 'GET',
       credentials: 'include',

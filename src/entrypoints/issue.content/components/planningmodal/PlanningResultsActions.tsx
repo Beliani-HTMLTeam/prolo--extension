@@ -4,6 +4,7 @@ import Skeleton from 'react-loading-skeleton';
 import styles from '../../styles/planning.module.scss';
 
 import PlanningButton from './PlanningButton';
+import { config } from '@/config/prolo';
 
 export const PlanningResultsActions = ({
   loading,
@@ -35,7 +36,7 @@ export const PlanningResultsActions = ({
             isPrimary={false}
             onClick={() => {
               window.open(
-                'https://www.prologistics.info/spam_plan.php',
+                `${window.location.origin}${config.paths.spamPlan}`,
                 '_blank',
               );
             }}

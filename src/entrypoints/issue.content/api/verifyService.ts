@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { SHOP_ID_MAP } from '../lib/shopConfig';
 import pLimit from 'p-limit';
+import { config } from '@/config/prolo';
 
 const limit = pLimit(5);
 
@@ -68,7 +69,7 @@ const fetchAndVerifyContent = async (
   try {
     // Fetch newsletter page
     if (nsltId) {
-      const newsResponse = await axios.get(`https://www.prologistics.info/news_email.php?id=${nsltId}`, {
+      const newsResponse = await axios.get(`${window.location.origin}${config.paths.newsEmail}?id=${nsltId}`, {
         withCredentials: true,
       });
       const html = newsResponse.data;
@@ -85,7 +86,7 @@ const fetchAndVerifyContent = async (
       const shopId = SHOP_ID_MAP[slug as keyof typeof SHOP_ID_MAP];
       if (shopId) {
         const shopResponse = await axios.get(
-          `https://www.prologistics.info/shop_content.php?id=${lpId}&shop_id=${shopId}`,
+          `${window.location.origin}${config.paths.shopContent}?id=${lpId}&shop_id=${shopId}`,
           { withCredentials: true },
         );
         const html = shopResponse.data;

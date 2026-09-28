@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { type Comment } from '@/entrypoints/issue.content/api/comments';
+import { config } from '@/config/prolo';
 
 export interface IssueWithComments {
   link: string;
@@ -33,7 +34,7 @@ export function useIssuesWithComments() {
         setLoading(true);
         setError(null);
 
-        const prolo = await axios.get('https://www.prologistics.info/');
+        const prolo = await axios.get(config.prologisticsProdHost);
         const parser = new DOMParser();
         const doc = parser.parseFromString(prolo.data, 'text/html');
         const username = doc.body.getAttribute('data-user');
@@ -42,7 +43,7 @@ export function useIssuesWithComments() {
           throw new Error('Username not found');
         }
 
-        const baseIssuesUrl = 'https://www.prologistics.info/api/issueLog/list/';
+        const baseIssuesUrl = `${config.prologisticsProdHost}${config.paths.issueLogList}`;
         const baseIssueListQuery = {
           status: 'open',
           view_type: 'list',
@@ -79,7 +80,7 @@ export function useIssuesWithComments() {
 
         const commentsPromises = issueIds.map(async (id: number) => {
           const commentsResponse = await axios.get(
-            `https://www.prologistics.info/api/issueLog/comments/?comment_type=issuelog&page_id=${id}`,
+            `${config.prologisticsProdHost}/api/issueLog/comments/?comment_type=issuelog&page_id=${id}`,
           );
           return { id, comments: commentsResponse.data.comments || [] };
         });
@@ -92,7 +93,7 @@ export function useIssuesWithComments() {
           const recentComments = filterCommentsByTime(allComments, 24);
 
           return {
-            link: `https://www.prologistics.info/react/logs/issue_logs/${issue.id}/`,
+            link: `${config.prologisticsProdHost}/react/logs/issue_logs/${issue.id}/`,
             issue: issue.issue,
             id: issue.id,
             comments: recentComments,

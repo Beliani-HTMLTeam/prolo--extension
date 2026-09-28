@@ -1,4 +1,6 @@
-const NEWSLETTER_ENDPOINT = 'https://www.prologistics.info/news_email.php';
+import { config } from '@/config/prolo';
+
+const NEWSLETTER_ENDPOINT = `${window.location.origin}${config.paths.newsEmail}`;
 
 export type UpdateBodyPayload = {
   campaign_id: string;

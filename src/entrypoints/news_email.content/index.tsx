@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import NewsEmailApp from './App.tsx';
 import SendTestControls from './components/SendTestTo/SendTestControls.tsx';
 import { initNewsletterFamilyTable } from './utils/copyCampaignNumber.ts';
+import { config } from '@/config/prolo';
 
 export default defineContentScript({
   matches: [`*://*.prologistics.info/news_email.php*`],
@@ -28,7 +29,7 @@ export const initReactApp = (container: HTMLElement) => {
 function initSendTestControls() {
   const testCustomerInput = document.querySelector('#test_customer');
   const showSendTest =
-    window.location.href.includes('https://www.prologistics.info/news_email.php?id=') &&
+    window.location.href.includes(`${window.location.origin}${config.paths.newsEmail}?id=`) &&
     !!testCustomerInput;
 
   if (!showSendTest || !testCustomerInput) return;

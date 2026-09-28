@@ -175,7 +175,7 @@ const handleImageSave = useCallback(() => {
 
           if (isTemplate) {
             const templateId = customTemplate?.value || value;
-            const prologisticsUrl = `https://www.prologistics.info/news_email.php?id=${templateId}`;
+            const prologisticsUrl = `${window.location.origin}/news_email.php?id=${templateId}`;
 
             return (
               <td key={key} className={styles.colTemplate}>

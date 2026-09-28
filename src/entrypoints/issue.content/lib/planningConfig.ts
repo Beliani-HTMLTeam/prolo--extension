@@ -100,4 +100,4 @@ export const NEWSLETTER_SLUGS: Record<number, string> = {
   21: 'UK',
 };
 
-export const PLANNING_TEMPLATE_URL = 'https://www.prologistics.info/api/customerSpam/buildTemplate/?filter_id=';
+export const PLANNING_TEMPLATE_URL = `${window.location.origin}/api/customerSpam/buildTemplate/?filter_id=`;

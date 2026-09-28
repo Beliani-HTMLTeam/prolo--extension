@@ -3,6 +3,7 @@ import { buildNewsletterPreviewHtml } from './banner';
 import { type NewsletterDomData } from './dom';
 import pLimit from 'p-limit';
 import pRetry from 'p-retry';
+import { config } from '@/config/prolo';
 
 export type UpdateResult = {
   slug: string;
@@ -48,10 +49,10 @@ export const updateNewsletter = async (
   formData.append('deleted_doc', '0');
   formData.append('shop_content_id', domData.shopContentId);
 
-  const response = await fetch(`${window.origin}/news_email.php`, {
+  const response = await fetch(`${window.origin}${config.paths.newsEmail}`, {
     method: 'POST',
     body: formData,
-    referrer: `${window.origin}/news_email.php?id=${newsletterId}`,
+    referrer: `${window.origin}${config.paths.newsEmail}?id=${newsletterId}`,
     referrerPolicy: 'strict-origin-when-cross-origin',
   });
 

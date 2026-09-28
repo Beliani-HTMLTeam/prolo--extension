@@ -10,8 +10,10 @@ const logger: Logger = {
   debug: (...args) => console.debug('[Purge]', ...args),
 };
 
+import { config } from '@/config/prolo';
+
 const STORAGE_KEY = 'purgeSavedUrls';
-const REQUEST_URL = 'https://www.prologistics.info/purge.php';
+const REQUEST_URL = `${window.location.origin}${config.paths.purge}`;
 
 function getSavedUrls(): string[] {
   try {
