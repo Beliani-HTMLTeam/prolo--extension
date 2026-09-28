@@ -1,4 +1,5 @@
 import { initUpdateChecker, checkForUpdate } from './updater.content/checker';
+import { SHOP_ID_TO_CODE, COUNTRY_CASHBACK } from '@/config/shopMaps';
 
 import JSZip from 'jszip';
 
@@ -592,34 +593,12 @@ if (message.action === 'openPurgeAndSubmit') {
             // Get current shop from URL
             const currentShopResult = await browser.scripting.executeScript({
               target: { tabId: tabId },
-              func: () => {
+              func: (shopIdMap: Record<string, string>) => {
                 const params = new URLSearchParams(window.location.search);
                 const shopId = params.get('shop_id');
-                const shopIdMap: Record<string, string> = {
-                  2: 'UK',
-                  12: 'PL',
-                  1: 'CH',
-                  3: 'DE',
-                  8: 'AT',
-                  17: 'NL',
-                  7: 'FR',
-                  10: 'ES',
-                  22: 'PT',
-                  21: 'IT',
-                  25: 'DK',
-                  28: 'NO',
-                  27: 'FI',
-                  23: 'SE',
-                  26: 'CZ',
-                  29: 'SK',
-                  24: 'HU',
-                  30: 'RO',
-                  19: 'BE',
-                  33: 'HR',
-                  34: 'SI',
-                };
                 return shopIdMap[shopId || ''];
               },
+              args: [SHOP_ID_TO_CODE],
             });
 
             const currentShop = currentShopResult[0]?.result;
@@ -672,34 +651,12 @@ if (message.action === 'openPurgeAndSubmit') {
           // Get current shop from URL
           const currentShopResult = await browser.scripting.executeScript({
             target: { tabId: tabId },
-            func: () => {
+            func: (shopIdMap: Record<string, string>) => {
               const params = new URLSearchParams(window.location.search);
               const shopId = params.get('shop_id');
-              const shopIdMap: Record<string, string> = {
-                2: 'UK',
-                12: 'PL',
-                1: 'CH',
-                3: 'DE',
-                8: 'AT',
-                17: 'NL',
-                7: 'FR',
-                10: 'ES',
-                22: 'PT',
-                21: 'IT',
-                25: 'DK',
-                28: 'NO',
-                27: 'FI',
-                23: 'SE',
-                26: 'CZ',
-                29: 'SK',
-                24: 'HU',
-                30: 'RO',
-                19: 'BE',
-                33: 'HR',
-                34: 'SI',
-              };
               return shopIdMap[shopId || ''];
             },
+            args: [SHOP_ID_TO_CODE],
           });
 
           const currentShop = currentShopResult[0]?.result;
@@ -858,65 +815,10 @@ if (message.action === 'openPurgeAndSubmit') {
 
     return await browser.scripting.executeScript({
       target: { tabId: tabId },
-      func: async (filesData, isCashbackMode) => {
+      func: async (filesData, isCashbackMode, countryCashback: Record<string, string>) => {
         console.log('Inside page context, starting upload...');
 
-        // Language mapping for cashback campaigns (copy from your assets)
-        const COUNTRY_CASHBACK: Record<string, string> = {
-          'UK-PL': 'polish',
-          UK: 'english',
-          'SK-HU': 'Hungarian',
-          'SK-EN': 'english',
-          'SK-CZ': 'czech',
-          SK: 'slovak',
-          SE: 'swedish',
-          'SE-EN': 'english',
-          RO: 'romanian',
-          'RO-EN': 'english',
-          PT: 'portugal',
-          'PT-EN': 'english',
-          PL: 'polish',
-          'PL-EN': 'english',
-          NO: 'norsk',
-          'NO-EN': 'english',
-          'NL-FR': 'french',
-          'NL-EN': 'english',
-          NL: 'dutch',
-          IT: 'italian',
-          'IT-EN': 'english',
-          HU: 'Hungarian',
-          'HU-EN': 'english',
-          FR: 'french',
-          'FR-NL': 'dutch',
-          'FR-DE': 'germanDE',
-          'FR-EN': 'english',
-          FI: 'finnish',
-          'FI-EN': 'english',
-          'FI-SE': 'swedish',
-          ES: 'spanish',
-          'ES-EN': 'english',
-          DK: 'danish',
-          'DK-EN': 'english',
-          DEAT: 'germanDE',
-          'DEAT-EN': 'english',
-          CZ: 'czech',
-          'CZ-EN': 'english',
-          'CZ-SK': 'slovak',
-          CH: 'german',
-          'CH-EN': 'english',
-          'CH-FR': 'french',
-          'CH-IT': 'italian',
-          'BE-DE': 'germanDE',
-          'BE-EN': 'english',
-          'BE-FR': 'french',
-          'BE-NL': 'dutch',
-          HR: 'croatian',
-          'HR-EN': 'english',
-          SI: 'slovene',
-          'SI-EN': 'english',
-        };
-
-        // Helper function to get the language from filename using COUNTRY_CASHBACK
+        // Helper function to get the language from filename using countryCashback
         const getLanguageFromFilename = (fileName: string): string | undefined => {
           const nameWithoutExt = fileName
             .replace(/\.[^/.]+$/, '')
@@ -935,8 +837,8 @@ if (message.action === 'openPurgeAndSubmit') {
             key = `${slug}-${extra}`;
           }
 
-          // Look up in COUNTRY_CASHBACK
-          const language = COUNTRY_CASHBACK[key];
+          // Look up in countryCashback
+          const language = countryCashback[key];
           console.log(`Filename: ${fileName}, key: ${key}, mapped language: ${language}`);
 
           return language;
@@ -1293,7 +1195,7 @@ if (message.action === 'openPurgeAndSubmit') {
 
         return { success: true, results };
       },
-      args: [filesToUpload, isCashback],
+      args: [filesToUpload, isCashback, COUNTRY_CASHBACK],
     });
   };
 
