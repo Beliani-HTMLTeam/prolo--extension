@@ -61,7 +61,7 @@ const Header = ({
           {dueDate && (
             <div className={styles.deadlineWrapper}>
               <div className={styles.deadlineInfo}>
-                <span className={styles.deadlineName}>{dueDateName}:</span>
+                <span className={styles.deadlineName}>{dueDateName}</span>
                 <span className={styles.deadlineDate}>
                   {dueDate.toLocaleDateString('pl-PL')}
                 </span>

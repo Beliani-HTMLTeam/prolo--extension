@@ -23,6 +23,38 @@ export const COLUMN_IDS = {
   LP_B_ACCEPTED: 'lpBAccepted',
 } as const;
 
+export const COLUMN_GROUPS: Array<{ key: string; label: string; columnIds: string[] }> = [
+  {
+    key: 'newsletter',
+    label: 'Newsletter',
+    columnIds: [
+      COLUMN_IDS.NSLT_ID,
+      COLUMN_IDS.NSLT_ACCEPTED,
+      COLUMN_IDS.NSLT_A_ID,
+      COLUMN_IDS.NSLT_A_ACCEPTED,
+      COLUMN_IDS.NSLT_B_ID,
+      COLUMN_IDS.NSLT_B_ACCEPTED,
+    ],
+  },
+  {
+    key: 'landingPage',
+    label: 'Landing Page',
+    columnIds: [
+      COLUMN_IDS.LP_ID,
+      COLUMN_IDS.LP_ACCEPTED,
+      COLUMN_IDS.LP_A_ID,
+      COLUMN_IDS.LP_A_ACCEPTED,
+      COLUMN_IDS.LP_B_ID,
+      COLUMN_IDS.LP_B_ACCEPTED,
+    ],
+  },
+  {
+    key: 'utility',
+    label: 'Timer/Push',
+    columnIds: [COLUMN_IDS.TIMER_DONE, COLUMN_IDS.PUSH_DONE],
+  },
+];
+
 export const TABLE_HEADERS = [
   'SHOP',
   'Translations',
