@@ -13,6 +13,8 @@ import { MentionPicker } from './pickers/MentionPicker';
 import { RichTextarea, type RichTextareaHandle, applyTwemoji } from './RichTextarea';
 import { FormatToolbar } from './FormatToolbar';
 import type { ChecklistMode } from '../lib/types';
+import { TRANSLATOR_GROUPS } from '../lib/translators';
+import { filterCommentsByGroup } from '../utils/commentShopFilter';
 
 const TwemojiContent = memo(({ html, className }: { html: string; className: string }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -72,6 +74,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isNewestFirst, setIsNewestFirst] = useState(true);
+  const [groupFilter, setGroupFilter] = useState<string | null>(null);
   const [lastSeenCount, setLastSeenCount] = useState<number | null>(null);
   const [newCommentsCount, setNewCommentsCount] = useState(0);
   const [messageText, setMessageText] = useState('');
@@ -405,7 +408,11 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
     }
   };
 
-  const sortedComments = [...comments].sort((a, b) => {
+  // comments written by, or mentioning, anyone from the selected shop's translators
+  const activeGroup = useMemo(() => TRANSLATOR_GROUPS.find(g => g.key === groupFilter) ?? null, [groupFilter]);
+  const visibleComments = useMemo(() => filterCommentsByGroup(comments, activeGroup), [comments, activeGroup]);
+
+  const sortedComments = [...visibleComments].sort((a, b) => {
     const dateA = new Date(a.create_date).getTime();
     const dateB = new Date(b.create_date).getTime();
     return isNewestFirst ? dateB - dateA : dateA - dateB;
@@ -442,9 +449,22 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
             </span>
           </div>
         )}
+        <div className={styles.shopFilterBar}>
+          {TRANSLATOR_GROUPS.map(group => (
+            <button
+              key={group.key}
+              type="button"
+              className={clsx(styles.shopFilterChip, groupFilter === group.key && styles.shopFilterChipActive)}
+              title={group.shops.join(', ')}
+              onClick={() => setGroupFilter(groupFilter === group.key ? null : group.key)}
+            >
+              {group.label}
+            </button>
+          ))}
+        </div>
         <div className={styles.messagesArea} ref={messagesAreaRef} onScroll={handleScroll}>
           {sortedComments.length === 0 ? (
-            <div className={styles.commentEmpty}>No messages yet</div>
+            <div className={styles.commentEmpty}>{activeGroup ? `No messages for ${activeGroup.label}` : 'No messages yet'}</div>
           ) : (
             sortedComments.map(comment => {
               const isOwnMessage = comment.username === currentUsername;
