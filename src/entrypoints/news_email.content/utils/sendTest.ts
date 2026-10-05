@@ -14,6 +14,9 @@ export const SEND_TO_USERS = {
     JChmielewska: 'Shop#2478629: Justyna Chmielewska chmielewska@beliani.fr',
     RKobus: 'Shop#4280939: Rafał Kobus rafal.kobus@beliani.net',
   },
+  'Test Outlook': {
+    belianihtml: 'Shop#8745220:   belianihtml@outlook.com'
+  },
   'Test Mobile': {
     TestPhone: 'Shop#2476929: Calendar Beliani calendar@beliani.co.uk',
   },
