@@ -253,7 +253,7 @@ export default defineBackground(() => {
 
 if (message.action === 'openPurgeAndSubmit') {
   void (async () => {
-    const origin = sender.tab?.url ? new URL(sender.tab.url).origin : config.prologisticsProdHost;
+    const origin = config.prologisticsProdHost;
     const requestURL = `${origin}${config.paths.purge}`;
     let tabId: number | undefined;
 
