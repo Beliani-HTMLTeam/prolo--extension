@@ -1,17 +1,15 @@
-import { createPortal } from "react-dom";
-import { FixedDeactivateButton, FixedRealUpdateButton, PurgeButton } from "./components";
+import { FloatingTool } from './FloatingTool';
+import styles from './shop_content.module.scss';
+import { tools } from './tools';
 
 export function App() {
-  const langContainer = document.querySelector(".lang_select_container");
+  const availableTools = tools.filter(tool => tool.isAvailable?.() ?? true);
 
   return (
-    <>
-      <FixedDeactivateButton />
-      <FixedRealUpdateButton />
-
-      {/* Render Purge button next to the language selector */}
-      {langContainer &&
-        createPortal(<PurgeButton />, langContainer.parentElement!)}
-    </>
+    <div className={styles.tools}>
+      {availableTools.map(tool => (
+        <FloatingTool key={tool.id} {...tool} />
+      ))}
+    </div>
   );
 }
