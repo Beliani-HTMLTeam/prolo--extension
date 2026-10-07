@@ -7,6 +7,7 @@ import styles from '../styles/chat.module.scss';
 import formStyles from '@/assets/styles/forms.module.scss';
 import { extractMentionIds, fetchComments, notifyMentionedUsers, sendComment, type Comment } from '../api/comments';
 import { fetchMentionableUsers } from '../api/issueData';
+import { renameBannerChecklists } from '../api/bannerChecklistRename';
 import { EmojiPicker } from './pickers/EmojiPicker';
 import { GifPicker } from './pickers/GifPicker';
 import { MentionPicker } from './pickers/MentionPicker';
@@ -66,9 +67,10 @@ const parseCommentHtml = (html: string): string => {
 type CommentsViewProps = {
   issueId: number;
   mode?: ChecklistMode;
+  onRenamed?: () => Promise<void> | void;
 };
 
-export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
+export const CommentsView = ({ issueId, mode, onRenamed }: CommentsViewProps) => {
   const [cookies] = useCookies(['ebas_username']);
   const [oldTitle, setOldTitle] = useState(document.title);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -82,6 +84,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
   const [previewMode, setPreviewMode] = useState<'edit' | 'preview' | 'source'>('edit');
   const [emojiAnchorStyle, setEmojiAnchorStyle] = useState<CSSProperties>({});
   const [mentionAnchorStyle, setMentionAnchorStyle] = useState<CSSProperties>({});
@@ -262,22 +265,18 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
     setShowGifPicker(false);
   };
 
-  const handleAddCgbHeader = () => {
-    if (mode !== 'cgb') return;
-
-    const CGB_HEADER =
-      '<link rel=stylesheet href=https:&#x2F;&#x2F;pictureserver.net/static/checklist_tickoff_reminder.css>';
-
-    const currentText = richInputRef.current?.getText() ?? messageText;
-    const nextText = currentText.startsWith(CGB_HEADER)
-      ? currentText
-      : currentText.length > 0
-        ? `${CGB_HEADER}\n${currentText}`
-        : CGB_HEADER;
-
-    richInputRef.current?.clear();
-    richInputRef.current?.insertText(nextText);
-    richInputRef.current?.focus();
+  const handleRenameChecklists = async () => {
+    if (mode !== 'cgb' || isRenaming) return;
+    setIsRenaming(true);
+    try {
+      const count = await renameBannerChecklists(issueId, comments);
+      console.info(`[comments] Renamed ${count} checklists`);
+      await onRenamed?.();
+    } catch (error) {
+      console.error('Failed to rename checklists:', error);
+    } finally {
+      setIsRenaming(false);
+    }
   };
 
   const handleMention = (username: string) => {
@@ -557,12 +556,12 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
             {mode === 'cgb' && (
               <button
                 className={clsx(formStyles.btn, formStyles['btn--ghost'])}
-                title="Add CGB header"
-                onClick={handleAddCgbHeader}
+                title="Rename 'Banners approved (with RO)' checklists using names from comments"
+                onClick={() => void handleRenameChecklists()}
                 type="button"
-                disabled={previewMode !== 'edit'}
+                disabled={isRenaming || previewMode !== 'edit'}
               >
-                Add CGB Header
+                {isRenaming ? 'Renaming...' : 'Rename Checklists'}
               </button>
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>

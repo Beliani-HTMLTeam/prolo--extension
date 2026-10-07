@@ -109,7 +109,7 @@ const removeChecklist = async (issueId: number, checklistId: string): Promise<vo
   }
 };
 
-const updateChecklistTitle = async (issueId: number, checklistId: string, title: string): Promise<void> => {
+export const updateChecklistTitle = async (issueId: number, checklistId: string, title: string): Promise<void> => {
   const baseUrl = window.location.origin;
   const encodedTitle = encodeURIComponent(title);
   const apiUrl = `${baseUrl}/api/issueLog/saveChecklistTitle/?issue_id=${issueId}&checklist_id=${checklistId}&checklist_title=${encodedTitle}`;
