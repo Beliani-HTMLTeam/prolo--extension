@@ -26,6 +26,7 @@
     "clsx": "^2.1.1",
     "emoji-picker-react": "^4.22.2",
     "gif-picker-react-klipy": "github:micenx/gif-picker-react-klipy",
+    "jszip": "^3.10.2",
     "p-limit": "^7.3.3",
     "p-min-delay": "^4.2.0",
     "p-props": "^6.1.0",
