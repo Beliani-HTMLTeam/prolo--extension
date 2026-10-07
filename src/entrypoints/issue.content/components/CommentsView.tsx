@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo, memo, CSSProperties } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '@iconify/react';
 import clsx from 'clsx';
@@ -7,12 +7,15 @@ import styles from '../styles/chat.module.scss';
 import formStyles from '@/assets/styles/forms.module.scss';
 import { extractMentionIds, fetchComments, notifyMentionedUsers, sendComment, type Comment } from '../api/comments';
 import { fetchMentionableUsers } from '../api/issueData';
+import { renameBannerChecklists } from '../api/bannerChecklistRename';
 import { EmojiPicker } from './pickers/EmojiPicker';
 import { GifPicker } from './pickers/GifPicker';
 import { MentionPicker } from './pickers/MentionPicker';
 import { RichTextarea, type RichTextareaHandle, applyTwemoji } from './RichTextarea';
 import { FormatToolbar } from './FormatToolbar';
 import type { ChecklistMode } from '../lib/types';
+import { TRANSLATOR_GROUPS } from '../lib/translators';
+import { filterCommentsByGroup } from '../utils/commentShopFilter';
 
 const TwemojiContent = memo(({ html, className }: { html: string; className: string }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -47,6 +50,8 @@ const parseCommentHtml = (html: string): string => {
     '<a href="$1" target="_blank" rel="noopener noreferrer" class="comment-link">$1</a>',
   );
 
+  processed = processed.replace(/<br\s*\/?>/gi, '');
+
   // shorten long urls
   processed = processed.replace(/<a ([^>]*?)>([^<]{50,})<\/a>/gi, (match, attrs, text) => {
     if (text.startsWith('http')) {
@@ -62,14 +67,16 @@ const parseCommentHtml = (html: string): string => {
 type CommentsViewProps = {
   issueId: number;
   mode?: ChecklistMode;
+  onRenamed?: () => Promise<void> | void;
 };
 
-export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
+export const CommentsView = ({ issueId, mode, onRenamed }: CommentsViewProps) => {
   const [cookies] = useCookies(['ebas_username']);
   const [oldTitle, setOldTitle] = useState(document.title);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isNewestFirst, setIsNewestFirst] = useState(true);
+  const [groupFilter, setGroupFilter] = useState<string | null>(null);
   const [lastSeenCount, setLastSeenCount] = useState<number | null>(null);
   const [newCommentsCount, setNewCommentsCount] = useState(0);
   const [messageText, setMessageText] = useState('');
@@ -77,6 +84,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
   const [previewMode, setPreviewMode] = useState<'edit' | 'preview' | 'source'>('edit');
   const [emojiAnchorStyle, setEmojiAnchorStyle] = useState<CSSProperties>({});
   const [mentionAnchorStyle, setMentionAnchorStyle] = useState<CSSProperties>({});
@@ -131,7 +139,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
   useEffect(() => {
     const handler = (e: Event) => {
       const text = (e as CustomEvent<{ text: string }>).detail?.text;
-      if (!text || !richInputRef.current) return;
+      if (text === undefined || !richInputRef.current) return;
       richInputRef.current.clear();
       richInputRef.current.insertText(text);
       richInputRef.current.focus();
@@ -257,22 +265,18 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
     setShowGifPicker(false);
   };
 
-  const handleAddCgbHeader = () => {
-    if (mode !== 'cgb') return;
-
-    const CGB_HEADER =
-      '<link rel=stylesheet href=https:&#x2F;&#x2F;pictureserver.net/static/checklist_tickoff_reminder.css>';
-
-    const currentText = richInputRef.current?.getText() ?? messageText;
-    const nextText = currentText.startsWith(CGB_HEADER)
-      ? currentText
-      : currentText.length > 0
-        ? `${CGB_HEADER}\n${currentText}`
-        : CGB_HEADER;
-
-    richInputRef.current?.clear();
-    richInputRef.current?.insertText(nextText);
-    richInputRef.current?.focus();
+  const handleRenameChecklists = async () => {
+    if (mode !== 'cgb' || isRenaming) return;
+    setIsRenaming(true);
+    try {
+      const count = await renameBannerChecklists(issueId, comments);
+      console.info(`[comments] Renamed ${count} checklists`);
+      await onRenamed?.();
+    } catch (error) {
+      console.error('Failed to rename checklists:', error);
+    } finally {
+      setIsRenaming(false);
+    }
   };
 
   const handleMention = (username: string) => {
@@ -318,6 +322,7 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
       }
       setMessageText('');
       richInputRef.current?.clear();
+      document.dispatchEvent(new CustomEvent('richchat:sent'));
       await loadComments();
     } else {
       console.warn('[comments] Failed to send message');
@@ -402,7 +407,11 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
     }
   };
 
-  const sortedComments = [...comments].sort((a, b) => {
+  // comments written by, or mentioning, anyone from the selected shop's translators
+  const activeGroup = useMemo(() => TRANSLATOR_GROUPS.find(g => g.key === groupFilter) ?? null, [groupFilter]);
+  const visibleComments = useMemo(() => filterCommentsByGroup(comments, activeGroup), [comments, activeGroup]);
+
+  const sortedComments = [...visibleComments].sort((a, b) => {
     const dateA = new Date(a.create_date).getTime();
     const dateB = new Date(b.create_date).getTime();
     return isNewestFirst ? dateB - dateA : dateA - dateB;
@@ -439,9 +448,22 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
             </span>
           </div>
         )}
+        <div className={styles.shopFilterBar}>
+          {TRANSLATOR_GROUPS.map(group => (
+            <button
+              key={group.key}
+              type="button"
+              className={clsx(styles.shopFilterChip, groupFilter === group.key && styles.shopFilterChipActive)}
+              title={group.shops.join(', ')}
+              onClick={() => setGroupFilter(groupFilter === group.key ? null : group.key)}
+            >
+              {group.label}
+            </button>
+          ))}
+        </div>
         <div className={styles.messagesArea} ref={messagesAreaRef} onScroll={handleScroll}>
           {sortedComments.length === 0 ? (
-            <div className={styles.commentEmpty}>No messages yet</div>
+            <div className={styles.commentEmpty}>{activeGroup ? `No messages for ${activeGroup.label}` : 'No messages yet'}</div>
           ) : (
             sortedComments.map(comment => {
               const isOwnMessage = comment.username === currentUsername;
@@ -534,12 +556,12 @@ export const CommentsView = ({ issueId, mode }: CommentsViewProps) => {
             {mode === 'cgb' && (
               <button
                 className={clsx(formStyles.btn, formStyles['btn--ghost'])}
-                title="Add CGB header"
-                onClick={handleAddCgbHeader}
+                title="Rename 'Banners approved (with RO)' checklists using names from comments"
+                onClick={() => void handleRenameChecklists()}
                 type="button"
-                disabled={previewMode !== 'edit'}
+                disabled={isRenaming || previewMode !== 'edit'}
               >
-                Add CGB Header
+                {isRenaming ? 'Renaming...' : 'Rename Checklists'}
               </button>
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>

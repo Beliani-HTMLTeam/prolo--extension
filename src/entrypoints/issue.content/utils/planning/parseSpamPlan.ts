@@ -1,4 +1,4 @@
-import { SpamPlanEntry } from '../../types/Planning';
+import { type SpamPlanEntry } from '../../types/Planning';
 
 export const parseSpamPlanHtml = (html: string, targetIds: Set<number>): Map<number, SpamPlanEntry> => {
   const parser = new DOMParser();

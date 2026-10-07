@@ -1,3 +1,5 @@
+import { config } from '@/config/prolo';
+
 export const SELLER_TO_SLUG = {
   "CHDE": "Beliani",
   "CHFR": "Beliani",
@@ -53,5 +55,5 @@ export const LANG_TO_SLUG = {
 export const DEFAULT_SERVERS = [60, 64, 65, 67];
 export const NL_SERVERS = [66];
 
-export const SHOP_ENDPOINT = "https://www.prologistics.info/shop_content.php";
-export const NEWSLETTER_ENDPOINT = "https://www.prologistics.info/news_email.php";
+export const SHOP_ENDPOINT = `${window.location.origin}${config.paths.shopContent}`;
+export const NEWSLETTER_ENDPOINT = `${window.location.origin}${config.paths.newsEmail}`;

@@ -10,11 +10,11 @@ import {
   LineElement,
   Filler,
   Tooltip,
-  ChartOptions,
+  type ChartOptions,
 } from 'chart.js';
 import { fetchProjectData } from '@/entrypoints/newtab/utils/commits/fetchProjectData';
-import { ProjectData } from '@/entrypoints/newtab/types/ProjectData';
-import { CommitsByDate } from '@/entrypoints/newtab/types/CommitsByDate';
+import { type ProjectData } from '@/entrypoints/newtab/types/ProjectData';
+import { type CommitsByDate } from '@/entrypoints/newtab/types/CommitsByDate';
 import { formatDateShort } from '@/entrypoints/newtab/utils/formatDateShort';
 import { truncateMessage } from '@/entrypoints/newtab/utils/truncateMessage';
 

@@ -1,4 +1,4 @@
-import { ChecklistMode, ChecklistTableData } from '@/entrypoints/issue.content/lib/types';
+import { type ChecklistMode, type ChecklistTableData } from '@/entrypoints/issue.content/lib/types';
 
 export interface PlanningResult {
   slug: string;
@@ -20,6 +20,7 @@ export interface PlanningModalProps {
   onSuccess?: () => void;
   tableData?: ChecklistTableData | null;
   isABTesting?: boolean;
+  isTwoLP?: boolean;
   allowSelection?: boolean;
 }
 

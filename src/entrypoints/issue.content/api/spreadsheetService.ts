@@ -1,4 +1,4 @@
-const ZROK_BASE = 'https://tj31c889tzsk.share.zrok.io/api/sheets/';
+import { config } from '@/config/prolo';
 
 const refreshCache = new Map<string, { timestamp: number; data: any }>();
 
@@ -14,19 +14,14 @@ export const purgeDynamicSpreadsheetData = async (
   year: string,
   tabName: string
 ): Promise<PurgeResult> => {
-  const url = `${ZROK_BASE}dynamic/${year}/${tabName}/force-refresh`;
+  const url = `${config.zrokBase}/dynamic/${year}/${tabName}/force-refresh`;
 
   try {
     console.log(`Purging dynamic spreadsheet...\nYear: ${year}\nTab: ${tabName}`);
 
-    const headers = {
-      Accept: 'application/json',
-      skip_zrok_interstitial: 'true',
-    };
-
     const response = await fetch(url, {
       method: 'GET',
-      headers: headers,
+      headers: config.zrokHeaders,
       mode: 'cors',
       credentials: 'omit',
     });
@@ -96,11 +91,8 @@ export const refreshSpreadsheetData = async (
     }
 
     // Resolve tab name
-    const tabRes = await fetch(`${ZROK_BASE}misc/resolveTabName/${spreadsheetId}/${gid}`, {
-      headers: {
-        Accept: 'application/json',
-        skip_zrok_interstitial: 'true',
-      },
+    const tabRes = await fetch(`${config.zrokBase}/misc/resolveTabName/${spreadsheetId}/${gid}`, {
+      headers: config.zrokHeaders,
       mode: 'cors',
       credentials: 'omit',
     });
@@ -119,11 +111,8 @@ export const refreshSpreadsheetData = async (
     }
 
     // Fetch fresh data
-    const dynRes = await fetch(`${ZROK_BASE}dynamic/${tabJson.year}/${tabJson.tab}`, {
-      headers: {
-        Accept: 'application/json',
-        skip_zrok_interstitial: 'true',
-      },
+    const dynRes = await fetch(`${config.zrokBase}/dynamic/${tabJson.year}/${tabJson.tab}`, {
+      headers: config.zrokHeaders,
       mode: 'cors',
       credentials: 'omit',
     });

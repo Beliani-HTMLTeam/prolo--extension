@@ -1,4 +1,4 @@
-import { PlanningTableProps } from '@/entrypoints/issue.content/types/Planning';
+import { type PlanningTableProps } from '@/entrypoints/issue.content/types/Planning';
 import { getCustomerCount, getSubjectLine } from '@/entrypoints/issue.content/utils/planning/resultHelpers';
 import { normalizeSlugForSlug } from '@/entrypoints/issue.content/utils/planning/slugNormalization';
 import { Icon } from '@iconify/react';
@@ -27,6 +27,8 @@ export const PlanningTable = ({
       const customerCount = getCustomerCount(result, planningStarted, slug, aggregating, selectedSlugs);
       const subjectLine = getSubjectLine(result, planningStarted, slug, aggregating, selectedSlugs);
       const ids = newsletterIdMap.get(slug) ?? newsletterIdMap.get(normalizedSlug);
+      console.log("ids, hasAB", ids, ids?.length, (ids?.length ?? 0) > 1);
+      
       const hasAB = (ids?.length ?? 0) > 1;
 
       return (

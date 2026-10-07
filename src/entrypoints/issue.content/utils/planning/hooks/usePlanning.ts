@@ -1,4 +1,4 @@
-import { NewsletterIdMap, PlanningResult } from '@/entrypoints/issue.content/types/Planning';
+import { type NewsletterIdMap, type PlanningResult } from '@/entrypoints/issue.content/types/Planning';
 import { preparePlanningEntries } from '../preparePlanningEntries';
 import { groupEntriesBySlug } from '../groupEntriesBySlug';
 import { sendNewslettersToSpam } from '../sendNewslettersToSpam';

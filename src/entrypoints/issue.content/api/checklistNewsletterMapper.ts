@@ -38,11 +38,13 @@ export const mapNewsletterChecklistsToTableData = (
   options?: {
     includeTranslations?: boolean;
     includeLp?: boolean;
+    hasGroupedLp?: boolean;
   },
 ): ChecklistTableData => {
   const rowsByShop = new Map<string, ChecklistTableRow>();
   const orderIndex = new Map<string, number>();
   let hasGroupedNslt = false;
+  let hasGroupedLp = false;
 
   TABLE_SHOP_ORDER.forEach((shop, index) => {
     orderIndex.set(shop, index);
@@ -111,6 +113,32 @@ export const mapNewsletterChecklistsToTableData = (
             row.lpAccepted = doneValue;
             row.checkpointRefs.lpAccepted = { checklistId: checklist.id, checkpointId: checkpoint.id };
             setStatus(row, COLUMN_IDS.LP_ACCEPTED, doneValue, {
+              checklistId: checklist.id,
+              checkpointId: checkpoint.id,
+            });
+          }
+        }
+
+        if (checklistTitle === CHECKLIST_TITLES_NORM.LPS_APPROVED_GROUP_A) {
+          hasGroupedLp = true;
+          const doneValue = checkpoint.done === '1' ? 1 : 0;
+          for (const row of rowsByShop.values()) {
+            row.lpAAccepted = doneValue;
+            row.checkpointRefs.lpAAccepted = { checklistId: checklist.id, checkpointId: checkpoint.id };
+            setStatus(row, COLUMN_IDS.LP_A_ACCEPTED, doneValue, {
+              checklistId: checklist.id,
+              checkpointId: checkpoint.id,
+            });
+          }
+        }
+
+        if (checklistTitle === CHECKLIST_TITLES_NORM.LPS_APPROVED_GROUP_B) {
+          hasGroupedLp = true;
+          const doneValue = checkpoint.done === '1' ? 1 : 0;
+          for (const row of rowsByShop.values()) {
+            row.lpBAccepted = doneValue;
+            row.checkpointRefs.lpBAccepted = { checklistId: checklist.id, checkpointId: checkpoint.id };
+            setStatus(row, COLUMN_IDS.LP_B_ACCEPTED, doneValue, {
               checklistId: checklist.id,
               checkpointId: checkpoint.id,
             });
@@ -201,6 +229,34 @@ export const mapNewsletterChecklistsToTableData = (
           }
         }
 
+        if (checklistTitle === CHECKLIST_TITLES_NORM.LPS_APPROVED_GROUP_A) {
+          hasGroupedLp = true;
+          row.lpAAccepted = doneValue;
+          row.checkpointRefs.lpAAccepted = { checklistId: checklist.id, checkpointId: checkpoint.id };
+          setStatus(row, COLUMN_IDS.LP_A_ACCEPTED, doneValue, {
+            checklistId: checklist.id,
+            checkpointId: checkpoint.id,
+          });
+          if (parsed.itemId) {
+            row.lpAId = parsed.itemId;
+            setValue(row, COLUMN_IDS.LP_A_ID, parsed.itemId);
+          }
+        }
+
+        if (checklistTitle === CHECKLIST_TITLES_NORM.LPS_APPROVED_GROUP_B) {
+          hasGroupedLp = true;
+          row.lpBAccepted = doneValue;
+          row.checkpointRefs.lpBAccepted = { checklistId: checklist.id, checkpointId: checkpoint.id };
+          setStatus(row, COLUMN_IDS.LP_B_ACCEPTED, doneValue, {
+            checklistId: checklist.id,
+            checkpointId: checkpoint.id,
+          });
+          if (parsed.itemId) {
+            row.lpBId = parsed.itemId;
+            setValue(row, COLUMN_IDS.LP_B_ID, parsed.itemId);
+          }
+        }
+
         if (checklistTitle === CHECKLIST_TITLES_NORM.SENT_NSLT_LP_FOR_TESTING) {
           row.testSent = doneValue;
           row.checkpointRefs.testSent = { checklistId: checklist.id, checkpointId: checkpoint.id };
@@ -238,6 +294,6 @@ export const mapNewsletterChecklistsToTableData = (
     }
   }
 
-  const columns = createNewsletterColumns(hasGroupedNslt, spreadsheet?.timer != null, spreadsheet?.push != null, options);
-  return { headers: columns.map(column => column.label), columns, rows, hasGroupedNslt };
+  const columns = createNewsletterColumns(hasGroupedNslt, hasGroupedLp, spreadsheet?.timer != null, spreadsheet?.push != null, options);
+  return { headers: columns.map(column => column.label), columns, rows, hasGroupedNslt, hasGroupedLp };
 };

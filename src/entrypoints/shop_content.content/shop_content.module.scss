@@ -1,0 +1,117 @@
+$fab-size: 44px;
+
+$fab-bg: #f9f9f9;
+$fab-bg-active: #ececec;
+$fab-bg-disabled: #f3f3f3;
+
+$fab-border: rgba(168, 168, 168, 0.25);
+$fab-border-disabled: rgba(168, 168, 168, 0.15);
+
+$fab-shadow: 0 4px 36px rgba(191, 191, 191, 0.35);
+$fab-shadow-hover: 0 8px 28px rgba(191, 191, 191, 0.55);
+$fab-shadow-pressed: inset 0 1px 4px rgba(0, 0, 0, 0.06);
+
+$icon-color: #1f2937;
+
+$label-bg: #6366f1;
+$label-bg-disabled: #b4b6f5;
+$label-color: #ffffff;
+$label-overlap: 22px;
+
+.tools {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.fab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $fab-size;
+  height: $fab-size;
+  min-height: $fab-size;
+  padding: 0;
+  overflow: visible;
+  border: 1px solid $fab-border;
+  border-radius: 50%;
+  background: $fab-bg;
+  box-shadow: $fab-shadow;
+  cursor: pointer;
+  transition:
+    background-color 0.45s ease,
+    box-shadow 0.45s ease;
+
+  &:hover:not(:disabled) {
+    box-shadow: $fab-shadow-hover;
+  }
+
+  &:active:not(:disabled) {
+    transition-duration: 0.12s;
+    background: $fab-bg-active;
+    box-shadow: $fab-shadow-pressed;
+
+    .icon {
+      transition-duration: 0.12s;
+      transform: scale(0.88);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    box-shadow: none;
+    background: $fab-bg-disabled;
+    border-color: $fab-border-disabled;
+
+    .icon {
+      opacity: 0.3;
+    }
+
+    .label {
+      background: $label-bg-disabled;
+    }
+  }
+
+  &:hover .label,
+  &:focus-visible .label {
+    clip-path: inset(0);
+    opacity: 1;
+  }
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: $icon-color;
+  opacity: 0.75;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.2s;
+}
+
+.label {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: $label-overlap;
+  transform: translateY(-50%);
+  padding: 3px 30px 3px 9px;
+  border-radius: 8px;
+  background: $label-bg;
+  color: $label-color;
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  clip-path: inset(0 0 0 100%);
+  opacity: 0;
+  transition:
+    clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s;
+}

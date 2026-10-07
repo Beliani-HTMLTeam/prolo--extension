@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { Icon } from '@iconify/react';
 import { getFlagUrl } from '@/entrypoints/issue.content/utils/updater/flag';
 import { SundayTableUpdateSkeleton } from './SundayTableUpdateSkeleton';
-import { SundayTableProps } from '@/entrypoints/issue.content/types/Updater';
+import { type SundayTableProps } from '@/entrypoints/issue.content/types/Updater';
 import UpdaterButton from './UpdaterButton';
 
 const SKELETON_ROWS_COUNT = 10;
@@ -147,7 +147,7 @@ export const SundayTable = ({
               <div className={sundayStyles.newsletterIdColumn}>
                 {nsltId ? (
                   <a
-                    href={`https://www.prologistics.info/news_email.php?id=${nsltId}`}
+                    href={`${window.location.origin}/news_email.php?id=${nsltId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={sundayStyles.idLink}

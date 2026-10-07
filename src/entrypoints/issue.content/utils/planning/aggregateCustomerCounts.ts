@@ -1,5 +1,5 @@
 import { fetchCustomerCountsForNewsletters } from '@/entrypoints/issue.content/api/planning';
-import { PlanningEntry, PlanningResult } from '../../types/Planning';
+import { type PlanningEntry, type PlanningResult } from '../../types/Planning';
 
 export const aggregateCustomerCounts = async (
   allNewsletterIds: number[],

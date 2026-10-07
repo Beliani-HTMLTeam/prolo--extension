@@ -1,4 +1,4 @@
-import { TableHeaderProps } from '@/entrypoints/issue.content/types/Updater';
+import { type TableHeaderProps } from '@/entrypoints/issue.content/types/Updater';
 import updaterStyles from '../../styles/updater.module.scss';
 
 

@@ -2,7 +2,7 @@ import styles from './NewsletterLayout.module.scss';
 
 import { Icon } from '@iconify/react';
 
-import { BannerType } from '../../types';
+import { type BannerType } from '../../types';
 import { Banner, buildCustomBannerImageSrc, buildBannerHref } from '../../utils/banner';
 
 type MobileBannerProps = {

@@ -1,4 +1,4 @@
-import { ChecklistTableRow } from "@/entrypoints/issue.content/lib/types";
+import { type ChecklistTableRow } from "@/entrypoints/issue.content/lib/types";
 
 export const filterSlugsWithNewsletterIds = (rows: ChecklistTableRow[]): string[] => {
   return rows.filter(row => {

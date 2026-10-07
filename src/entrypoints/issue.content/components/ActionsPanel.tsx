@@ -5,8 +5,9 @@ import chatStyles from '../styles/chat.module.scss';
 import { CommentsView } from './CommentsView';
 import GenerateChecklistModal from './GenerateChecklistModal';
 import type { ChecklistMode, ChecklistTableData, IssueLink } from '../lib/types';
-import { getShopId } from './familytable/../../lib/shopIdMap';
+import { getShopId } from '../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
+import { fetchLandingPageAliases } from '../api/shopContentService';
 import PlanningModal from './PlanningModal';
 import UpdaterModal from './UpdaterModal';
 import { useTableDataIds } from '@/entrypoints/issue.content/utils/updater/hooks/useTableDataIds';
@@ -78,6 +79,7 @@ const ActionsPanel = ({
   const shouldShowSLPTUpdater = mode === 'newsletter' || mode === 'sunday';
   const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
+  const hasGroupedLp = tableData?.hasGroupedLp ?? false;
   const rows = tableData?.rows ?? [];
   const origin = window.location.origin;
   const [showGenerateModal, setShowGenerateModal] = useState(false);
@@ -90,8 +92,6 @@ const ActionsPanel = ({
 
   const { newsletterIds, landingPageIds } = useTableDataIds(rows);
 
-  console.log('tableData', tableData);
-
   const isPlanningAllowed = useMemo(() => {
     if (mode === 'cgb') {
       return false;
@@ -103,30 +103,31 @@ const ActionsPanel = ({
   }, [mode, rows]);
 
   const filteredRows = useMemo(() => {
-  if (mode === 'sunday') {
-    return rows.filter(row => row.nsltId);
-  }
- return rows.filter(row => {
-    const hasNewsletterId = !!(row.nsltId || row.nsltAId || row.nsltBId);
-    const hasLandingPageOnly = !!(row.lpId && !row.nsltId && !row.nsltAId && !row.nsltBId);
-    return hasNewsletterId || hasLandingPageOnly;
-  });
-}, [rows, mode]);
+    if (mode === 'sunday') {
+      return rows.filter(row => row.nsltId);
+    }
+    return rows.filter(row => {
+      const hasNewsletterId = Boolean(row.nsltId || row.nsltAId || row.nsltBId);
+      const hasLandingPageId = Boolean(row.lpId || row.lpAId || row.lpBId);
+      const hasLandingPageOnly = hasLandingPageId && !hasNewsletterId;
 
-console.log('filteredRows', filteredRows);
-
+      return hasNewsletterId || hasLandingPageOnly;
+    });
+  }, [rows, mode]);
 
   const buildNsltLinks = (idKey: 'nsltId' | 'nsltAId' | 'nsltBId') =>
     rows.filter(r => !!r[idKey]).map(r => `${r.shop}\t${origin}/news_email.php?id=${r[idKey]}`);
 
-  const buildLpLinks = () =>
+  const buildLpLinksFor = (idKey: 'lpId' | 'lpAId' | 'lpBId') =>
     rows
-      .filter(r => r.lpId)
+      .filter(r => r[idKey])
       .map(r => {
         const shopId = getShopId(r.shop);
-        return shopId ? `${r.shop}\t${origin}/shop_content.php?id=${r.lpId}&shop_id=${shopId}` : null;
+        return shopId ? `${r.shop}\t${origin}/shop_content.php?id=${r[idKey]}&shop_id=${shopId}` : null;
       })
       .filter((url): url is string => url !== null);
+
+  const buildLpLinks = () => buildLpLinksFor('lpId');
 
   const buildLpShopsLinks = () => {
     const lpPath = toLpDatePath(issueDate);
@@ -139,22 +140,50 @@ console.log('filteredRows', filteredRows);
     }).filter((v): v is string => v !== null);
   };
 
-  const useCopyButton = (getLinks: () => string[]) => {
+  // real alias per shop
+  const buildLpShopsTestLinks = async (idKey: 'lpAId' | 'lpBId'): Promise<string[]> => {
+    const targets = rows
+      .map(r => {
+        const lpId = r[idKey];
+        const shopId = getShopId(r.shop);
+        const domain = SHOP_DOMAIN_MAP[r.shop];
+        return lpId && shopId && domain ? { shop: r.shop, lpId, shopId: String(shopId), domain } : null;
+      })
+      .filter((t): t is { shop: string; lpId: string; shopId: string; domain: string } => t !== null);
+
+    const aliases = await fetchLandingPageAliases(targets);
+
+    return targets
+      .map((t, i) => {
+        const alias = aliases[i];
+        return alias ? `${t.shop}\t${t.domain}/content/${alias}/` : null;
+      })
+      .filter((url): url is string => url !== null);
+  };
+
+  const useCopyButton = (getLinks: () => string[] | Promise<string[]>) => {
     const [copied, setCopied] = useState(false);
-    const onClick = useCallback(() => {
-      const text = getLinks().join('\n');
+    const [loading, setLoading] = useState(false);
+    const onClick = useCallback(async () => {
+      setLoading(true);
+      const links = await getLinks();
+      setLoading(false);
+      const text = links.join('\n');
       if (!text) return;
       void navigator.clipboard.writeText(text).then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       });
     }, [getLinks]);
-    return { copied, onClick };
+    return { copied, loading, onClick };
   };
 
-  const useOpenButton = (getLinks: () => string[]) => {
-    const onClick = useCallback(() => {
-      const links = getLinks();
+  const useOpenButton = (getLinks: () => string[] | Promise<string[]>) => {
+    const [loading, setLoading] = useState(false);
+    const onClick = useCallback(async () => {
+      setLoading(true);
+      const links = await getLinks();
+      setLoading(false);
       if (!links.length) return;
       links.forEach(link => {
         const url = link.split('\t')[1];
@@ -163,20 +192,28 @@ console.log('filteredRows', filteredRows);
         }
       });
     }, [getLinks]);
-    return { onClick };
+    return { onClick, loading };
   };
 
   const nslt = useCopyButton(useCallback(() => buildNsltLinks('nsltId'), [rows, origin]));
   const nsltA = useCopyButton(useCallback(() => buildNsltLinks('nsltAId'), [rows, origin]));
   const nsltB = useCopyButton(useCallback(() => buildNsltLinks('nsltBId'), [rows, origin]));
   const lp = useCopyButton(useCallback(() => buildLpLinks(), [rows, origin]));
+  const lpA = useCopyButton(useCallback(() => buildLpLinksFor('lpAId'), [rows, origin]));
+  const lpB = useCopyButton(useCallback(() => buildLpLinksFor('lpBId'), [rows, origin]));
   const lpShops = useCopyButton(useCallback(() => buildLpShopsLinks(), [issueDate]));
+  const lpShopsTestA = useCopyButton(useCallback(() => buildLpShopsTestLinks('lpAId'), [rows]));
+  const lpShopsTestB = useCopyButton(useCallback(() => buildLpShopsTestLinks('lpBId'), [rows]));
 
   const openNslt = useOpenButton(useCallback(() => buildNsltLinks('nsltId'), [rows, origin]));
   const openNsltA = useOpenButton(useCallback(() => buildNsltLinks('nsltAId'), [rows, origin]));
   const openNsltB = useOpenButton(useCallback(() => buildNsltLinks('nsltBId'), [rows, origin]));
   const openLp = useOpenButton(useCallback(() => buildLpLinks(), [rows, origin]));
+  const openLpA = useOpenButton(useCallback(() => buildLpLinksFor('lpAId'), [rows, origin]));
+  const openLpB = useOpenButton(useCallback(() => buildLpLinksFor('lpBId'), [rows, origin]));
   const openLpShops = useOpenButton(useCallback(() => buildLpShopsLinks(), [issueDate]));
+  const openLpShopsTestA = useOpenButton(useCallback(() => buildLpShopsTestLinks('lpAId'), [rows]));
+  const openLpShopsTestB = useOpenButton(useCallback(() => buildLpShopsTestLinks('lpBId'), [rows]));
 
   return (
     <div className={styles.rightPanel}>
@@ -255,20 +292,61 @@ console.log('filteredRows', filteredRows);
 
                 {hasLpActions && (
                   <>
-                    <ActionButton
-                      variant="ghost"
-                      label="Copy LP Prolo"
-                      icon="mdi:link-variant"
-                      copied={lp.copied}
-                      onClick={lp.onClick}
-                    />
-                    <ActionButton
-                      variant="ghost"
-                      label="Copy LP Shops"
-                      icon="mdi:web"
-                      copied={lpShops.copied}
-                      onClick={lpShops.onClick}
-                    />
+                    {hasGroupedLp ? (
+                      <>
+                        <ActionButton
+                          variant="ghost"
+                          label="Copy Prolo Test A"
+                          icon="mdi:link-variant"
+                          copied={lpA.copied}
+                          onClick={lpA.onClick}
+                        />
+                        <ActionButton
+                          variant="ghost"
+                          label="Copy Prolo Test B"
+                          icon="mdi:link-variant"
+                          copied={lpB.copied}
+                          onClick={lpB.onClick}
+                        />
+                      </>
+                    ) : (
+                      <ActionButton
+                        variant="ghost"
+                        label="Copy LP Prolo"
+                        icon="mdi:link-variant"
+                        copied={lp.copied}
+                        onClick={lp.onClick}
+                      />
+                    )}
+
+                    {hasGroupedLp ? (
+                      <>
+                        <ActionButton
+                          variant="ghost"
+                          label={lpShopsTestA.loading ? 'Loading...' : 'Copy Shop Test A'}
+                          icon="mdi:web"
+                          copied={lpShopsTestA.copied}
+                          disabled={lpShopsTestA.loading}
+                          onClick={lpShopsTestA.onClick}
+                        />
+                        <ActionButton
+                          variant="ghost"
+                          label={lpShopsTestB.loading ? 'Loading...' : 'Copy Shop Test B'}
+                          icon="mdi:web"
+                          copied={lpShopsTestB.copied}
+                          disabled={lpShopsTestB.loading}
+                          onClick={lpShopsTestB.onClick}
+                        />
+                      </>
+                    ) : (
+                      <ActionButton
+                        variant="ghost"
+                        label="Copy LP Shops"
+                        icon="mdi:web"
+                        copied={lpShops.copied}
+                        onClick={lpShops.onClick}
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -308,18 +386,55 @@ console.log('filteredRows', filteredRows);
 
                 {hasLpActions && (
                   <>
-                    <ActionButton
-                      variant="ghost"
-                      label="Open LP Prolo"
-                      icon="mdi:link-variant"
-                      onClick={openLp.onClick}
-                    />
-                    <ActionButton
-                      variant="ghost"
-                      label="Open LP Shops"
-                      icon="mdi:web"
-                      onClick={openLpShops.onClick}
-                    />
+                    {hasGroupedLp ? (
+                      <>
+                        <ActionButton
+                          variant="ghost"
+                          label="Open Prolo Test A"
+                          icon="mdi:link-variant"
+                          onClick={openLpA.onClick}
+                        />
+                        <ActionButton
+                          variant="ghost"
+                          label="Open Prolo Test B"
+                          icon="mdi:link-variant"
+                          onClick={openLpB.onClick}
+                        />
+                      </>
+                    ) : (
+                      <ActionButton
+                        variant="ghost"
+                        label="Open LP Prolo"
+                        icon="mdi:link-variant"
+                        onClick={openLp.onClick}
+                      />
+                    )}
+
+                    {hasGroupedLp ? (
+                      <>
+                        <ActionButton
+                          variant="ghost"
+                          label={openLpShopsTestA.loading ? 'Loading...' : 'Open Shop Test A'}
+                          icon="mdi:web"
+                          disabled={openLpShopsTestA.loading}
+                          onClick={openLpShopsTestA.onClick}
+                        />
+                        <ActionButton
+                          variant="ghost"
+                          label={openLpShopsTestB.loading ? 'Loading...' : 'Open Shop Test B'}
+                          icon="mdi:web"
+                          disabled={openLpShopsTestB.loading}
+                          onClick={openLpShopsTestB.onClick}
+                        />
+                      </>
+                    ) : (
+                      <ActionButton
+                        variant="ghost"
+                        label="Open LP Shops"
+                        icon="mdi:web"
+                        onClick={openLpShops.onClick}
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -343,7 +458,7 @@ console.log('filteredRows', filteredRows);
           <div className={chatStyles.chatHeaderButtons} id={`chat-buttons-${issueId}`}></div>
         </div>
         <div className={chatStyles.chatContent}>
-          <CommentsView issueId={issueId} mode={mode} />
+          <CommentsView issueId={issueId} mode={mode} onRenamed={onGeneratedChecklist} />
         </div>
       </div>
 
@@ -368,6 +483,7 @@ console.log('filteredRows', filteredRows);
           }}
           tableData={tableData}
           isABTesting={hasGroupedNslt}
+          isTwoLP={hasGroupedLp}
           allowSelection={true}
         />
       )}

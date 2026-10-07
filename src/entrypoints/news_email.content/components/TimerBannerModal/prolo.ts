@@ -37,7 +37,7 @@ export const LANG_MAP: Record<string, string> = {
   nl: 'dutch',
   se: 'swedish',
   dk: 'danish',
-  no: 'norwegian',
+  no: 'norsk',
   fi: 'finnish',
   cz: 'czech',
   sk: 'slovak',

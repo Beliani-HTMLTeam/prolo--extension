@@ -1,4 +1,6 @@
 import { initUpdateChecker, checkForUpdate } from './updater.content/checker';
+import { SHOP_ID_TO_CODE, COUNTRY_CASHBACK } from '@/config/shopMaps';
+import { config } from '@/config/prolo';
 
 import JSZip from 'jszip';
 
@@ -131,9 +133,9 @@ export default defineBackground(() => {
   let currentQueueIndex: number = 0;
   let pendingUploadData: any = null;
 
-  setTimeout(() => {
-    initUpdateChecker();
-  }, 50);
+  // setTimeout(() => {
+  //   initUpdateChecker();
+  // }, 50);
 
   browser.action.onClicked.addListener(tab => {
     console.log('Extension icon clicked');
@@ -248,6 +250,107 @@ export default defineBackground(() => {
 
       return true;
     }
+
+if (message.action === 'openPurgeAndSubmit') {
+  void (async () => {
+    const origin = config.prologisticsProdHost;
+    const requestURL = `${origin}${config.paths.purge}`;
+    let tabId: number | undefined;
+
+    try {
+      const tab = await browser.tabs.create({ url: requestURL, active: false });
+      tabId = tab.id;
+      if (tabId == null) throw new Error('Failed to create purge tab');
+
+      // Wait until the purge tab finishes loading
+      await new Promise<void>(resolve => {
+        const listener = (id: number, changeInfo: { status?: string }) => {
+          if (id === tabId && changeInfo.status === 'complete') {
+            browser.tabs.onUpdated.removeListener(listener);
+            resolve();
+          }
+        };
+        browser.tabs.onUpdated.addListener(listener);
+      });
+
+      let domain = (message.domain as string) || '';
+      if (domain.startsWith('www.')) domain = domain.slice(4);
+
+      let urlsPath = message.urlsValue as string;
+      try {
+        const u = new URL(message.urlsValue);
+        urlsPath = u.pathname || '/';
+        if (!urlsPath.endsWith('/')) urlsPath += '/';
+      } catch {
+        if (!urlsPath.endsWith('/')) urlsPath += '/';
+      }
+
+      const results = await browser.scripting.executeScript({
+        target: { tabId },
+        func: async (args: { domain: string; urlsPath: string }) => {
+          try {
+            const formData = new FormData();
+            formData.append('domain', args.domain);
+            formData.append('prio', '1');
+            formData.append('urls', args.urlsPath);
+            formData.append('purge', 'Purge');
+
+            const resp = await fetch(`${window.location.origin}/purge.php`, {
+              method: 'POST',
+              body: formData,
+              credentials: 'include',
+            });
+
+            const text = await resp.text();
+            return { ok: resp.ok, status: resp.status, text };
+          } catch (err) {
+            return {
+              ok: false,
+              error: err instanceof Error ? err.toString() : String(err),
+            };
+          }
+        },
+        args: [{ domain, urlsPath }],
+      });
+
+      const result = results[0]?.result ?? { ok: false, error: 'No script result' };
+
+      if (tabId != null) {
+        await browser.tabs.remove(tabId).catch(() => {});
+      }
+
+      // Do NOT await — avoids false "channel closed" errors
+      if (sender.tab?.id != null) {
+        void browser.tabs
+          .sendMessage(sender.tab.id, {
+            action: 'openPurgeAndSubmitResult',
+            result,
+          })
+          .catch(() => {});
+      }
+    } catch (err) {
+      if (tabId != null) {
+        await browser.tabs.remove(tabId).catch(() => {});
+      }
+
+      if (sender.tab?.id != null) {
+        void browser.tabs
+          .sendMessage(sender.tab.id, {
+            action: 'openPurgeAndSubmitResult',
+            result: {
+              ok: false,
+              error: err instanceof Error ? err.toString() : String(err),
+            },
+          })
+          .catch(() => {});
+      }
+    }
+  })();
+
+  // Important: do not return true (we are not using sendResponse)
+  return;
+}
+
     if (message.action === 'saveZipToStorage') {
       console.log('Saving ZIP to service worker storage...');
 
@@ -492,34 +595,12 @@ export default defineBackground(() => {
             // Get current shop from URL
             const currentShopResult = await browser.scripting.executeScript({
               target: { tabId: tabId },
-              func: () => {
+              func: (shopIdMap: Record<string, string>) => {
                 const params = new URLSearchParams(window.location.search);
                 const shopId = params.get('shop_id');
-                const shopIdMap: Record<string, string> = {
-                  2: 'UK',
-                  12: 'PL',
-                  1: 'CH',
-                  3: 'DE',
-                  8: 'AT',
-                  17: 'NL',
-                  7: 'FR',
-                  10: 'ES',
-                  22: 'PT',
-                  21: 'IT',
-                  25: 'DK',
-                  28: 'NO',
-                  27: 'FI',
-                  23: 'SE',
-                  26: 'CZ',
-                  29: 'SK',
-                  24: 'HU',
-                  30: 'RO',
-                  19: 'BE',
-                  33: 'HR',
-                  34: 'SI',
-                };
                 return shopIdMap[shopId || ''];
               },
+              args: [SHOP_ID_TO_CODE],
             });
 
             const currentShop = currentShopResult[0]?.result;
@@ -572,34 +653,12 @@ export default defineBackground(() => {
           // Get current shop from URL
           const currentShopResult = await browser.scripting.executeScript({
             target: { tabId: tabId },
-            func: () => {
+            func: (shopIdMap: Record<string, string>) => {
               const params = new URLSearchParams(window.location.search);
               const shopId = params.get('shop_id');
-              const shopIdMap: Record<string, string> = {
-                2: 'UK',
-                12: 'PL',
-                1: 'CH',
-                3: 'DE',
-                8: 'AT',
-                17: 'NL',
-                7: 'FR',
-                10: 'ES',
-                22: 'PT',
-                21: 'IT',
-                25: 'DK',
-                28: 'NO',
-                27: 'FI',
-                23: 'SE',
-                26: 'CZ',
-                29: 'SK',
-                24: 'HU',
-                30: 'RO',
-                19: 'BE',
-                33: 'HR',
-                34: 'SI',
-              };
               return shopIdMap[shopId || ''];
             },
+            args: [SHOP_ID_TO_CODE],
           });
 
           const currentShop = currentShopResult[0]?.result;
@@ -758,65 +817,10 @@ export default defineBackground(() => {
 
     return await browser.scripting.executeScript({
       target: { tabId: tabId },
-      func: async (filesData, isCashbackMode) => {
+      func: async (filesData, isCashbackMode, countryCashback: Record<string, string>) => {
         console.log('Inside page context, starting upload...');
 
-        // Language mapping for cashback campaigns (copy from your assets)
-        const COUNTRY_CASHBACK: Record<string, string> = {
-          'UK-PL': 'polish',
-          UK: 'english',
-          'SK-HU': 'Hungarian',
-          'SK-EN': 'english',
-          'SK-CZ': 'czech',
-          SK: 'slovak',
-          SE: 'swedish',
-          'SE-EN': 'english',
-          RO: 'romanian',
-          'RO-EN': 'english',
-          PT: 'portugal',
-          'PT-EN': 'english',
-          PL: 'polish',
-          'PL-EN': 'english',
-          NO: 'norsk',
-          'NO-EN': 'english',
-          'NL-FR': 'french',
-          'NL-EN': 'english',
-          NL: 'dutch',
-          IT: 'italian',
-          'IT-EN': 'english',
-          HU: 'Hungarian',
-          'HU-EN': 'english',
-          FR: 'french',
-          'FR-NL': 'dutch',
-          'FR-DE': 'germanDE',
-          'FR-EN': 'english',
-          FI: 'finnish',
-          'FI-EN': 'english',
-          'FI-SE': 'swedish',
-          ES: 'spanish',
-          'ES-EN': 'english',
-          DK: 'danish',
-          'DK-EN': 'english',
-          DEAT: 'germanDE',
-          'DEAT-EN': 'english',
-          CZ: 'czech',
-          'CZ-EN': 'english',
-          'CZ-SK': 'slovak',
-          CH: 'german',
-          'CH-EN': 'english',
-          'CH-FR': 'french',
-          'CH-IT': 'italian',
-          'BE-DE': 'germanDE',
-          'BE-EN': 'english',
-          'BE-FR': 'french',
-          'BE-NL': 'dutch',
-          HR: 'croatian',
-          'HR-EN': 'english',
-          SI: 'slovene',
-          'SI-EN': 'english',
-        };
-
-        // Helper function to get the language from filename using COUNTRY_CASHBACK
+        // Helper function to get the language from filename using countryCashback
         const getLanguageFromFilename = (fileName: string): string | undefined => {
           const nameWithoutExt = fileName
             .replace(/\.[^/.]+$/, '')
@@ -835,8 +839,8 @@ export default defineBackground(() => {
             key = `${slug}-${extra}`;
           }
 
-          // Look up in COUNTRY_CASHBACK
-          const language = COUNTRY_CASHBACK[key];
+          // Look up in countryCashback
+          const language = countryCashback[key];
           console.log(`Filename: ${fileName}, key: ${key}, mapped language: ${language}`);
 
           return language;
@@ -1193,7 +1197,7 @@ export default defineBackground(() => {
 
         return { success: true, results };
       },
-      args: [filesToUpload, isCashback],
+      args: [filesToUpload, isCashback, COUNTRY_CASHBACK],
     });
   };
 

@@ -1,8 +1,9 @@
-import { BannerType } from '../types';
+import { type BannerType } from '../types';
 import { buildNewsletterPreviewHtml } from './banner';
-import { NewsletterDomData } from './dom';
+import { type NewsletterDomData } from './dom';
 import pLimit from 'p-limit';
 import pRetry from 'p-retry';
+import { config } from '@/config/prolo';
 
 export type UpdateResult = {
   slug: string;
@@ -25,6 +26,7 @@ export const updateNewsletter = async (
   template: string,
   banners: BannerType[],
   translations: Translations,
+  titVersion: number = 1,
 ) => {
   const slugIndex = SHOP_SLUGS.indexOf(slug);
   const newsletterId = domData.id;
@@ -37,6 +39,7 @@ export const updateNewsletter = async (
     slugIndex === -1 ? 0 : slugIndex,
     newsletterId,
     translations,
+    titVersion,
   );
 
   const formData = new FormData();
@@ -46,10 +49,10 @@ export const updateNewsletter = async (
   formData.append('deleted_doc', '0');
   formData.append('shop_content_id', domData.shopContentId);
 
-  const response = await fetch(`${window.origin}/news_email.php`, {
+  const response = await fetch(`${window.origin}${config.paths.newsEmail}`, {
     method: 'POST',
     body: formData,
-    referrer: `${window.origin}/news_email.php?id=${newsletterId}`,
+    referrer: `${window.origin}${config.paths.newsEmail}?id=${newsletterId}`,
     referrerPolicy: 'strict-origin-when-cross-origin',
   });
 
@@ -73,6 +76,7 @@ export const updateNewslettersBatch = async (
   onProgress: (completed: number, results: UpdateResult[]) => void,
   concurrency: number = 3,
   options: UpdateNewslettersBatchOptions = {},
+  titVersion: number = 1,
 ) => {
   const limit = pLimit(concurrency);
   let completed = 0;
@@ -101,7 +105,7 @@ export const updateNewslettersBatch = async (
       }
 
       try {
-        await pRetry(() => updateNewsletter(slug, domData, template, banners, translations), {
+        await pRetry(() => updateNewsletter(slug, domData, template, banners, translations, titVersion), {
           retries: 2,
           onFailedAttempt: error => {
             console.warn(
@@ -129,7 +133,7 @@ export const updateNewslettersBatch = async (
 
   if (deferredCurrentResult && currentDomData) {
     try {
-      await pRetry(() => updateNewsletter(currentSlug!, currentDomData, template, banners, translations), {
+      await pRetry(() => updateNewsletter(currentSlug!, currentDomData, template, banners, translations, titVersion), {
         retries: 2,
         onFailedAttempt: error => {
           console.warn(

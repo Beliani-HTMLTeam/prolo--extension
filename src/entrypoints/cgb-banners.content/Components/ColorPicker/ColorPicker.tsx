@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactElement } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { PulseLoader } from 'react-spinners';
 
 interface ColorPickerProps {

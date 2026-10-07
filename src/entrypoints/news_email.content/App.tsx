@@ -4,8 +4,8 @@ import AvailableBanners from './components/AvailableBanners';
 import CampaignPreview from './components/CampaignPreview';
 import NewsletterLayout from './components/NewsletterLayout';
 import { getNewsletterIdsMap } from './utils/dom';
-import { updateNewslettersBatch, UpdateResult } from './utils/api';
-import { BannerType, TimerConfig } from './types';
+import { updateNewslettersBatch, type UpdateResult } from './utils/api';
+import { type BannerType, type TimerConfig } from './types';
 import {
   getDaysBetweenInclusive,
   matchesBannerSearchTerm,
@@ -14,6 +14,7 @@ import {
 } from './utils/banner';
 import newsletterTemplate from './template.html?raw';
 
+import { config } from '@/config/prolo';
 import AppProviders from '@/components/app/AppProviders';
 import Overlay from '@/components/overlay/Overlay';
 import OverlayToggleButton from '@/components/overlay/OverlayToggleButton';
@@ -59,6 +60,7 @@ const NewsEmailAppContent = () => {
   const [isCustomBannerOpen, setIsCustomBannerOpen] = useState(false);
   const [isSelectNewslettersOpen, setIsSelectNewslettersOpen] = useState(false);
   const [isGenerateNewslettersOpen, setIsGenerateNewslettersOpen] = useState(false);
+  const [titVersion, setTitVersion] = useState<number>(1);
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateResults, setUpdateResults] = useState<UpdateResult[]>([]);
@@ -208,9 +210,9 @@ const NewsEmailAppContent = () => {
     checkForSundayNewsletter();
 
     Promise.all([
-      fetch('https://tj31c889tzsk.share.zrok.io/api/sheets/static/header').then(r => r.json()),
-      fetch('https://tj31c889tzsk.share.zrok.io/api/sheets/static/footer').then(r => r.json()),
-      fetch('https://tj31c889tzsk.share.zrok.io/api/sheets/static/templates').then(r => r.json()),
+      fetch(`${config.zrokBase}/static/header`).then(r => r.json()),
+      fetch(`${config.zrokBase}/static/footer`).then(r => r.json()),
+      fetch(`${config.zrokBase}/static/templates`).then(r => r.json()),
     ])
       .then(([headerRes, footerRes, templatesRes]) => {
         setTranslations({
@@ -284,6 +286,7 @@ const NewsEmailAppContent = () => {
       },
       3, // concurrency limit
       { currentSlug },
+      titVersion,
     );
 
     setIsUpdating(false);
@@ -328,6 +331,8 @@ const NewsEmailAppContent = () => {
             <NewsletterLayout
               banners={selectedBanners}
               dragIndex={dragIndex}
+              titVersion={titVersion}
+              onTitVersionChange={setTitVersion}
               onRemoveBanner={removeBanner}
               onEditBannerRequest={handleEditBannerRequest}
               onTimerRequest={handleTimerRequest}
@@ -383,7 +388,13 @@ const NewsEmailAppContent = () => {
         </div>
 
         {/* Preview newsletter modal */}
-        <CampaignPreview isOpen={isPreviewOpen} banners={selectedBanners} translations={translations} onClose={() => setIsPreviewOpen(false)} />
+        <CampaignPreview
+          isOpen={isPreviewOpen}
+          banners={selectedBanners}
+          translations={translations}
+          titVersion={titVersion}
+          onClose={() => setIsPreviewOpen(false)}
+        />
 
         {/* Preview banners modal */}
         <PreviewBannersModal

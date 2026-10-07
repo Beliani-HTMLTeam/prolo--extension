@@ -1,13 +1,15 @@
 import Swal from 'sweetalert2';
 import nyanCat from '../img/cat.gif';
 import cryMen from '../img/crying-26.gif';
+import { config } from '@/config/prolo';
+import { SHOP_ID_TO_CODE, COUNTRY_CASHBACK, invertRecord } from '@/config/shopMaps';
 
-export const dev: string = 'https://prolodev.prologistics.info';
-export const prod: string = 'https://www.prologistics.info';
-export const bannerDEV: string = 'https://prolodev.prologistics.info/shop_banner.php';
-export const mainURL: string = 'https://prolodev.prologistics.info/shop_banners.php';
-export const mainURLprod: string = 'https://www.prologistics.info/shop_banners.php';
-export const bannerPROD: string = 'https://www.prologistics.info/shop_banner.php';
+export const dev: string = config.prologisticsDevHost;
+export const prod: string = config.prologisticsProdHost;
+export const bannerDEV: string = `${dev}/shop_banner.php`;
+export const mainURL: string = `${dev}/shop_banners.php`;
+export const mainURLprod: string = `${prod}/shop_banners.php`;
+export const bannerPROD: string = `${prod}/shop_banner.php`;
 export const shopDev: string = 'https://www.dev.beliani.net/';
 export const shopProd: string = 'https://www.beliani.co.uk/';
 
@@ -91,83 +93,11 @@ export const COUNTRY_CODE: CountryCodeMap = {
   HR: 'croatian',
 };
 
-export const COUNTRY_CASHBACK: Record<string, string>  = {
-  'UK-PL': 'polish',
-  UK: 'english',
-  'SK-HU': 'Hungarian',
-  'SK-EN': 'english',
-  'SK-CZ': 'czech',
-  SK: 'slovak',
-  SE: 'swedish',
-  'SE-EN': 'english',
-  RO: 'romanian',
-  'RO-EN': 'english',
-  PT: 'portugal',
-  'PT-EN': 'english',
-  PL: 'polish',
-  'PL-EN': 'english',
-  NO: 'norsk',
-  'NO-EN': 'english',
-  'NL-FR': 'french',
-  'NL-EN': 'english',
-  NL: 'dutch',
-  IT: 'italian',
-  'IT-EN': 'english',
-  HU: 'Hungarian',
-  'HU-EN': 'english',
-  FR: 'french',
-  'FR-NL': 'dutch',
-  'FR-DE': 'germanDE',
-  'FR-EN': 'english',
-  FI: 'finnish',
-  'FI-EN': 'english',
-  'FI-SE': 'swedish',
-  ES: 'spanish',
-  'ES-EN': 'english',
-  DK: 'danish',
-  'DK-EN': 'english',
-  DEAT: 'germanDE',
-  'DEAT-EN': 'english',
-  CZ: 'czech',
-  'CZ-EN': 'english',
-  'CZ-SK': 'slovak',
-  CH: 'german',
-  'CH-EN': 'english',
-  'CH-FR': 'french',
-  'CH-IT': 'italian',
-  'BE-DE': 'germanDE',
-  'BE-EN': 'english',
-  'BE-FR': 'french',
-  'BE-NL': 'dutch',
-  HR: 'croatian',
-  "HR-EN": 'english',
-  SI: 'slovene',
-  "SI-EN": 'english',
-};
+const CODE_TO_SHOP_ID: Record<string, string> = invertRecord(SHOP_ID_TO_CODE);
 
 export const SLUG_SHOP: SlugMap = {
-  UK: '?shop_id=2',
-  PL: '?shop_id=12',
+  ...Object.fromEntries(Object.entries(CODE_TO_SHOP_ID).map(([code, id]) => [code, `?shop_id=${id}`])),
   DACH: ['?shop_id=1', '?shop_id=3', '?shop_id=8'],
-  AT: '?shop_id=8',
-  DE: '?shop_id=3',
-  CH: '?shop_id=1',
-  NL: '?shop_id=17',
-  FR: '?shop_id=7',
-  ES: '?shop_id=10',
-  PT: '?shop_id=22',
-  IT: '?shop_id=21',
-  DK: '?shop_id=25',
-  NO: '?shop_id=28',
-  FI: '?shop_id=27',
-  SE: '?shop_id=23',
-  CZ: '?shop_id=26',
-  SK: '?shop_id=29',
-  HU: '?shop_id=24',
-  RO: '?shop_id=30',
-  HR: '?shop_id=33',
-  SI: '?shop_id=34',
-  BE: '?shop_id=19',
 };
 
 export function convertToObject(CSV: string[][]): Record<string, string> {
@@ -243,29 +173,7 @@ export const getModal = (status: StatusType, text: string): void => {
 };
 
 export const getCurrentShop = (): ShopKey | undefined => {
-  const shopIdMap: ShopIdMap = {
-    2: 'UK',
-    12: 'PL',
-    1: 'CH',
-    3: 'DE',
-    8: 'AT',
-    17: 'NL',
-    7: 'FR',
-    10: 'ES',
-    22: 'PT',
-    21: 'IT',
-    25: 'DK',
-    28: 'NO',
-    27: 'FI',
-    23: 'SE',
-    26: 'CZ',
-    29: 'SK',
-    24: 'HU',
-    30: 'RO',
-    19: 'BE',
-    33: 'HR',
-    34: 'SI',
-  };
+  const shopIdMap: ShopIdMap = SHOP_ID_TO_CODE as ShopIdMap;
 
   const params = new URLSearchParams(window.location.search);
   const shopId = params.get('shop_id');

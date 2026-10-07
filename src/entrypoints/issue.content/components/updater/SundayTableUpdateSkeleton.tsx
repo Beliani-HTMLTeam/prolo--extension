@@ -1,7 +1,7 @@
 import Skeleton from "react-loading-skeleton";
 import sundayStyles from '../../styles/sunday.module.scss';
 import { getFlagUrl } from "@/entrypoints/issue.content/utils/updater/flag";
-import { SundayTableUpdateSkeletonProps } from "@/entrypoints/issue.content/types/Updater";
+import { type SundayTableUpdateSkeletonProps } from "@/entrypoints/issue.content/types/Updater";
 
 
 

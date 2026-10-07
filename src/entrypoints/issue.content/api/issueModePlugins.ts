@@ -19,8 +19,8 @@ const newsletterPlugin: IssueModePlugin = {
   showDashboardActions: true,
   mapTableData: (apiResponse, spreadsheet) => mapNewsletterChecklistsToTableData(apiResponse, spreadsheet),
   createEmptyTableData: () => {
-    const columns = createNewsletterColumns(false, false, false);
-    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false };
+    const columns = createNewsletterColumns(false, false, false, false);
+    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false, hasGroupedLp: false };
   },
 };
 
@@ -31,13 +31,14 @@ const sundayPlugin: IssueModePlugin = {
     mapNewsletterChecklistsToTableData(apiResponse, spreadsheet, {
       includeTranslations: false,
       includeLp: false,
+      hasGroupedLp: false,
     }),
   createEmptyTableData: () => {
-    const columns = createNewsletterColumns(false, false, false, {
+    const columns = createNewsletterColumns(false, false, false, false, {
       includeTranslations: false,
       includeLp: false,
     });
-    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false };
+    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false, hasGroupedLp: false };
   },
 };
 
@@ -47,7 +48,7 @@ const cgbPlugin: IssueModePlugin = {
   mapTableData: (apiResponse, _, newsletterApiResponse) => mapCgbChecklistsToTableData(apiResponse, newsletterApiResponse, { isGraphicsMode: true }),
   createEmptyTableData: () => {
     const columns = createCgbColumns([], { includeTranslations: true, includeTestSent: true });
-    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false };
+    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false, hasGroupedLp: false };
   },
 };
 
@@ -57,7 +58,7 @@ const graphicsPlugin: IssueModePlugin = {
   mapTableData: (apiResponse, _, newsletterApiResponse) => mapCgbChecklistsToTableData(apiResponse, newsletterApiResponse, { isGraphicsMode: true }),
   createEmptyTableData: () => {
     const columns = createCgbColumns([], { includeTranslations: true, includeTestSent: true });
-    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false };
+    return { headers: columns.map(column => column.label), columns, rows: [], hasGroupedNslt: false, hasGroupedLp: false };
   },
 };
 

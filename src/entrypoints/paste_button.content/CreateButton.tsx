@@ -63,7 +63,7 @@ export const CreateButton = (elems: Elems, target: string) => {
           const parser = new DOMParser();
           const doc = parser.parseFromString(content, 'text/html');
 
-          const linkSelector = doc.querySelectorAll<HTMLAnchorElement>('.newsletterRecommendationHeaderLink')[1];
+          const linkSelector = doc.querySelectorAll<HTMLAnchorElement>('.newsletterRecommendationHeaderLink')[1] ?? doc.querySelectorAll<HTMLAnchorElement>('a')[0];
           const domain = new URL(linkSelector.href).hostname.split('.').pop() ?? '';
           let lang = '';
 
@@ -105,6 +105,10 @@ export const CreateButton = (elems: Elems, target: string) => {
             toast.error(`Failed to get ${elems.ckeTextArea} element.`, { duration: 2500 });
             return;
           }
+
+          // @ts-ignore:next-line
+          content = minifiedHTML(minifiedCSS(content));
+
           textArea.value = content;
           upd.click();
           toast.success('Updating...', { duration: 2500 });
@@ -163,8 +167,7 @@ export const CreateButton = (elems: Elems, target: string) => {
               const link = doc.querySelector<HTMLAnchorElement>('a[href*="beliani."]');
               const walker = document.createTreeWalker(doc, NodeFilter.SHOW_COMMENT);
               const langComment = walker.nextNode();
-              if (!langComment)
-                hasLangVerification = false;
+              if (!langComment) hasLangVerification = false;
 
               if (!link) {
                 toast.error(`Failed to get link element.`, { duration: 2500 });
@@ -184,8 +187,19 @@ export const CreateButton = (elems: Elems, target: string) => {
               const attr = entry.updateBtn.getAttribute('onclick');
               let attrLang = attr?.split(', ')[1].replace(/'/g, '');
 
-              if (domain != lang || (hasLangVerification && attrLang != langComment?.textContent?.trim())) {
-                toast.error(`Pasting wrong lang '${!hasLangVerification ? domain : langComment?.textContent?.trim()}', expected '${!hasLangVerification ? lang : attrLang}'`, { duration: 2500 });
+              if (hasLangVerification && attrLang != langComment?.textContent?.trim()) {
+                toast.error(
+                  `Pasting wrong lang '${langComment?.textContent?.trim()}', expected '${attrLang}'`,
+                  { duration: 2500 },
+                );
+                return;
+              }
+
+              if (!hasLangVerification && domain != lang) {
+                toast.error(
+                  `Pasting wrong lang '${domain}', expected '${lang}'`,
+                  { duration: 2500 },
+                );
                 return;
               }
 

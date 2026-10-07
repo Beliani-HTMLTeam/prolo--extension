@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Modal from '@/components/modal/Modal';
 import styles from './SelectNewslettersModal.module.scss';
 import clsx from 'clsx';
-import { UpdateResult } from '../../utils/api';
+import { type UpdateResult } from '../../utils/api';
 
 type Newsletter = {
   slug: string;

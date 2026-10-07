@@ -3,6 +3,8 @@ import { CreateButton } from './CreateButton';
 
 export default defineContentScript({
   matches: [`*://*.prologistics.info/*news_email.php*`, `*://*.prologistics.info/*shop_content.php*`],
+  world: "MAIN",
+  
   main() {
     let locationUrl = location.href.split('/');
     const target = locationUrl[locationUrl.length - 1].split('.')[0] ?? '';

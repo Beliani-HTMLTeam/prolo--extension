@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styles from '../styles/FamilyTable.module.scss';
-import { shopToMentionTagMap } from '../lib/shopMaps';
-import { COLUMN_IDS } from '../api/checklistShared';
 import type { ChecklistOwner, ChecklistTableData, ChecklistTableRow } from '../lib/types';
+import { COLUMN_GROUPS } from '../api/checklistShared';
 import { TableHeaders } from './familytable/TableHeaders';
 import { TableRows } from './familytable/TableRows';
+import { ColumnGroupToggle } from './familytable/ColumnGroupToggle';
+import { useMentionCommentSync } from './familytable/useMentionCommentSync';
+import { useColumnGroupVisibility } from './familytable/useColumnGroupVisibility';
 
 type FamilyTableProps = {
   data: ChecklistTableData;
@@ -13,65 +15,47 @@ type FamilyTableProps = {
 
 const FamilyTable = ({ data, owner }: FamilyTableProps) => {
   const [rows, setRows] = useState<ChecklistTableRow[]>(data.rows);
-  const [hoveredShop, setHoveredShop] = useState<string | null>(null);    
+  const [hoveredShop, setHoveredShop] = useState<string | null>(null);
+  const { hiddenGroups, toggleGroup } = useColumnGroupVisibility();
 
   useEffect(() => {
     setRows(data.rows);
   }, [data.rows]);
 
   const columns = data.columns;
+  useMentionCommentSync(rows, columns, setRows);
 
-  useEffect(() => {
-    const hasTranslations = columns.some(column => column.id === COLUMN_IDS.TRANSLATIONS);
-    const hasTestRequest = columns.some(column => column.id === COLUMN_IDS.TEST_REQUEST);
-    if (!hasTranslations && !hasTestRequest) {
-      return;
-    }
-
-    const translationTags = new Set<string>();
-    const testRequestTags = new Set<string>();
-
-    rows.forEach(row => {
-      if ((row.columnStatuses?.[COLUMN_IDS.TRANSLATIONS] ?? row.translations) === 2) {
-        const mentionTag = shopToMentionTagMap[row.shop];
-        if (mentionTag) {
-          translationTags.add(mentionTag);
-        }
-      }
-
-      if ((row.columnStatuses?.[COLUMN_IDS.TEST_REQUEST] ?? row.testRequest) === 2) {
-        const mentionTag = shopToMentionTagMap[row.shop];
-        if (mentionTag) {
-          testRequestTags.add(mentionTag);
-        }
-      }
+  const hiddenColumnIds = useMemo(() => {
+    const ids = new Set<string>();
+    COLUMN_GROUPS.forEach(group => {
+      if (hiddenGroups.has(group.key)) group.columnIds.forEach(id => ids.add(id));
     });
+    return ids;
+  }, [hiddenGroups]);
 
-    let commentText = '';
-
-    if (translationTags.size > 0) {
-      commentText += `${Array.from(translationTags).join(' ')} please translate :)\n`;
-    }
-
-    if (testRequestTags.size > 0) {
-      commentText += `${Array.from(testRequestTags).join(' ')} please test :)`;
-    }
-
-    document.dispatchEvent(new CustomEvent('richchat:set', { detail: { text: commentText.trim() } }));
-  }, [rows, columns]);
+  const visibleColumns = useMemo(
+    () => columns.filter(column => !hiddenColumnIds.has(column.id)),
+    [columns, hiddenColumnIds],
+  );
 
   return (
-    <div className={styles.familyTable} style={{ gridTemplateColumns: `repeat(${columns.length}, auto)` }}>
-      <TableHeaders columns={columns} rows={rows} />
-      <TableRows
-        columns={columns}
-        rows={rows}
-        setRows={setRows}
-        hoveredShop={hoveredShop}
-        setHoveredShop={setHoveredShop}
-        checklistOwner={owner}
-      />
-    </div>
+    <>
+      <ColumnGroupToggle columns={columns} hiddenGroups={hiddenGroups} onToggle={toggleGroup} />
+      <div
+        className={styles.familyTable}
+        style={{ gridTemplateColumns: `repeat(${visibleColumns.length}, auto)` }}
+      >
+        <TableHeaders columns={visibleColumns} rows={rows} />
+        <TableRows
+          columns={visibleColumns}
+          rows={rows}
+          setRows={setRows}
+          hoveredShop={hoveredShop}
+          setHoveredShop={setHoveredShop}
+          checklistOwner={owner}
+        />
+      </div>
+    </>
   );
 };
 

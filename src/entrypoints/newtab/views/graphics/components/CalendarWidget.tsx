@@ -20,6 +20,7 @@ export default function CalendarWidget({ token, setToken, setUserProfile, fetchU
   const today = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
+  const currentDay = currentDate.getDate();
 
   const firstDayOffset = (new Date(currentYear, currentMonth, 1).getDay() + 6) % 7;
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -185,7 +186,11 @@ export default function CalendarWidget({ token, setToken, setUserProfile, fetchU
     return (
       <div className={styles.calendarLoginWidget}>
         <div className={styles.content}>
-          <img src={calendar_logo} className={styles.logo} />
+          <img
+            src={calendar_logo}
+            className={styles.logo}
+            style={{ objectFit: 'cover', objectPosition: `0px -${96 * (currentDay - 1)}px` }}
+          />
           <p>
             In order to use calendar widget, you need to
             <br />

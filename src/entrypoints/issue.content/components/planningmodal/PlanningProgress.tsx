@@ -1,4 +1,4 @@
-import { PlanningProgressProps } from '@/entrypoints/issue.content/types/Planning';
+import { type PlanningProgressProps } from '@/entrypoints/issue.content/types/Planning';
 import PlanningStyles from '../../styles/planning.module.scss';
 
 export const PlanningProgress = ({ loading, aggregating, progress }: PlanningProgressProps) => (

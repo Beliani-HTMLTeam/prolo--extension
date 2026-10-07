@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import useTeam, { Team } from '@/hooks/useTeam';
+import useTeam, { type Team } from '@/hooks/useTeam';
 
 import '@/assets/styles/reset.css';
 

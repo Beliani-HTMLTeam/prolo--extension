@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Modal from '@/components/modal/Modal';
 import styles from './TimerBannerModal.module.scss';
 import clsx from 'clsx';
-import { TimerConfig } from '../../types';
+import { type TimerConfig } from '../../types';
 import { SHOP_SLUGS, TOTAL_SHOPS } from '../../constants/shops';
 import { generateProloUrls } from './prolo';
 

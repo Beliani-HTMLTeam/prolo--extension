@@ -1,4 +1,4 @@
-import { Commit } from '../../types/Commit';
+import { type Commit } from '../../types/Commit';
 
 // Calculate commit activity for the configured date range
 export function calculateCommitActivity(commitsList: Commit[], sinceWhenDays: number): number[] {

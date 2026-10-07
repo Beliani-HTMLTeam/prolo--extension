@@ -1,4 +1,4 @@
-import { ShopDetails } from './ShopDetails';
+import { type ShopDetails } from './ShopDetails';
 
 export type ProductWithShops = {
   id: string;

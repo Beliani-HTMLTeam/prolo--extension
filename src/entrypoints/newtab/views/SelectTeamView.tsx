@@ -1,4 +1,4 @@
-import { Team } from '@/hooks/useTeam';
+import { type Team } from '@/hooks/useTeam';
 import styles from './SelectTeamView.module.scss';
 import logo_light from '@/entrypoints/newtab/img/Beliani_Icon_Brown_RGB.svg';
 import logo_dark from '@/entrypoints/newtab/img/Beliani_Icon_Color_RGB.svg';

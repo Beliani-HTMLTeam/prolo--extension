@@ -1,5 +1,5 @@
 import pLimit from 'p-limit';
-import { IssueListItem } from '../lib/types';
+import { type IssueListItem } from '../lib/types';
 import { fetchSpreadsheetTranslationsTab } from './issueData';
 import { NEWSLETTER_ENDPOINT, SHOP_ENDPOINT } from '../utils/updater/constants';
 import axios from 'axios';
@@ -9,9 +9,9 @@ interface LPPathResult {
   date: Date | null;
 }
 
-export const fetchLPPaths = async (issueItem: IssueListItem): Promise<LPPathResult> => {
-  const tabName = await fetchSpreadsheetTranslationsTab(issueItem);
-
+export const fetchLPPaths = async (issueItem: IssueListItem, tabNameOverride?: string | null): Promise<LPPathResult> => {
+  const tabName = tabNameOverride ?? (await fetchSpreadsheetTranslationsTab(issueItem));
+  
   if (!tabName) {
     console.warn('No tab name found, using default LP');
     return { lp: 'lp00-00-00', date: null };

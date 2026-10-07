@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import styles from './PreviewBannersModal.module.scss';
-import { BannerType } from '../../types';
+import { type BannerType } from '../../types';
 import { Banner } from '../../utils/banner';
 import ActionButton from '@/components/Button';
 

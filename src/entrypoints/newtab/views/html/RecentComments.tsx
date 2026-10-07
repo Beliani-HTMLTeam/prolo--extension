@@ -3,7 +3,7 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '@iconify/react';
 import styles from './styles/RecentComments.module.scss';
-import { Comment } from '@/entrypoints/issue.content/api/comments';
+import { type Comment } from '@/entrypoints/issue.content/api/comments';
 
 export interface IssueWithComments {
   link: string;
@@ -41,6 +41,11 @@ const formatRelativeTime = (dateString: string): string => {
 const getMarqueeDuration = (title: string): string => {
   const lengthBasedDuration = Math.max(12, Math.min(48, title.length * 0.45));
   return `${lengthBasedDuration}s`;
+};
+
+const handleScroll = (event: React.WheelEvent<HTMLDivElement>) => {
+  event.preventDefault();
+  event.currentTarget.scrollLeft += event.deltaY;
 };
 
 export default function RecentComments({ issues, loading = false, error = null }: RecentCommentsProps) {
@@ -89,7 +94,7 @@ export default function RecentComments({ issues, loading = false, error = null }
 
   return (
     <aside className={styles.recentCommentsContainer}>
-      <div className={styles.scrollWrapper}>
+      <div className={styles.scrollWrapper} onWheel={handleScroll}>
         <div className={styles.cardsFlex}>
           {sortedIssues.map(issue => {
             const sortedComments = [...issue.comments].sort(
@@ -124,7 +129,7 @@ export default function RecentComments({ issues, loading = false, error = null }
                 </div>
 
                 {/* Nested Comments List */}
-                <div className={styles.commentsList}>
+                <div className={styles.commentsList} onWheel={(e) => e.stopPropagation()}>
                   {sortedComments
                     .filter(comment => comment.comment_type)
                     .map(comment => (

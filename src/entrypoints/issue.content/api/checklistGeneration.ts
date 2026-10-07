@@ -7,6 +7,7 @@ import {
   NEWSLETTER_SHOP_ORDER,
 } from '../lib/shopConfig';
 import { CHECKLIST_TITLES } from '../lib/checklistTitles';
+import { config } from '@/config/prolo';
 
 export type GenerateChecklistPayload = {
   startId: string;
@@ -19,7 +20,7 @@ export type ChecklistGenerationResult = {
 };
 
 const REQUEST_DELAY_MS = 200;
-const PROLO_BASE_URL = 'https://www.prologistics.info';
+const PROLO_BASE_URL = window.location.origin;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const normalizeTitle = (title: string) => title.trim().toLowerCase();
@@ -42,7 +43,7 @@ const buildGeneratedCheckpointItems = (startId: string, mode: 'newsletter' | 'lp
     for (const slug of NEWSLETTER_SHOP_ORDER) {
       items.push({
         slug,
-        url: `${PROLO_BASE_URL}/news_email.php?id=${currentId}`,
+        url: `${PROLO_BASE_URL}${config.paths.newsEmail}?id=${currentId}`,
       });
       currentId += 1;
     }
@@ -65,7 +66,7 @@ const buildGeneratedCheckpointItems = (startId: string, mode: 'newsletter' | 'lp
 
       items.push({
         slug: item.slug,
-        url: `${PROLO_BASE_URL}/shop_content.php?id=${groupedId}&shop_id=${item.shopId}`,
+        url: `${PROLO_BASE_URL}${config.paths.shopContent}?id=${groupedId}&shop_id=${item.shopId}`,
       });
     }
   }
@@ -108,7 +109,7 @@ const removeChecklist = async (issueId: number, checklistId: string): Promise<vo
   }
 };
 
-const updateChecklistTitle = async (issueId: number, checklistId: string, title: string): Promise<void> => {
+export const updateChecklistTitle = async (issueId: number, checklistId: string, title: string): Promise<void> => {
   const baseUrl = window.location.origin;
   const encodedTitle = encodeURIComponent(title);
   const apiUrl = `${baseUrl}/api/issueLog/saveChecklistTitle/?issue_id=${issueId}&checklist_id=${checklistId}&checklist_title=${encodedTitle}`;

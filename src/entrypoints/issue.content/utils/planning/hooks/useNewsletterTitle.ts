@@ -1,4 +1,6 @@
-const ISSUE_URL = 'https://www.prologistics.info/api/issueLog/list/?page_id=';
+import { config } from '@/config/prolo';
+
+const ISSUE_URL = `${window.location.origin}${config.paths.issueLogList}?page_id=`;
 
 export const useNewsletterTitle = (issueId: number) => {
   const [newsletterTitle, setNewsletterTitle] = useState<string | null>(null);

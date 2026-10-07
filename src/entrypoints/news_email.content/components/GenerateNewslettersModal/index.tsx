@@ -2,7 +2,7 @@ import Modal from '@/components/modal/Modal';
 import styles from './GenerateNewslettersModal.module.scss';
 import clsx from 'clsx';
 
-import { UpdateResult } from '../../utils/api';
+import { type UpdateResult } from '../../utils/api';
 
 type NewsletterMapping = {
   slug: string;

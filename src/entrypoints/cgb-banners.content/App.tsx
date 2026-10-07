@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import MainButtons from './MainButtons';
 
 type ImageElement = HTMLImageElement | HTMLVideoElement;

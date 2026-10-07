@@ -1,4 +1,4 @@
-import { PlanningResult } from '../../types/Planning';
+import { type PlanningResult } from '../../types/Planning';
 
 export const getTotalCustomers = (results: PlanningResult[]): number => {
   const shopTotals = new Map<string, number>();
