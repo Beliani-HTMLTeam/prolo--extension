@@ -1,3 +1,22 @@
+[Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.2.1...v1.3.0)
+
+## ✨ Features
+
+- fix update notifier, it was never working properly ([103eaef](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/103eaef)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## ♻️ Code Refactoring
+
+- split background.ts into src/background modules ([c1e766e](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/c1e766e)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## 🔧 Chores
+
+- release v1.3.0 ([bac2d8a](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/bac2d8a)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- remove commented-out zipStorage ([93e9160](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/93e9160)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## Contributors
+
+- _kkazzann <kamil.kazaniecki@beliani.net>_
+
 [Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.2.0...v1.2.1)
 
 ## 🐛 Bug Fixes
