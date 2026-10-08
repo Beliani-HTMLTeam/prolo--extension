@@ -17,6 +17,8 @@ export default function TopBar({ data, userProfile, handleLogout }: TopBarProps)
   const [isAppsOpen, setIsAppsOpen] = useState(false);
   const [isBelianiOpen, setIsBelianiOpen] = useState(false);
 
+  const currentDay = new Date().getDate();
+
   const appsRef = useRef<HTMLDivElement>(null);
   const belianiRef = useRef<HTMLDivElement>(null);
 
@@ -98,7 +100,7 @@ export default function TopBar({ data, userProfile, handleLogout }: TopBarProps)
                       {isAccount && userProfile?.picture ? (
                         <img src={userProfile.picture} alt={app.name} width="48px" style={{ borderRadius: '50%' }} />
                       ) : app.image ? (
-                        <img src={`/icons/${app.image}.png`} alt={app.name} width="48px" />
+                        <img src={`/icons/${app.image}.png`} alt={app.name} width="48px" style={app.name== 'Calendar' ? { objectFit: 'cover', objectPosition: `0px -${48 * (currentDay - 1)}px`, height: '48px' } : undefined} />
                       ) : app.icon ? (
                         <Icon icon={app.icon} style={{ fontSize: '48px', color: app.iconColor || 'inherit' }} />
                       ) : null}
