@@ -89,6 +89,7 @@ export default function TopBar({ data, userProfile, handleLogout }: TopBarProps)
               <div className={styles.appsGrid}>
                 {data.googleApps?.map(app => {
                   const isAccount = app.name === 'Account';
+                  const isCalendar = app.name === 'Calendar';
                   return (
                     <a
                       key={app.name}
@@ -100,7 +101,20 @@ export default function TopBar({ data, userProfile, handleLogout }: TopBarProps)
                       {isAccount && userProfile?.picture ? (
                         <img src={userProfile.picture} alt={app.name} width="48px" style={{ borderRadius: '50%' }} />
                       ) : app.image ? (
-                        <img src={`/icons/${app.image}.png`} alt={app.name} width="48px" style={app.name== 'Calendar' ? { objectFit: 'cover', objectPosition: `0px -${48 * (currentDay - 1)}px`, height: '48px' } : undefined} />
+                        <img
+                          src={`/icons/${app.image}.png`}
+                          alt={app.name}
+                          width="48px"
+                          style={
+                            isCalendar
+                              ? {
+                                  objectFit: 'cover',
+                                  objectPosition: `0px -${48 * (currentDay - 1)}px`,
+                                  height: '48px',
+                                }
+                              : {}
+                          }
+                        />
                       ) : app.icon ? (
                         <Icon icon={app.icon} style={{ fontSize: '48px', color: app.iconColor || 'inherit' }} />
                       ) : null}
