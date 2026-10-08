@@ -1,3 +1,22 @@
+[Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.2.0...v1.2.1)
+
+## 🐛 Bug Fixes
+
+- calendar icon in top bar ([50e6afd](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/50e6afd)) _(by Krzysztof <krzysieq95.mail@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- run prettier, extract calendar boolean to isCalendar ([befd730](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/befd730)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## 🔧 Chores
+
+- release v1.2.1 ([edf943d](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/edf943d)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## Contributors
+
+- _Krzysztof <krzysieq95.mail@gmail.com>_
+- _kkazzann <kamil.kazaniecki@beliani.net>_
+
 [Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.1.0...v1.2.0)
 
 ## ✨ Features
