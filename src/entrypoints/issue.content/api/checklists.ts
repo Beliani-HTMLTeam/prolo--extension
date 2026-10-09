@@ -2,9 +2,6 @@ import axios from 'axios';
 import type { BannersCounts, ChecklistApiResponse, ChecklistMode, ChecklistTableData, IssueListItem, SpreadsheetTranslations } from '../lib/types';
 import { getIssueModePlugin } from './issueModePlugins';
 
-export const createEmptyTableData = (mode: ChecklistMode): ChecklistTableData =>
-  getIssueModePlugin(mode).createEmptyTableData();
-
 export const mapChecklistsToTableData = (
   apiResponse: ChecklistApiResponse,
   mode: ChecklistMode,

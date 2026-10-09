@@ -1,6 +1,6 @@
 export type ChecklistStatus = 0 | 1 | 2;
 
-export type ChecklistMode = 'newsletter' | 'sunday' | 'cgb' | 'graphics' | null;
+export type ChecklistMode = 'newsletter' | 'sunday' | 'cgb' | 'graphics' | 'campaign' | null;
 
 export type ChecklistOwner = 'HTML' | 'GRAPHICS' | null;
 
@@ -101,7 +101,12 @@ export type IssueTypeInfo = {
 export type AdditionalFieldEntry = {
   id: string;
   name: string;
+  // typed as string, but tag/select fields actually come as arrays and empty ones as null
   value: string;
+  field_type?: string;
+  // multiselect fields: value holds option ids, text_value the joined names ("Chairs; Lighting")
+  text_value?: string | null;
+  values?: Array<{ id: string; answer_value: string }>;
 };
 
 export type IssueListItem = {
@@ -140,9 +145,17 @@ export type ParsedIssueInfo = {
   checkpointsTotal: number;
   dueDate: Date | null;
   dueDateName: string | null;
+  // raw field value when it is not just a date (free text, or a date mentioned inside text)
+  dueDateText: string | null;
   issueCreatedAt: string;
   newsletterIssueId?: number | null;
+  // names of the selected "Newsletter TAGS" options
+  tags: string[];
+  // filled free-text fields not shown elsewhere (brief, objective, notes...)
+  extraFields: IssueExtraField[];
 };
+
+export type IssueExtraField = { name: string; value: string };
 
 export type IssueInfoViewModel = ParsedIssueInfo & {
   mode: ChecklistMode;

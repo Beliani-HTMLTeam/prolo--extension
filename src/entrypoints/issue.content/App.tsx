@@ -19,7 +19,7 @@ import {
 import { type ChecklistOwner, type ChecklistApiResponse, type ChecklistTableData, type IssueInfoViewModel, type IssueLink } from './lib/types';
 import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
 import { getIssueModePlugin } from './api/issueModePlugins';
-import { getChecklistOwner } from './api/issueParsing';
+import { getChecklistOwner, isCgbIssue } from './api/issueParsing';
 
 const IssueAppContent = () => {
   const issueId = useMemo(() => {
@@ -55,7 +55,7 @@ const IssueAppContent = () => {
     const mode = getChecklistMode(parsed.issueTypes);
     setChecklistOwner(getChecklistOwner(parsed.issueTypes));
     console.log("checklist mode", mode);
-    
+
     if (!mode) {
       setIssueInfo(null);
       setTableData(null);
@@ -78,7 +78,10 @@ const IssueAppContent = () => {
       checkpointsTotal: bannersCounts.total || 0,
       dueDate: parsed.dueDate,
       dueDateName: parsed.dueDateName,
+      dueDateText: parsed.dueDateText,
       issueCreatedAt: parsed.issueCreatedAt,
+      tags: parsed.tags,
+      extraFields: parsed.extraFields,
     });
     const apiData = await fetchChecklists(issueId);
     
@@ -128,11 +131,18 @@ const IssueAppContent = () => {
           issueDate={issueInfo.issueDate}
           dueDate={issueInfo.dueDate}
           dueDateName={issueInfo.dueDateName}
+          dueDateText={issueInfo.dueDateText}
           issueCreatedAt={issueInfo.issueCreatedAt}
+          tags={issueInfo.tags}
         />
 
         <div className={styles.dashboard}>
-          <div className={styles.leftPanel}>{tableData && <FamilyTable data={tableData} owner={checklistOwner} />}</div>
+          {/* no shop checklists (campaigns, most SM Paid / Technology tasks) - only links and chat */}
+          {tableData && tableData.rows.length > 0 && (
+            <div className={styles.leftPanel}>
+              <FamilyTable data={tableData} owner={checklistOwner} />
+            </div>
+          )}
           <ActionsPanel
             tableData={tableData}
             issueId={issueId}

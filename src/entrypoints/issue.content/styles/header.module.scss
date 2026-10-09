@@ -231,6 +231,17 @@
   font-weight: 600;
 }
 
+// raw "Due date" field value when it is free text
+.deadlineText {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  color: $grey-dark;
+}
+
 .progressContainer {
   display: flex;
   align-items: center;

@@ -17,7 +17,9 @@ type HeaderProps = {
   issueDate?: string;
   dueDate?: Date | null;
   dueDateName?: string | null;
+  dueDateText?: string | null;
   issueCreatedAt?: string;
+  tags?: string[];
 };
 
 const Header = ({
@@ -34,17 +36,23 @@ const Header = ({
   issueDate,
   dueDate,
   dueDateName,
+  dueDateText,
   issueCreatedAt,
+  tags = [],
 }: HeaderProps) => {
-  let calendarDate: Date | null = null;
-  if (dueDate) {
-    calendarDate = dueDate;
-  } else if (issueDate) {
+  let titleDate: Date | null = null;
+  if (issueDate) {
     const parts = issueDate.split('.');
     if (parts.length === 3) {
-      calendarDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      titleDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
     }
   }
+
+  const calendarDate = dueDate ?? titleDate;
+  // date shown in the deadline box: due date field, or the date from the issue title (newsletters, banners)
+  // unless the due date field holds free text, which is then shown as-is
+  const deadlineDate = dueDate ?? (dueDateText ? null : titleDate);
+  const deadlineName = dueDate || dueDateText ? dueDateName : 'Deadline';
 
   const getCalendarDateString = (date: Date) => {
     const y = date.getFullYear();
@@ -58,18 +66,34 @@ const Header = ({
       <div className={styles.headerLeft}>
         <IssueInfo title={issueTitle} description={issueDescription} />
         <div className={styles.deadlineAndActions}>
-          {dueDate && (
+          {!deadlineDate && dueDateText && (
             <div className={styles.deadlineWrapper}>
               <div className={styles.deadlineInfo}>
-                <span className={styles.deadlineName}>{dueDateName}</span>
+                <span className={styles.deadlineName}>{deadlineName}</span>
+              </div>
+              <span className={styles.deadlineText} title={dueDateText}>
+                {dueDateText}
+              </span>
+            </div>
+          )}
+
+          {deadlineDate && (
+            <div className={styles.deadlineWrapper}>
+              <div className={styles.deadlineInfo}>
+                <span className={styles.deadlineName}>{deadlineName}</span>
                 <span className={styles.deadlineDate}>
-                  {dueDate.toLocaleDateString('pl-PL')}
+                  {deadlineDate.toLocaleDateString('pl-PL')}
                 </span>
               </div>
+              {dueDateText && (
+                <span className={styles.deadlineText} title={dueDateText}>
+                  {dueDateText}
+                </span>
+              )}
               {(() => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const due = new Date(dueDate);
+                const due = new Date(deadlineDate);
                 due.setHours(0, 0, 0, 0);
                 const created = new Date(issueCreatedAt || new Date());
                 created.setHours(0, 0, 0, 0);
@@ -129,7 +153,7 @@ const Header = ({
       </div>
 
       <div className={styles.meta}>
-        {issueTypes.length > 0 && (
+        {(issueTypes.length > 0 || tags.length > 0) && (
           <div className={styles.typeTags}>
             {issueTypes.map(type => (
               <span
@@ -138,6 +162,12 @@ const Header = ({
                 style={{ '--type-color': type.color ?? '#ebf5ff' } as React.CSSProperties}
               >
                 {type.name}
+              </span>
+            ))}
+            {tags.map(tag => (
+              <span key={`tag-${tag}`} className={styles.typeTag} title="Newsletter TAG">
+                <Icon icon="mdi:tag-outline" width="11" />
+                {tag}
               </span>
             ))}
           </div>
