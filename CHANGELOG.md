@@ -1,3 +1,23 @@
+[Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.3.0...v1.4.0)
+
+## ✨ Features
+
+- grouped link chips, details popover and CGB-only rename checklists ([6708bbd](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/6708bbd)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- parse due dates, campaign mode, graphics tags and newsletter tags in issue dashboard ([2a58a15](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/2a58a15)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## 🐛 Bug Fixes
+
+- skip empty checklist columns and map locale codes for graphics issues ([43e526c](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/43e526c)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- add HR and SI translator mention tags ([a4f46ce](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/a4f46ce)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## 🔧 Chores
+
+- release v1.4.0 ([b3e9deb](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/b3e9deb)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## Contributors
+
+- _kkazzann <kamil.kazaniecki@beliani.net>_
+
 [Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.2.1...v1.3.0)
 
 ## ✨ Features
