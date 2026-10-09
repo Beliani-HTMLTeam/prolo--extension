@@ -13,8 +13,9 @@ export const mentionToShopsMap: Record<string, string[]> = {
   '@PT translation(4492)': ['PT'],
   '@RO translation(4688)': ['RO'],
   '@SE translation(4494)': ['SE'],
-  '@SI translation()': ['SI'],
-  '@HR translation()': ['HR'],
+  // no SI translation group in prolo yet, SI is translated by a single person
+  '@Maksymilian Molak(5692)': ['SI'],
+  '@HR translation(6024)': ['HR'],
   '@SK translation(4498)': ['SK'],
 };
 
