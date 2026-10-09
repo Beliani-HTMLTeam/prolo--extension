@@ -1,10 +1,11 @@
-import { Icon } from '@iconify/react';
 import { useState, useCallback } from 'react';
 import styles from '../styles/layout.module.scss';
 import chatStyles from '../styles/chat.module.scss';
 import { CommentsView } from './CommentsView';
 import GenerateChecklistModal from './GenerateChecklistModal';
-import type { ChecklistMode, ChecklistTableData, IssueLink } from '../lib/types';
+import type { ChecklistMode, ChecklistTableData, IssueExtraField, IssueLink } from '../lib/types';
+import ExtraFieldsMenu from './ExtraFieldsMenu';
+import LinkChips from './LinkChips';
 import { getShopId } from '../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
 import { fetchLandingPageAliases } from '../api/shopContentService';
@@ -13,45 +14,14 @@ import UpdaterModal from './UpdaterModal';
 import { useTableDataIds } from '@/entrypoints/issue.content/utils/updater/hooks/useTableDataIds';
 import ActionButton from '@/components/Button';
 
-const LINK_ICON_MAP: [string, string][] = [
-  ['figma', 'simple-icons:figma'],
-  ['spreadsheet', 'mdi:google-spreadsheet'],
-  ['translation', 'mdi:translate'],
-  ['dropbox', 'simple-icons:dropbox'],
-  ['newsletter', 'mdi:email-newsletter'],
-  ['banner', 'mdi:image-multiple'],
-  ['planning', 'mdi:email-send'],
-];
-
-const getLinkIcon = (name: string): string => {
-  const lower = name.toLowerCase();
-  for (const [key, icon] of LINK_ICON_MAP) {
-    if (lower.includes(key)) return icon;
-  }
-  return 'mdi:link-variant';
-};
-
-/** Shorten long field names for display (match old createLinkChip behaviour). */
-const getLinkLabel = (name: string): string => {
-  return (
-    name
-      .replace(/translation spreadsheet newsletter/i, 'Translations')
-      .replace(/spreadsheet newsletter/i, 'Spreadsheet')
-      .replace(/newsletter template/i, 'Newsletter')
-      .replace(/Newsletter Campaign banners/i, 'Banners')
-      .replace(/Campaign dropbox/i, 'Dropbox')
-      .replace(/Figma newsletter link/i, 'Figma')
-      .replace(/Newsletter testing issue/i, 'Testing')
-      .trim() || name
-  );
-};
-
 type ActionsPanelProps = {
   tableData: ChecklistTableData | null;
   issueId: number;
   mode?: ChecklistMode;
   showDashboardActions?: boolean;
+  showRenameChecklists?: boolean;
   issueLinks?: IssueLink[];
+  extraFields?: IssueExtraField[];
   issueDate?: string;
   onGeneratedChecklist?: () => Promise<void> | void;
   onStartPlanning?: (chdeId: string | null) => Promise<void> | void;
@@ -70,12 +40,15 @@ const ActionsPanel = ({
   issueId,
   mode,
   showDashboardActions,
+  showRenameChecklists = false,
   issueLinks = [],
+  extraFields = [],
   issueDate,
   onGeneratedChecklist,
   onStartPlanning,
 }: ActionsPanelProps) => {
   const shouldShowActions = showDashboardActions ?? mode !== 'cgb';
+  const showExtraFields = (mode === 'graphics' || mode === 'campaign') && extraFields.length > 0;
   const shouldShowSLPTUpdater = mode === 'newsletter' || mode === 'sunday';
   const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
@@ -217,22 +190,11 @@ const ActionsPanel = ({
 
   return (
     <div className={styles.rightPanel}>
-      {/* links from response.additional_fields */}
-      {issueLinks.length > 0 && (
+      {/* links from response.additional_fields, plus brief/notes for issues without a standard checklist flow */}
+      {(issueLinks.length > 0 || showExtraFields) && (
         <div className={styles.linkChipsRow}>
-          {issueLinks.map(link => (
-            <a
-              key={link.url}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.linkChip}
-              title={link.name}
-            >
-              <Icon icon={getLinkIcon(link.name)} width="14" height="14" />
-              {getLinkLabel(link.name)}
-            </a>
-          ))}
+          <LinkChips links={issueLinks} />
+          {showExtraFields && <ExtraFieldsMenu fields={extraFields} />}
         </div>
       )}
 
@@ -458,7 +420,12 @@ const ActionsPanel = ({
           <div className={chatStyles.chatHeaderButtons} id={`chat-buttons-${issueId}`}></div>
         </div>
         <div className={chatStyles.chatContent}>
-          <CommentsView issueId={issueId} mode={mode} onRenamed={onGeneratedChecklist} />
+          <CommentsView
+            issueId={issueId}
+            mode={mode}
+            showRenameChecklists={showRenameChecklists}
+            onRenamed={onGeneratedChecklist}
+          />
         </div>
       </div>
 

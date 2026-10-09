@@ -148,7 +148,9 @@ const IssueAppContent = () => {
             issueId={issueId}
             mode={issueInfo.mode}
             showDashboardActions={getIssueModePlugin(issueInfo.mode).showDashboardActions}
+            showRenameChecklists={isCgbIssue(issueInfo.issueTypes)}
             issueLinks={issueLinks}
+            extraFields={issueInfo.extraFields}
             issueDate={issueInfo.issueDate}
             onGeneratedChecklist={loadIssueData}
             onStartPlanning={() => {}}

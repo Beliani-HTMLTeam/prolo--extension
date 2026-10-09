@@ -55,6 +55,102 @@
   gap: 8px;
 }
 
+.popoverRoot {
+  position: relative;
+  display: inline-flex;
+}
+
+.popoverPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  width: 280px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px;
+  background: $pure-white;
+  border: 1.5px solid $grey-border-dark;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  color: $dawn-grey;
+}
+
+.popoverPanelWide {
+  width: 420px;
+  max-width: calc(100vw - 48px);
+}
+
+.popoverList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popoverLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: $dawn-grey !important;
+  text-decoration: none !important;
+
+  &:hover {
+    background: $soft-peach;
+    color: $happy-red !important;
+  }
+}
+
+.popoverLinkText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.extraFieldRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 8px;
+
+  & + & {
+    border-top: 1px solid $grey-border-dark;
+  }
+}
+
+.extraFieldName {
+  font-weight: 600;
+}
+
+.extraFieldValue {
+  overflow-wrap: anywhere;
+}
+
+.linkChipLabel {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linkChipCount {
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: $grey-border-dark;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.linkChipActive {
+  border-color: $happy-red;
+}
+
 .linkChip {
   display: inline-flex;
   align-items: center;

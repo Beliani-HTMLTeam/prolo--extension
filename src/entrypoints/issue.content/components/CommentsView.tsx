@@ -67,10 +67,11 @@ const parseCommentHtml = (html: string): string => {
 type CommentsViewProps = {
   issueId: number;
   mode?: ChecklistMode;
+  showRenameChecklists?: boolean;
   onRenamed?: () => Promise<void> | void;
 };
 
-export const CommentsView = ({ issueId, mode, onRenamed }: CommentsViewProps) => {
+export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRenamed }: CommentsViewProps) => {
   const [cookies] = useCookies(['ebas_username']);
   const [oldTitle, setOldTitle] = useState(document.title);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -266,7 +267,7 @@ export const CommentsView = ({ issueId, mode, onRenamed }: CommentsViewProps) =>
   };
 
   const handleRenameChecklists = async () => {
-    if (mode !== 'cgb' || isRenaming) return;
+    if (mode !== 'cgb' || !showRenameChecklists || isRenaming) return;
     setIsRenaming(true);
     try {
       const count = await renameBannerChecklists(issueId, comments);
@@ -553,7 +554,7 @@ export const CommentsView = ({ issueId, mode, onRenamed }: CommentsViewProps) =>
             >
               <Icon icon="mdi:image-multiple-outline" width="18" height="18" />
             </button>
-            {mode === 'cgb' && (
+            {mode === 'cgb' && showRenameChecklists && (
               <button
                 className={clsx(formStyles.btn, formStyles['btn--ghost'])}
                 title="Rename 'Banners approved (with RO)' checklists using names from comments"
