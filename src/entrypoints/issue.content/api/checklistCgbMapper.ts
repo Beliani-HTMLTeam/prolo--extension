@@ -10,6 +10,8 @@ export const mapCgbChecklistsToTableData = (
   const rowsByShop = new Map<string, ChecklistTableRow>();
   const includedChecklists = (apiResponse.checklists ?? [])
     .filter(checklist => {
+      // skip empty checklists (e.g. freshly added "Checklist 8"), they would render as an empty column
+      if (!checklist.checkpoints?.length) return false;
       const checklistTitle = normalizeTitle(checklist.title);
       return !checklistTitle.startsWith('banners checked') && checklistTitle !== CHECKLIST_TITLES_NORM.SENT_NSLT_LP_FOR_TESTING;
     })
@@ -78,11 +80,16 @@ export const mapCgbChecklistsToTableData = (
     }
   }
 
+  // columns only make sense when the source checklist exists (e.g. CGB issues have neither)
+  let hasTestSent = false;
+  let hasTranslations = false;
+
   if (options?.isGraphicsMode) {
     const testSentChecklist = (apiResponse.checklists ?? []).find(
       c => normalizeTitle(c.title) === CHECKLIST_TITLES_NORM.SENT_NSLT_LP_FOR_TESTING
     );
     if (testSentChecklist) {
+      hasTestSent = true;
       for (const checkpoint of testSentChecklist.checkpoints ?? []) {
         const parsed = parseCheckpointDescription(checkpoint.description || '');
         if (!parsed) continue;
@@ -108,6 +115,7 @@ export const mapCgbChecklistsToTableData = (
         c => normalizeTitle(c.title) === CHECKLIST_TITLES_NORM.NEWSLETTER_TRANSLATIONS
       );
       if (translationsChecklist) {
+        hasTranslations = true;
         for (const checkpoint of translationsChecklist.checkpoints ?? []) {
           const parsed = parseCheckpointDescription(checkpoint.description || '');
           if (!parsed) continue;
@@ -131,9 +139,12 @@ export const mapCgbChecklistsToTableData = (
     return left.shop.localeCompare(right.shop);
   });
 
-  const columns = createCgbColumns(dynamicColumns, {
-    includeTranslations: options?.isGraphicsMode,
-    includeTestSent: options?.isGraphicsMode,
+  // checklists without any shop checkpoint (e.g. photostudio steps in Content Graphics) would be empty columns
+  const usedColumns = dynamicColumns.filter(column => rows.some(row => row.columnStatuses[column.id] !== undefined));
+
+  const columns = createCgbColumns(usedColumns, {
+    includeTranslations: hasTranslations,
+    includeTestSent: hasTestSent,
   });
   return { headers: columns.map(column => column.label), columns, rows, hasGroupedNslt: false };
 };

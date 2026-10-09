@@ -164,6 +164,12 @@ const shopGroupAliases: Record<string, string[]> = {
   BE: ['BEFR', 'BENL'],
 };
 
+// language-country codes used in Content Graphics checklists ("DE-DE", "DE-CH"), dash already stripped
+const localeCodeAliases: Record<string, string> = {
+  DEDE: 'DE',
+  DECH: 'CHDE',
+};
+
 export const normalizeShopCode = (value: string) =>
   value
     .trim()
@@ -196,7 +202,7 @@ export const parseCheckpointDescription = (description: string) => {
 
   const rest = restTab ?? normalizedDescription.slice(firstToken.length).trim();
 
-  const aliasResolved = SHOP_ALIASES[normalizedCode] ?? normalizedCode;
+  const aliasResolved = SHOP_ALIASES[normalizedCode] ?? localeCodeAliases[normalizedCode] ?? normalizedCode;
 
   if (knownShops.has(aliasResolved)) {
     return {
