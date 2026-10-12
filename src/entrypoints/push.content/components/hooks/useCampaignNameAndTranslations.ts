@@ -6,6 +6,11 @@ import { fetchPushTranslations } from '@/entrypoints/issue.content/api/issueData
 import { showErrorAlert } from '../Alerts';
 import { DEFAULT_SPREADSHEET } from '../../const/defaults';
 
+export interface FetchTranslationsOptions {
+  /** Set when a custom date overrides the name's date. */
+  skipDateWarning?: boolean;
+}
+
 export function useCampaignNameAndTranslations(spreadsheetUrl: string = DEFAULT_SPREADSHEET, initialName = '') {
   const [campaignName, setCampaignName] = useState(initialName);
   const [pushTranslations, setPushTranslations] = useState<PushTranslations | null>(null);
@@ -31,10 +36,12 @@ export function useCampaignNameAndTranslations(spreadsheetUrl: string = DEFAULT_
   }, []);
 
   const fetchTranslations = useCallback(
-    async (name: string) => {
+    async (name: string, options?: FetchTranslationsOptions) => {
       if (!name || !name.trim()) return null;
 
-      const result = checkCampaignNameDate(name);
+      // With a custom date the name's own date is irrelevant: don't warn about it.
+      const skipDateWarning = !!options?.skipDateWarning;
+      const result = skipDateWarning ? parseCampaignName(name) : checkCampaignNameDate(name);
 
       setIsLoadingTranslations(true);
       try {
@@ -48,7 +55,7 @@ export function useCampaignNameAndTranslations(spreadsheetUrl: string = DEFAULT_
         const translations = await fetchPushTranslations(spreadsheetUrl, year, name);
         setPushTranslations(translations);
 
-        if (result && !result.hasDate) {
+        if (result && !result.hasDate && !skipDateWarning) {
           await Swal.fire({
             icon: 'warning',
             title: 'No Date Found',

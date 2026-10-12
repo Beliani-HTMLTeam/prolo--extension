@@ -1,7 +1,10 @@
 import styles from '../push.module.scss';
 import { MainContent } from './MainContent';
 import { Sidebar } from './Sidebar';
+import { type CustomDateProps } from '../helpers/customDate';
 import { type DashboardContentProps } from '../types/push';
+
+const EMPTY_TABS: string[] = [];
 
 export const DashboardContent = ({
   campaign,
@@ -22,7 +25,7 @@ export const DashboardContent = ({
   isLoadingTranslations,
   isGenerating,
   isLoadingTabs,
-  availableTabs = [],
+  availableTabs = EMPTY_TABS,
   onAddCustomTemplate,
   onRemoveCustomTemplate,
   onHideOverlay,
@@ -56,7 +59,14 @@ export const DashboardContent = ({
   oldNewsletterFamilyIds,
   onUseOldNewsletterFamily,
   onOldNewsletterIdsChange,
-}: DashboardContentProps) => {
+  customDate,
+  effectiveCampaignName,
+  isCustomDateActive,
+  isCustomDatePending,
+  customDateError,
+  onSetCustomDate,
+  onClearCustomDate,
+}: DashboardContentProps & CustomDateProps) => {
   return (
     <div className={styles.dashboardOverlay}>
       <button onClick={onHideOverlay} className={styles.closeButton}>
@@ -83,11 +93,22 @@ export const DashboardContent = ({
           onSetPreviewImage={onSetPreviewImage}
           onAddCustomTemplate={onAddCustomTemplate}
           onRemoveCustomTemplate={onRemoveCustomTemplate}
+          // These three were never passed before, so ✎ / ✓ / ✕ on sidebar overrides did nothing.
+          onToggleCustomTemplate={onToggleCustomTemplate}
+          onUpdateCustomTemplateValue={onUpdateCustomTemplateValue}
+          onSaveCustomTemplate={onSaveCustomTemplate}
           customTemplates={customTemplates}
           useOldNewsletterFamily={useOldNewsletterFamily}
           oldNewsletterFamilyIds={oldNewsletterFamilyIds}
           onUseOldNewsletterFamily={onUseOldNewsletterFamily}
           onOldNewsletterIdsChange={onOldNewsletterIdsChange}
+          customDate={customDate}
+          effectiveCampaignName={effectiveCampaignName}
+          isCustomDateActive={isCustomDateActive}
+          isCustomDatePending={isCustomDatePending}
+          customDateError={customDateError}
+          onSetCustomDate={onSetCustomDate}
+          onClearCustomDate={onClearCustomDate}
         />
 
         <MainContent

@@ -4,6 +4,18 @@ import Swal from 'sweetalert2';
 import { generateCampaignData, getAllSlugs, isValidTemplateId } from '../../helpers/slugMapper';
 import { showErrorAlert } from '../Alerts';
 import { type StoredCampaign, type UseGenerateCampaignProps } from '../../types/push';
+import { type FetchTranslationsOptions } from './useCampaignNameAndTranslations';
+
+type GenerateCampaignProps = Omit<UseGenerateCampaignProps, 'fetchTranslations'> & {
+  fetchTranslations: (
+    name: string,
+    options?: FetchTranslationsOptions,
+  ) => ReturnType<UseGenerateCampaignProps['fetchTranslations']>;
+  /** Campaign name with the custom date applied (from useCustomDate). Defaults to campaignName. */
+  effectiveCampaignName?: string;
+  /** Called after a successful generation. */
+  onGenerated?: (info: { campaignName: string; effectiveCampaignName: string }) => void;
+};
 
 export function useGenerateCampaign({
   campaignName,
@@ -19,7 +31,9 @@ export function useGenerateCampaign({
   useOldNewsletterFamily = false,
   oldNewsletterFamilyIds = {},
   onShowSuccess,
-}: UseGenerateCampaignProps) {
+  effectiveCampaignName,
+  onGenerated,
+}: GenerateCampaignProps) {
   const handleGenerateAllSlugs = useCallback(async () => {
     if (generating.isGenerating) {
       return;
@@ -30,6 +44,10 @@ export function useGenerateCampaign({
       return;
     }
 
+    // Date-dependent data comes from the effective name; translations still use the real tab name.
+    const dateSourceName = effectiveCampaignName || campaignName;
+    const hasDateOverride = dateSourceName !== campaignName;
+
     setCampaign(null);
     setActiveSlug(null);
     bumpVersion();
@@ -39,7 +57,7 @@ export function useGenerateCampaign({
     generating.setIsGenerating(true);
 
     try {
-      const result = checkCampaignNameDate(campaignName);
+      const result = checkCampaignNameDate(dateSourceName);
       if (result && !result.hasDate) {
         const confirmResult = await Swal.fire({
           icon: 'warning',
@@ -56,7 +74,7 @@ export function useGenerateCampaign({
         }
       }
 
-      const translations = await fetchTranslations(campaignName);
+      const translations = await fetchTranslations(campaignName, { skipDateWarning: hasDateOverride });
       if (!translations) {
         await showErrorAlert('Failed to load translations. Please check the campaign name and try again.');
         generating.setIsGenerating(false);
@@ -90,7 +108,7 @@ export function useGenerateCampaign({
         slugsToUse,
         chdeTemplateId,
         translations,
-        campaignName,
+        dateSourceName,
         undefined,
         undefined,
         oldIds,
@@ -115,6 +133,7 @@ export function useGenerateCampaign({
       setActiveSlug(null);
 
       bumpVersion();
+      onGenerated?.({ campaignName, effectiveCampaignName: dateSourceName });
 
       generating.setIsGenerating(false);
 
@@ -142,6 +161,9 @@ export function useGenerateCampaign({
     bumpVersion,
     useOldNewsletterFamily,
     oldNewsletterFamilyIds,
+    effectiveCampaignName,
+    onGenerated,
+    onShowSuccess,
   ]);
 
   return { handleGenerateAllSlugs };

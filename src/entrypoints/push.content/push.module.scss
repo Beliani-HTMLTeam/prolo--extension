@@ -1791,3 +1791,25 @@
   font-weight: 400;
   color: $grey-dark;
 }
+
+.customDateRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+
+  input[type='date'] {
+    flex: 0 1 160px;
+    min-width: 0;
+  }
+}
+
+.customDateLabel {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.customDateBadge {
+  font-weight: 600;
+  color: #d97706;
+}

@@ -1,64 +1,66 @@
+import { memo } from 'react';
 import styles from '../push.module.scss';
 import { type CampaignActionsProps } from '../types/push';
 
-export const CampaignActions = ({
-  isRandomTesting,
-  isSendingAll,
-  hasCampaignData,
-  testProgress,
-  sendAllProgress,
-  activeSlug,
-  onTest3Random,
-  onSendAll,
-}: CampaignActionsProps) => {
-  const getTestButtonText = () => {
-    if (!isRandomTesting) return 'Test 3 Random';
-    if (testProgress) {
-      return `Testing ${testProgress.current}/${testProgress.total}...: ${activeSlug}`;
-    }
-    return 'Testing 3 Random...';
-  };
+type Progress = { current: number; total: number } | null | undefined;
 
-  const getSendAllButtonText = () => {
-    if (!isSendingAll) return 'Send All';
-    if (sendAllProgress) {
-      return `Sending ${sendAllProgress.current}/${sendAllProgress.total}...`;
-    }
-    return 'Sending All...';
-  };
+const ProgressBar = ({ progress }: { progress: NonNullable<Progress> }) => (
+  <span className={styles.progressBar}>
+    <span
+      className={styles.progressFill}
+      style={{ width: `${progress.total ? (progress.current / progress.total) * 100 : 0}%` }}
+    />
+  </span>
+);
 
-  return (
-    <div className={styles.campaignActions}>
-      <button
-        onClick={onTest3Random}
-        disabled={isRandomTesting || isSendingAll || !hasCampaignData}
-        className={`${styles.btnTestRandom} ${isRandomTesting ? styles.testing : ''}`}
-      >
-        {getTestButtonText()}
-        {isRandomTesting && testProgress && (
-          <span className={styles.progressBar}>
-            <span
-              className={styles.progressFill}
-              style={{ width: `${(testProgress.current / testProgress.total) * 100}%` }}
-            />
-          </span>
-        )}
-      </button>
-      <button
-        onClick={onSendAll}
-        disabled={isSendingAll || isRandomTesting || !hasCampaignData}
-        className={`${styles.btnSendAll} ${isSendingAll ? styles.sending : ''}`}
-      >
-        {getSendAllButtonText()}
-        {isSendingAll && sendAllProgress && (
-          <span className={styles.progressBar}>
-            <span
-              className={styles.progressFill}
-              style={{ width: `${(sendAllProgress.current / sendAllProgress.total) * 100}%` }}
-            />
-          </span>
-        )}
-      </button>
-    </div>
-  );
-};
+export const CampaignActions = memo(
+  ({
+    isRandomTesting,
+    isSendingAll,
+    hasCampaignData,
+    testProgress,
+    sendAllProgress,
+    activeSlug,
+    onTest3Random,
+    onSendAll,
+  }: CampaignActionsProps) => {
+    const disabled = isRandomTesting || isSendingAll || !hasCampaignData;
+
+    const testLabel = !isRandomTesting
+      ? 'Test 3 Random'
+      : testProgress
+        ? `Testing ${testProgress.current}/${testProgress.total}...: ${activeSlug}`
+        : 'Testing 3 Random...';
+
+    const sendLabel = !isSendingAll
+      ? 'Send All'
+      : sendAllProgress
+        ? `Sending ${sendAllProgress.current}/${sendAllProgress.total}...`
+        : 'Sending All...';
+
+    return (
+      <div className={styles.campaignActions}>
+        <button
+          type="button"
+          onClick={onTest3Random}
+          disabled={disabled}
+          className={`${styles.btnTestRandom} ${isRandomTesting ? styles.testing : ''}`}
+        >
+          {testLabel}
+          {isRandomTesting && testProgress && <ProgressBar progress={testProgress} />}
+        </button>
+        <button
+          type="button"
+          onClick={onSendAll}
+          disabled={disabled}
+          className={`${styles.btnSendAll} ${isSendingAll ? styles.sending : ''}`}
+        >
+          {sendLabel}
+          {isSendingAll && sendAllProgress && <ProgressBar progress={sendAllProgress} />}
+        </button>
+      </div>
+    );
+  },
+);
+
+CampaignActions.displayName = 'CampaignActions';

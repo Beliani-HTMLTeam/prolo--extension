@@ -2,11 +2,17 @@ import styles from '../push.module.scss';
 import { type MainContentProps } from '../types/push';
 import { CampaignActions } from './CampaignActions';
 import { CampaignTable } from './CampaignTable';
-import { ConfirmationDialog } from './ConfirmationDialog';
 import { Dialog } from './Dialog';
 import { EmptyState } from './EmptyState';
 import { FooterInfo } from './FooterInfo';
-import { SuccessDialog } from './SuccessDialog';
+
+type Confirmation = NonNullable<MainContentProps['confirmation']>;
+type Success = NonNullable<MainContentProps['success']>;
+
+// Module-level defaults: no new objects on every render.
+const noop = () => {};
+const CLOSED_CONFIRMATION = { isOpen: false, slug: null, onConfirm: null, onCancel: null } as Confirmation;
+const CLOSED_SUCCESS = { isOpen: false, title: '', message: '', onClose: noop } as Success;
 
 export const MainContent = ({
   campaign,
@@ -20,10 +26,10 @@ export const MainContent = ({
   campaignName,
   testProgress,
   sendAllProgress,
-  confirmation = { isOpen: false, slug: null, onConfirm: null, onCancel: null },
-  closeConfirmation = () => {},
-  success = { isOpen: false, title: '', message: '', onClose: () => {} }, // Add default
-  closeSuccess = () => {}, // Add default
+  confirmation = CLOSED_CONFIRMATION,
+  closeConfirmation = noop,
+  success = CLOSED_SUCCESS,
+  closeSuccess = noop,
   customImages,
   customTemplates,
   customLpPaths,
@@ -42,59 +48,38 @@ export const MainContent = ({
   onTest3Random,
   onSendAll,
 }: MainContentProps) => {
-  const hasCampaignData = campaign && Object.keys(campaign.data).length > 0;
-  const totalRows = hasCampaignData ? Object.keys(campaign.data).length : 0;
+  const totalRows = campaign ? Object.keys(campaign.data).length : 0;
+  const hasCampaignData = totalRows > 0;
+  const confirmSlug = confirmation.slug?.toUpperCase();
 
-  const handleConfirm = () => {
-    console.log('Confirm clicked');
-    if (confirmation.onConfirm) {
-      confirmation.onConfirm();
-    }
-  };
-
-  const handleCancel = () => {
-    console.log('Cancel clicked');
-    if (closeConfirmation) {
-      closeConfirmation();
-    }
-  };
+  const handleConfirm = () => confirmation.onConfirm?.();
 
   const handleSuccessClose = () => {
-    if (closeSuccess) {
-      closeSuccess();
-    }
-    if (success.onClose) {
-      success.onClose();
-    }
+    closeSuccess();
+    success.onClose?.();
   };
 
   return (
     <div className={styles.mainContent}>
-      {confirmation.isOpen && confirmation.slug && (
+      {confirmation.isOpen && confirmSlug && (
         <Dialog
-          isOpen={confirmation.isOpen}
+          isOpen
           variant="confirm"
-          title={`Send ${confirmation.slug?.toUpperCase()}?`}
+          title={`Send ${confirmSlug}?`}
           message={
             <>
-              This will send the notification to <strong>{confirmation.slug?.toUpperCase()}</strong>.
+              This will send the notification to <strong>{confirmSlug}</strong>.
             </>
           }
           confirmLabel="Send Now"
           cancelLabel="Cancel"
           onConfirm={handleConfirm}
-          onCancel={handleCancel}
+          onCancel={closeConfirmation}
         />
       )}
 
       {success.isOpen && (
-        <Dialog
-          variant="success"
-          isOpen={success.isOpen}
-          title={success.title}
-          message={success.message}
-          onClose={handleSuccessClose}
-        />
+        <Dialog isOpen variant="success" title={success.title} message={success.message} onClose={handleSuccessClose} />
       )}
 
       {!hasCampaignData ? (

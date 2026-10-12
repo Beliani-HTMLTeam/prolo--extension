@@ -1,3 +1,4 @@
+import { type ReactNode, useEffect } from 'react';
 import styles from '../push.module.scss';
 
 export type DialogVariant = 'confirm' | 'success';
@@ -6,7 +7,7 @@ export interface DialogProps {
   isOpen: boolean;
   variant?: DialogVariant;
   title: string;
-  message?: React.ReactNode;
+  message?: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm?: () => void;
@@ -25,6 +26,20 @@ export const Dialog = ({
   onCancel,
   onClose,
 }: DialogProps) => {
+  const isSuccess = variant === 'success';
+
+  // Escape = Cancel (confirm dialog) / OK (success dialog). Never confirms a send.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (isSuccess) onClose?.();
+      onCancel?.();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isOpen, isSuccess, onCancel, onClose]);
+
   if (!isOpen) return null;
 
   const handleClose = () => {
@@ -32,38 +47,36 @@ export const Dialog = ({
     onCancel?.();
   };
 
-  const isSuccess = variant === 'success';
-
   return (
     <div className={styles.confirmationOverlay}>
-      <div className={styles.confirmationDialog}>
-        <div className={styles.confirmationIcon}>
-          {isSuccess ? '✅' : '📤'}
-        </div>
+      <div className={styles.confirmationDialog} role="dialog" aria-modal="true" aria-label={title}>
+        <div className={styles.confirmationIcon}>{isSuccess ? '✅' : '📤'}</div>
 
         <h3 className={styles.confirmationTitle}>{title}</h3>
 
-        {message && (
-          <p className={styles.confirmationText}>{message}</p>
-        )}
+        {message && <p className={styles.confirmationText}>{message}</p>}
 
         <div className={styles.confirmationActions}>
           {isSuccess ? (
             <button
+              type="button"
               onClick={handleClose}
               className={`${styles.confirmationBtn} ${styles.confirmationBtnConfirm}`}
+              autoFocus
             >
               OK
             </button>
           ) : (
             <>
               <button
+                type="button"
                 onClick={onCancel}
                 className={`${styles.confirmationBtn} ${styles.confirmationBtnCancel}`}
               >
                 {cancelLabel}
               </button>
               <button
+                type="button"
                 onClick={onConfirm}
                 className={`${styles.confirmationBtn} ${styles.confirmationBtnConfirm}`}
               >

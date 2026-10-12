@@ -12,6 +12,7 @@ import { useGeneratingGuard } from './components/hooks/useGeneratingGuard';
 import { useAvailableTabs } from './components/hooks/useAvailableTabs';
 import { useHideAlertifyLogs } from './components/hooks/useHideAlertifyLogs';
 import { useCustomOverrides } from './components/hooks/useCustomOverrides';
+import { useCustomDate } from './components/hooks/useCustomDate';
 
 const NEWSLETTER_SPREADSHEET =
   'https://docs.google.com/spreadsheets/d/1RcsQspit0B3b3xX1NwZ9RWnUzZrkoVDULu2cnPMZ04U/edit?gid=337547236#gid=337547236';
@@ -93,6 +94,8 @@ export default function App() {
     closeSuccess
   } = useCampaignPush(campaign);
 
+  const customDate = useCustomDate(campaignName);
+
   const { handleGenerateAllSlugs } = useGenerateCampaign({
     campaignName,
     chdeTemplateId,
@@ -107,6 +110,8 @@ export default function App() {
     useOldNewsletterFamily, // Add this
     oldNewsletterFamilyIds, // Add this
     onShowSuccess: showSuccess,
+     effectiveCampaignName: customDate.effectiveCampaignName,
+  onGenerated: customDate.markGenerated
   });
 
   const showOverlay = useCallback(() => setVisible(true), []);
@@ -171,6 +176,7 @@ export default function App() {
             onOldNewsletterIdsChange={setOldNewsletterFamilyIds}
             closeSuccess={closeSuccess}
             success={success}
+            {...customDate.dashboardProps}
           />
         )}
       </Overlay>
