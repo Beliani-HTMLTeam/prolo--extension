@@ -6,7 +6,11 @@ export const useSelectionManager = () => {
   
      const handleToggleSL = (slug: string, checked: boolean, content: string) => {
     if (checked) {
-      setSelectedItems(prev => [...prev, { slug, type: 'subjectLine', content }]);
+      // replace instead of append, so re-selecting never creates duplicates
+      setSelectedItems(prev => [
+        ...prev.filter(item => !(item.slug === slug && item.type === 'subjectLine')),
+        { slug, type: 'subjectLine', content },
+      ]);
     } else {
       setSelectedItems(prev => prev.filter(item => !(item.slug === slug && item.type === 'subjectLine')));
     }
@@ -14,7 +18,10 @@ export const useSelectionManager = () => {
 
   const handleTogglePT = (slug: string, checked: boolean, content: string) => {
     if (checked) {
-      setSelectedItems(prev => [...prev, { slug, type: 'pageTitle', content }]);
+      setSelectedItems(prev => [
+        ...prev.filter(item => !(item.slug === slug && item.type === 'pageTitle')),
+        { slug, type: 'pageTitle', content },
+      ]);
     } else {
       setSelectedItems(prev => prev.filter(item => !(item.slug === slug && item.type === 'pageTitle')));
     }

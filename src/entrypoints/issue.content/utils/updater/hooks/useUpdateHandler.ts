@@ -11,6 +11,21 @@ import {
   fetchNsltIdFromLandingPage,
 } from '@/entrypoints/issue.content/api/shopContentService';
 
+// Shops that only have landing pages (no newsletters). They never get a subject line
+// update and must never pick up an NSLT ID from their LP (it would point to another shop's newsletter).
+export const SLUGS_WITHOUT_NEWSLETTER = new Set(['HR', 'SI']);
+export const hasNoNewsletter = (slug: string) => SLUGS_WITHOUT_NEWSLETTER.has(slug.toUpperCase());
+
+export interface UpdateRunSummary {
+  /** false when nothing was sent (no items / no valid updates) */
+  ran: boolean;
+  total: number;
+  successCount: number;
+  failureCount: number;
+}
+
+const NOT_RUN: UpdateRunSummary = { ran: false, total: 0, successCount: 0, failureCount: 0 };
+
 interface FormattedUpdateRecord {
   slug: string;
   nsltId: string;
@@ -34,6 +49,8 @@ interface UseUpdateHandlerProps {
   landingPageIds?: Record<string, { aId?: string; bId?: string }>;
   onClearSelections?: () => void;
 }
+
+export const TRANSLATION_NOT_FOUND = 'TRANSLATION NOT FOUND';
 
 const enrichMissingNsltIds = async (
   updatesBySlug: Record<
@@ -60,6 +77,8 @@ const enrichMissingNsltIds = async (
   }
 
   for (const [slug, update] of Object.entries(updatesBySlug)) {
+    if (hasNoNewsletter(slug)) continue;
+
     const existingNsltData = enrichedIds[slug] || {};
 
     // Check what we have and what we need
@@ -120,12 +139,12 @@ export const useUpdateHandler = ({
     return slug === 'NL' ? NL_SERVERS : DEFAULT_SERVERS;
   };
 
-  const handleUpdateSelected = async (selectedItems: UpdaterSelectedItem[]) => {
+  const handleUpdateSelected = async (selectedItems: UpdaterSelectedItem[]): Promise<UpdateRunSummary> => {
     console.log('🔍 handleUpdateSelected called with:', selectedItems);
 
     if (selectedItems.length === 0) {
       console.warn('No items selected to update');
-      return;
+      return NOT_RUN;
     }
 
     setUpdateResults([]);
@@ -263,7 +282,8 @@ export const useUpdateHandler = ({
   if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
   formattedUpdates.push(record);
 } else {
-  // No NSLT ID exists - still allow page title update
+  // No NSLT ID exists (e.g. HR/SI have no newsletters) - still allow page title update.
+  // In an A/B test the LP exists in both groups, so update LP A and LP B.
   const record: FormattedUpdateRecord = {
     slug: update.slug,
     nsltId: '', // Empty string for missing NSLT ID
@@ -280,12 +300,41 @@ export const useUpdateHandler = ({
   if (update.subjectLine !== undefined) record.subjectLine = trimAllLineBreaks(update.subjectLine);
   if (update.pageTitle !== undefined) record.pageTitle = trimAllLineBreaks(update.pageTitle);
   formattedUpdates.push(record);
+
+  if (update.lpBId && update.lpBId !== update.lpAId) {
+    const recordB: FormattedUpdateRecord = {
+      slug: update.slug,
+      nsltId: '',
+      lpId: update.lpBId,
+      ...(update.landingPageB && update.landingPageB !== 'lp00-00-00' && { landingPage: update.landingPageB }),
+      activateDate: formatDateForAPI(update.activateDate),
+      deactivateDate: formatDateForAPI(update.deactivateDate),
+      seller,
+      lang,
+      servers,
+      shopId,
+      variant: 'b',
+    };
+    if (update.subjectLine !== undefined) recordB.subjectLine = trimAllLineBreaks(update.subjectLine);
+    if (update.pageTitle !== undefined) recordB.pageTitle = trimAllLineBreaks(update.pageTitle);
+    formattedUpdates.push(recordB);
+  }
 }
       });
 
       if (formattedUpdates.length === 0) {
         console.warn('No formatted updates to send');
-        return;
+        return NOT_RUN;
+      }
+
+      // "TRANSLATION NOT FOUND" is written as-is into the SL / PT, so it's visible in Prologistics
+      const missing = formattedUpdates.filter(
+        r => r.subjectLine === TRANSLATION_NOT_FOUND || r.pageTitle === TRANSLATION_NOT_FOUND,
+      );
+      if (missing.length > 0) {
+        console.warn(
+          `⚠️ Writing "${TRANSLATION_NOT_FOUND}" for: ${missing.map(r => `${r.slug} ${r.variant.toUpperCase()}`).join(', ')}`,
+        );
       }
 
       const updatesToSend: Array<{ type: 'newsletter' | 'landing-page'; data: any; slug: string; variant: 'a' | 'b' }> =
@@ -326,10 +375,9 @@ export const useUpdateHandler = ({
 
           const pageTitleForProLogistics = encodeEmojiToHtmlEntities(update.pageTitle || '');
 
-          // if it is CHFR, use CHDE's nslt
-          if (update.slug === 'CHFR' || update.slug === 'CHDE') {
-            // Use CHDE's newsletter ID (which is the primary one)
-            const chdeNsltData = newsletterIds?.['CHDE'];
+          // CHFR / CHIT use CHDE's nslt (CHDE is the primary one) - per A/B variant
+          if (update.slug === 'CHFR' || update.slug === 'CHDE' || update.slug === 'CHIT') {
+            const chdeNsltData = enrichedNewsletterIds?.['CHDE'] || newsletterIds?.['CHDE'];
             if (update.variant === 'b') {
               newsletterTemplateId = chdeNsltData?.bId || update.nsltId;
             } else {
@@ -337,20 +385,14 @@ export const useUpdateHandler = ({
             }
           }
 
-          // If this is BEFR, use BENL's nsltId
+          // If this is BEFR, use BENL's nsltId (BENL is the primary one) - per A/B variant
           if (update.slug === 'BEFR' || update.slug === 'BENL') {
-            // Use BENL's newsletter ID (which is the primary one)
-            const benlNsltData = newsletterIds?.['BENL'];
+            const benlNsltData = enrichedNewsletterIds?.['BENL'] || newsletterIds?.['BENL'];
             if (update.variant === 'b') {
               newsletterTemplateId = benlNsltData?.bId || update.nsltId;
             } else {
               newsletterTemplateId = benlNsltData?.aId || update.nsltId;
             }
-          }
-
-          if (update.slug === 'CHIT') {
-            const chdeNsltData = newsletterIds?.['CHDE'];
-            newsletterTemplateId = chdeNsltData?.aId || chdeNsltData?.bId || update.nsltId;
           }
 
           updatesToSend.push({
@@ -380,7 +422,7 @@ export const useUpdateHandler = ({
         console.log('formatterLog', formattedUpdates);
 
         console.warn('No updates to send');
-        return;
+        return NOT_RUN;
       }
 
       const totalUpdates = updatesToSend.length;
@@ -424,9 +466,15 @@ export const useUpdateHandler = ({
         r => r.success && r.type === 'newsletter' && slugsWithSubjectLineUpdates.has(r.slug),
       );
       if (successfullyUpdatedNewsletters.length > 0) {
+        // A/B slugs return two newsletter results (A + B) - activate each slug's LP only once
+        const activatedSlugs = new Set<string>();
+
         // Get shop IDs for each updated item
         const itemsToActivate = successfullyUpdatedNewsletters
           .map(result => {
+            if (activatedSlugs.has(result.slug)) return null;
+            activatedSlugs.add(result.slug);
+
             const update = updatesBySlug[result.slug];
             if (!update || !update.lpAId) return null;
 
@@ -439,7 +487,7 @@ export const useUpdateHandler = ({
             }
 
             // Get the newsletter template ID (nsltId) from the update
-            const nsltData = newsletterIds?.[result.slug];
+            const nsltData = enrichedNewsletterIds?.[result.slug] || newsletterIds?.[result.slug];
             const newsletterTemplateId = nsltData?.aId || nsltData?.bId || '';
 
             return {
@@ -500,10 +548,15 @@ export const useUpdateHandler = ({
 
       setUpdateProgress({ completed: 0, total: 0 });
       setIsComplete(true);
+
+      // resolves only now: all SL/PT requests (family A, then B) and LP activation are finished
+      return { ran: true, total: results.length, successCount, failureCount };
     } catch (error) {
       console.error('Failed to update translations: ', error);
       throw error;
     } finally {
+      // Also covers early returns / errors, so rows are not left stuck in "updating" state
+      setUpdatingSlugs(new Set());
       setIsUpdating(false);
     }
   };
@@ -524,14 +577,16 @@ export const useUpdateHandler = ({
 
   const handleUpdateAll = async (
     translations: LineTitleTranslations | null,
-    updateSelected: (items: UpdaterSelectedItem[]) => Promise<void>,
-  ) => {
-    if (!translations) return;
+    updateSelected: (items: UpdaterSelectedItem[]) => Promise<UpdateRunSummary>,
+  ): Promise<UpdateRunSummary> => {
+    if (!translations) return NOT_RUN;
 
     const allItems: UpdaterSelectedItem[] = [];
 
     if (translations.subjectLine) {
       Object.entries(translations.subjectLine).forEach(([slug, content]) => {
+        // "TRANSLATION NOT FOUND" stays in: the update keeps the current subject and still sets dates/LP
+        if (hasNoNewsletter(slug)) return;
         allItems.push({
           slug,
           type: 'subjectLine',
@@ -552,10 +607,10 @@ export const useUpdateHandler = ({
 
     if (allItems.length === 0) {
       console.warn('No items to update');
-      return;
+      return NOT_RUN;
     }
 
-    await updateSelected(allItems);
+    return updateSelected(allItems);
   };
 
   return {

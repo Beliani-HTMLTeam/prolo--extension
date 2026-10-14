@@ -48,18 +48,20 @@ export const useDateConfig = ({ initialDeactivateDate, onAutoSelect }: UseDateCo
   const handleSlugActivateDateChange = useCallback(
     (slug: string, date: Date | null, skipAutoSelect?: boolean) => {
       if (date) {
-        date.setHours(0, 0, 0, 0);
+        // clone - don't mutate the caller's Date (e.g. the shared initial dates used for reset)
+        const activateDate = new Date(date);
+        activateDate.setHours(0, 0, 0, 0);
         setSlugDateConfig(prev => {
           const updates: UpdaterSlugDateConfig = {
             ...prev,
-            [slug]: { ...prev[slug], activateDate: date },
+            [slug]: { ...prev[slug], activateDate },
           };
 
           const pairedSlug = getPairedSlug(slug);
           if (pairedSlug) {
             updates[pairedSlug] = {
               ...prev[pairedSlug],
-              activateDate: date,
+              activateDate,
             };
           }
           return updates;

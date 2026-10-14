@@ -14,11 +14,16 @@ export const useSundayTranslations = ({ issueId, availableSlugs: propAvailableSl
 
     const loadSundayData = useCallback(async () => {
       setLoading(true);
+      setError(null);
       try {
         const issueData = await fetchIssueData(issueId);
         const issueItem = issueData.issue_list?.[0];
 
-        if (!issueItem) return;
+        if (!issueItem) {
+          // otherwise isSundayNewsletter stays null and the modal spins forever
+          setIsSundayNewsletter(false);
+          return;
+        }
 
         const sundayField = issueItem.additional_fields?.['Sunday newsletter'];
         const isSunday = !!sundayField;

@@ -8,7 +8,11 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useTranslationsLoader } from '@/entrypoints/issue.content/utils/updater/hooks/useTranslationsLoader';
 import { useDateConfig } from '@/entrypoints/issue.content/utils/updater/hooks/useDateConfig';
 import { useLPConfig } from '@/entrypoints/issue.content/utils/updater/hooks/useLPConfig';
-import { useUpdateHandler } from '@/entrypoints/issue.content/utils/updater/hooks/useUpdateHandler';
+import {
+  useUpdateHandler,
+  hasNoNewsletter,
+  type UpdateRunSummary,
+} from '@/entrypoints/issue.content/utils/updater/hooks/useUpdateHandler';
 import { useSelectionManager } from '@/entrypoints/issue.content/utils/updater/hooks/useSelectionManager';
 import { MenuContent } from './updater/MenuContent';
 import { useSundayTranslations } from '@/entrypoints/issue.content/utils/updater/hooks/useSundayTranslations';
@@ -18,11 +22,12 @@ import { Icon } from '@iconify/react';
 import { UpdateResults } from './updater/UpdateResults';
 import { getTodayAtMidnight } from '@/entrypoints/issue.content/utils/updater/dates';
 import UpdaterButton from './updater/UpdaterButton';
-import { verifyBatch } from '../api/verifyService';
+import { verifyBatch, type VerifyItem } from '../api/verifyService';
+import { applyNewsletterTags, formatTagSyncResult } from '../api/newsletterTags';
 import Modal from '@/components/modal/Modal';
 
 const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }: UpdaterProps) => {
-  const availableSlugs = rows.map(row => row.shop);
+  const availableSlugs = useMemo(() => rows.map(row => row.shop), [rows]);
   const [showResults, setShowResults] = useState(false);
 
   const [initialSlugDates, setInitialSlugDates] = useState<Record<string, { activate: Date; deactivate: Date }>>({});
@@ -46,7 +51,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     getSelectedTranslations,
     error: sundayError,
     retry: retrySunday,
-  } = useSundayTranslations({ issueId, availableSlugs: rows.map(r => r.shop) });
+  } = useSundayTranslations({ issueId, availableSlugs });
 
   const {
     translations,
@@ -350,12 +355,10 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   const handleUpdateAllSL = () => {
     if (!translations?.subjectLine) return;
 
-    const allSlugs = Object.keys(translations.subjectLine);
-    const allSLItems: UpdaterSelectedItem[] = allSlugs.map(slug => ({
-      slug,
-      type: 'subjectLine',
-      content: translations.subjectLine![slug],
-    }));
+    // skip shops without newsletters (HR/SI); missing translations keep the current subject in the update
+    const allSLItems: UpdaterSelectedItem[] = Object.entries(translations.subjectLine)
+      .filter(([slug]) => !hasNoNewsletter(slug))
+      .map(([slug, content]) => ({ slug, type: 'subjectLine', content }));
 
     handleUpdateSelected(allSLItems);
   };
@@ -363,12 +366,8 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
   const handleUpdateAllPT = () => {
     if (!translations?.pageTitle) return;
 
-    const allSlugs = Object.keys(translations.pageTitle);
-    const allPTItems: UpdaterSelectedItem[] = allSlugs.map(slug => ({
-      slug,
-      type: 'pageTitle',
-      content: translations.pageTitle![slug],
-    }));
+    // missing translations keep the current page title in the update
+    const allPTItems: UpdaterSelectedItem[] = Object.entries(translations.pageTitle).map(([slug, content]) => ({ slug, type: 'pageTitle', content }));
 
     handleUpdateSelected(allPTItems);
   };
@@ -398,7 +397,49 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     }
     handleUpdateSelected(selectedItems);
   };
-  const handleUpdateAllWrapper = () => handleUpdateAll(translations, handleUpdateSelected);
+  // Newsletter tags: issue "Newsletter TAGS" -> CHDE newsletter (A and B) -> copied to the family
+  const [tagSync, setTagSync] = useState<{
+    status: 'idle' | 'waiting' | 'running' | 'done' | 'error';
+    message: string;
+  }>({
+    status: 'idle',
+    message: '',
+  });
+
+  const runTagSync = useCallback(async () => {
+    setTagSync({ status: 'running', message: 'Setting newsletter tags on CHDE and copying to family...' });
+    try {
+      const res = await applyNewsletterTags({ issueId, newsletterIds });
+      setTagSync({ status: res.success ? 'done' : 'error', message: formatTagSyncResult(res) });
+    } catch (e) {
+      console.error('Newsletter tags failed:', e);
+      setTagSync({ status: 'error', message: `Tags not set: ${e instanceof Error ? e.message : String(e)}` });
+    }
+  }, [issueId, newsletterIds]);
+
+  // Update All: 1) subject lines + page titles (family A, then B, then LP activation)  2) only then the tags
+  const handleUpdateAllWrapper = async () => {
+    setTagSync({ status: 'waiting', message: 'Tags: waiting for subject lines and page titles to finish...' });
+
+    let summary: UpdateRunSummary;
+    try {
+      summary = await handleUpdateAll(translations, handleUpdateSelected);
+    } catch (e) {
+      console.error('Update all failed:', e);
+      setTagSync({ status: 'error', message: 'Tags not set: the SL/PT update stopped with an error' });
+      return;
+    }
+
+    if (!summary.ran) {
+      setTagSync({ status: 'error', message: 'Tags not set: no subject lines / page titles were updated' });
+      return;
+    }
+
+    console.log(
+      `[Update All] SL/PT finished (${summary.successCount} ok, ${summary.failureCount} failed) -> setting tags`,
+    );
+    await runTagSync();
+  };
   const handleSelectAllReadyWrapper = () => handleSelectAllReady(translations);
 
   const verifyAllItems = useCallback(async () => {
@@ -414,30 +455,24 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       ...(translations.pageTitle ? Object.keys(translations.pageTitle) : []),
     ]);
 
-    // Prepare items for batch verification
-    const itemsToVerify: Array<{
-      nsltId: string;
-      lpId: string;
-      spreadsheetSubject: string | null;
-      spreadsheetPageTitle: string | null;
-      slug: string;
-    }> = [];
+    // Prepare items for batch verification - group A and group B are passed separately,
+    // so A/B tests verify both newsletters and both LPs (single tests only have A)
+    const itemsToVerify: VerifyItem[] = [];
 
-    Array.from(allSlugs).forEach(slug => {
-      const subjectLine = translations.subjectLine?.[slug] || null;
-      const pageTitle = translations.pageTitle?.[slug] || null;
-      const nsltId = newsletterIds?.[slug]?.aId || newsletterIds?.[slug]?.bId || null;
-      const lpId = landingPageIds?.[slug]?.aId || landingPageIds?.[slug]?.bId || null;
+    allSlugs.forEach(slug => {
+      const nslt = newsletterIds?.[slug];
+      const lp = landingPageIds?.[slug];
+      if (!nslt?.aId && !nslt?.bId && !lp?.aId && !lp?.bId) return;
 
-      if (nsltId || lpId) {
-        itemsToVerify.push({
-          nsltId: nsltId || '',
-          lpId: lpId || '',
-          spreadsheetSubject: subjectLine,
-          spreadsheetPageTitle: pageTitle,
-          slug,
-        });
-      }
+      itemsToVerify.push({
+        slug,
+        spreadsheetSubject: translations.subjectLine?.[slug] || null,
+        spreadsheetPageTitle: translations.pageTitle?.[slug] || null,
+        nsltId: nslt?.aId,
+        lpId: lp?.aId,
+        nsltBId: nslt?.bId,
+        lpBId: lp?.bId,
+      });
     });
 
     if (itemsToVerify.length === 0) {
@@ -445,24 +480,24 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       return;
     }
 
+    setVerifyProgress({ completed: 0, total: itemsToVerify.length });
+
     // Batch verify with progress
-    const results = await verifyBatch(itemsToVerify, (completed, total, result) => {
-      setVerifyProgress({ completed, total });
-      setVerificationResults(prev => ({
-        ...prev,
-        [result.slug]: result,
-      }));
-    });
-
-    setVerifying(false);
-    setHasVerified(true);
-  }, [translations, newsletterIds, landingPageIds]);
-
-  useEffect(() => {
-    if (isComplete && !isUpdating) {
-      setShowResults(true);
+    try {
+      await verifyBatch(itemsToVerify, (completed, total, result) => {
+        setVerifyProgress({ completed, total });
+        setVerificationResults(prev => ({
+          ...prev,
+          [result.slug]: result,
+        }));
+      });
+    } catch (e) {
+      console.error('Verification failed:', e);
+    } finally {
+      // never leave the Verify button stuck in "Verifying..."
+      setVerifying(false);
     }
-  }, [isComplete, isUpdating]);
+  }, [translations, newsletterIds, landingPageIds]);
 
   const selectedSLCount = selectedItems.filter(item => item.type === 'subjectLine').length;
   const selectedPTCount = selectedItems.filter(item => item.type === 'pageTitle').length;
@@ -623,7 +658,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               hasABLandingPages={hasABLandingPages}
               selectedSLCount={selectedSLCount}
               selectedPTCount={selectedPTCount}
-              isUpdating={isUpdating}
+              isUpdating={isUpdating || tagSync.status === 'waiting' || tagSync.status === 'running'}
               onToggleGlobalDate={checked => setUseGlobalDate(checked)}
               onActivateDateChange={handleGlobalActivateDateChangeWithAutoSelect}
               onDeactivateDateChange={handleGlobalDeactivateDateChangeWithAutoSelect}
@@ -646,6 +681,39 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
             />
           </div>
           <div className={updaterStyles.rightContent}>
+            {tagSync.status !== 'idle' && (
+              <div className={updaterStyles.progressStats}>
+                <div className={updaterStyles.progressInfo}>
+                  <Icon
+                    icon={
+                      tagSync.status === 'waiting'
+                        ? 'mdi:timer-sand'
+                        : tagSync.status === 'running'
+                        ? 'svg-spinners:180-ring'
+                        : tagSync.status === 'done'
+                          ? 'mdi:tag-check'
+                          : 'mdi:alert-circle'
+                    }
+                    width="14"
+                    height="14"
+                    className={
+                      tagSync.status === 'running' || tagSync.status === 'waiting'
+                        ? updaterStyles.progressSpinner
+                        : tagSync.status === 'done'
+                          ? updaterStyles.successIcon
+                          : updaterStyles.errorIcon
+                    }
+                  />
+                  <span>{tagSync.message}</span>
+                </div>
+                {tagSync.status === 'error' && (
+                  <button className={updaterStyles.retryButtonInline} onClick={runTagSync}>
+                    <Icon icon="mdi:refresh" width="16" height="16" />
+                    Retry tags
+                  </button>
+                )}
+              </div>
+            )}
             {showResults && (
               <div className={updaterStyles.resultsContainer}>
                 <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />
@@ -794,4 +862,3 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
 };
 
 export default UpdaterModal;
- 

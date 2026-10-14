@@ -210,7 +210,8 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
         return global || initialGlobalLP;
       }
 
-      let baseLP = perSlugLP.replace(/fd|md$/, '');
+      // strip only a trailing fd/md suffix (old regex also removed "fd" from the middle of the alias)
+      const baseLP = perSlugLP.replace(/(fd|md)$/, '');
 
       const modes = slugFMDModes[slug];
       if (modes?.fd) return `${baseLP}fd`;
@@ -270,4 +271,3 @@ export const useLPConfig = ({initialGlobalLP, onAutoSelect}: UseLPConfigProps) =
     resetInitialization,
   };
 };
- 

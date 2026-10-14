@@ -3,6 +3,7 @@ import { fetchLPPaths } from '@/entrypoints/issue.content/api/updater';
 import { type LineTitleTranslations } from '@/entrypoints/issue.content/lib/types';
 import { getDefaultDeactivateDate } from '../dates';
 import { refreshSpreadsheetData } from '@/entrypoints/issue.content/api/spreadsheetService';
+import { hasNoNewsletter } from './useUpdateHandler';
 
 interface UseTranslationsLoaderProps {
   issueId: number;
@@ -11,7 +12,6 @@ interface UseTranslationsLoaderProps {
 }
 
 export const useTranslationsLoader = ({ issueId, rows, isSundayNewsletter = false }: UseTranslationsLoaderProps) => {
-  console.log('rows', rows);
   const [translations, setTranslations] = useState<LineTitleTranslations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +75,8 @@ export const useTranslationsLoader = ({ issueId, rows, isSundayNewsletter = fals
         const filteredTranslations: LineTitleTranslations = {
           subjectLine: rawTranslations.subjectLine
             ? Object.entries(rawTranslations.subjectLine)
-                .filter(([slug]) => availableSlugsSet.has(slug))
+                // HR / SI have no newsletters -> no subject line to update (page title only)
+                .filter(([slug]) => availableSlugsSet.has(slug) && !hasNoNewsletter(slug))
                 .reduce(
                   (acc, [slug, content]) => ({
                     ...acc,
