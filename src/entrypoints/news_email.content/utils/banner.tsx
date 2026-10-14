@@ -128,6 +128,7 @@ export const matchesBannerSearchTerm = (date: string, query: string) => {
 };
 
 import { SHOP_SLUGS } from '../constants/shops';
+import { renderTimerRows, TIMER_CSS } from './timer/render';
 
 type Translations = {
   header: Record<string, any>;
@@ -135,7 +136,10 @@ type Translations = {
   templates: Record<string, any>;
 } | null;
 
-const getTranslationVal = (dict: Record<string, any>, key: string, slug: string): string | null => {
+const HEADER_CATEGORIES_WIDTH = 312;
+const HEADER_IMAGES_URL = 'https://pictureserver.net/static/header/';
+
+export const getTranslationVal = (dict: Record<string, any>, key: string, slug: string): string | null => {
   const slugArray: string[] = dict['slug'] ?? [];
   const idx = slugArray.indexOf(slug);
   if (idx === -1) return null;
@@ -179,6 +183,17 @@ const buildRenderContext = (
 
   ctx['header["Sunday_TiT"]'] = `https://pictureserver.net/static/${slug}sunday_${titVersion}.png`;
 
+  ctx['headerCategories'] = [1, 2, 3].map(n => {
+    const width = Number(ctx[`header["Header Category ${n} width new"]`]) || HEADER_CATEGORIES_WIDTH / 3;
+    return {
+      src: `${HEADER_IMAGES_URL}${ctx[`header["Header Category ${n} src new"]`] ?? ''}`,
+      href: ctx[`header["Header Category ${n} href new"]`] ?? '',
+      alt: ctx[`header["Header Category ${n} alt new"]`] ?? '',
+      width,
+      percent: ((width / HEADER_CATEGORIES_WIDTH) * 100).toFixed(2),
+    };
+  });
+
   const topHref = (ctx['header["Top image href"]'] as string) || '';
   const domain = topHref.replace(/\/$/, ''); // strip trailing slash
 
@@ -199,31 +214,24 @@ const buildRenderContext = (
         ? buildCustomBannerImageSrc(banner.customSrcSuffix, year, slug)
         : buildBannerUrl(date, 'mobile', slug);
 
-    const shopSlugIdx = SHOP_SLUGS.indexOf(slug);
-    const timerUrls = banner.timerConfig?.timerUrls ?? [];
-    const timerUrl = shopSlugIdx !== -1 ? (timerUrls[shopSlugIdx] ?? timerUrls[0] ?? '') : (timerUrls[0] ?? '');
-
-    console.log('timer for slug ', slug, ' is ', timerUrl, 'shopSlugIdx', shopSlugIdx);
-
-    const timerBg = banner.timerConfig?.backgroundColor ?? '#ff2f00';
-
-    const freebieRaw = banner.timerConfig?.freebieSrc ?? '';
-    const hasFreebie = !!freebieRaw;
-    const freebieYear = freebieRaw.slice(0, 4);
-
-    const finalFreebie = hasFreebie && banner.timerConfig?.insertSlugInFreebie ? `${slug}${freebieRaw}` : freebieRaw;
+    const timerHtml = banner.timerConfig
+      ? renderTimerRows({
+          config: banner.timerConfig,
+          slug,
+          href: `${bannerHref}${ctx.utm}${newsletterId}`,
+          phrase: key => getTranslationVal(translations?.templates ?? {}, key, slug),
+        })
+      : '';
 
     return {
       banner_href: bannerHref,
       banner_img_src: bannerImgSrc,
-      timer_url: timerUrl,
-      timer_bg: timerBg,
-      freebie: hasFreebie ? finalFreebie : '',
-      freebie_year: freebieYear,
-      freebie_href: hasFreebie ? bannerHref : '',
+      timer_html: timerHtml,
       last: isLast,
     };
   });
+
+  ctx['timer_css'] = banners.some(banner => banner.timerConfig) ? TIMER_CSS : '';
 
   return ctx;
 };
