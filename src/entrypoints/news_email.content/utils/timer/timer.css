@@ -1,0 +1,73 @@
+.newsletterFreebieCta {text-decoration: underline;font-size: 18px;line-height: 1.2;font-family: "Open Sans", sans-serif;}
+.freebiesContainer {padding-left: 40px;padding-right: 40px;padding-top: 24px;padding-bottom: 24px;}
+.freebieImage {width: 96px;height: 96px;max-width: 96px;max-height: 96px;display: block;margin: 0 auto;border: 0;}
+.newsletterProductTitleFreebie {font-size: 16px;font-family: "Open Sans", sans-serif;line-height: 1.3;font-weight: 400;color: #000000;}
+.newsletterFreebiesTitle {font-size: 20px;font-family: "Open Sans", sans-serif;line-height: 1.2;font-weight: 400;}
+.freebieImageTd {width: 96px;padding-right: 15px;padding-top: 12px;padding-bottom: 12px;border-bottom: 1px solid #eeeeee;}
+.freebieImageTdLast {width: 96px;padding-right: 15px;padding-top: 12px;padding-bottom: 12px;}
+.freebieTitleTd {width: 100%;padding-right: 15px;padding-top: 12px;padding-bottom: 12px;border-bottom: 1px solid #eeeeee;}
+.freebieTitleTdLast {width: 100%;padding-right: 15px;padding-top: 12px;padding-bottom: 12px;}
+.freebiePriceDesktopTd {width: 1%;padding-left: 10px;padding-top: 12px;padding-bottom: 12px;border-bottom: 1px solid #eeeeee;text-align: right;white-space: nowrap;}
+.freebiePriceDesktopTdLast {width: 1%;padding-left: 10px;padding-top: 12px;padding-bottom: 12px;text-align: right;white-space: nowrap;}
+.freebiePriceMobile {display: none;mso-hide: all;max-height: 0px;overflow: hidden;font-size: 0;line-height: 0;padding-top: 6px;}
+.freebieOldPriceMobile {font-size: 14px;font-family: "Open Sans", sans-serif;line-height: 1.2;text-decoration: line-through;color: #666666;margin-right: 8px;}
+.freebieLowPriceMobile {font-size: 16px;font-family: "Open Sans", sans-serif;line-height: 1.2;font-weight: 600;}
+.freebieOldPriceDesktop {margin-bottom: 6px;font-size: 13px;font-family: "Open Sans", sans-serif;line-height: 1.0;text-decoration: line-through;color: #000000;}
+.freebieLowPriceDesktop {font-size: 15px;font-family: "Open Sans", sans-serif;line-height: 1.0;font-weight: 600;}
+.freebieImgTd2col {width: 96px;padding-right: 12px;padding-top: 12px;padding-bottom: 12px;border-bottom: 1px solid #eeeeee;vertical-align: middle;text-align: center;}
+.freebieImgTd2colLast {width: 96px;padding-right: 12px;padding-top: 12px;padding-bottom: 12px;vertical-align: middle;text-align: center;}
+.freebieTileMobile {display: none;max-height: 0;overflow: hidden;font-size: 0;line-height: 0;}
+.freebieTitleTd2col {padding-right: 12px;padding-top: 12px;padding-bottom: 12px;border-bottom: 1px solid #eeeeee;vertical-align: middle;}
+.freebieTitleTd2colLast {padding-right: 12px;padding-top: 12px;padding-bottom: 12px;vertical-align: middle;}
+.frebiePriceTd2col {padding-top: 12px;padding-bottom: 12px;border-bottom: 1px solid #eeeeee;vertical-align: middle;text-align: right;white-space: nowrap;}
+.frebiePriceTd2colLast {padding-top: 12px;padding-bottom: 12px;vertical-align: middle;text-align: right;white-space: nowrap;}
+.freebieGapTd2col {padding-left: 10px;padding-right: 10px;}
+
+@media screen and (max-width: 768px) {
+  .freebiesContainer {padding-left: 20px;padding-right: 20px;padding-top: 20px;padding-bottom: 20px;}
+  .freebieImageTd,
+  .freebieImageTdLast {width: 80px;padding-right: 10px;}
+  .freebieImage {width: 80px;height: 80px;max-width: 80px;max-height: 80px;}
+  .freebieTitleTd,
+  .freebieTitleTdLast {padding-right: 10px;}
+  .newsletterProductTitleFreebie {font-size: 17px;line-height: 1.25;}
+  .freebiePriceDesktopTd,
+  .freebiePriceDesktopTdLast {display: none !important;width: 0 !important;max-height: 0 !important;padding: 0 !important;overflow: hidden !important;font-size: 0 !important;line-height: 0 !important;}
+  .freebiePriceMobile {display: block !important;max-height: none !important;font-size: inherit !important;line-height: inherit !important;overflow: visible !important;}
+  .freebieImgTd2col,
+  .freebieImgTd2colLast {width: 50% !important;padding: 10px 5px !important;vertical-align: top !important;text-align: center !important;}
+  .freebieTitleTd2col,
+  .freebieTitleTd2colLast,
+  .frebiePriceTd2col,
+  .frebiePriceTd2colLast {display: none !important;width: 0 !important;max-height: 0 !important;padding: 0 !important;overflow: hidden !important;font-size: 0 !important;line-height: 0 !important;}
+  .freebieGapTd2col {padding-left: 5px !important;padding-right: 5px !important;}
+  .freebieTileMobile {display: block !important;max-height: none !important;font-size: inherit !important;line-height: 1.3 !important;overflow: visible !important;text-align: center !important;padding-top: 6px;}
+  .freebieTileMobileTitle {font-size: 12px !important;line-height: 1.3 !important;display: block;}
+  .freebieTileMobilePrice {padding-top: 3px;}
+  .freebieTileMobilePrice .freebieOldPriceMobile {font-size: 11px !important;}
+  .freebieTileMobilePrice .freebieLowPriceMobile {font-size: 12px !important;font-weight: 600;}
+}
+
+@media screen and (max-width: 570px) {
+  .newsletterProductTitleFreebie {font-size: 16px;}
+}
+
+@media screen and (max-width: 460px) {
+  .newsletterProductTitleFreebie {font-size: 14px;}
+}
+
+@media screen and (max-width: 370px) {
+  .newsletterProductTitleFreebie {font-size: 12px;}
+}
+
+.freebiesContainer--list .newsletterProductTitleFreebie {font-size: 20px;}
+.freebiesContainer--list .newsletterProductTitleFreebie2col {font-size: 16px;}
+.freebiesContainer--list .freebieTileMobileTitle {font-size: 16px !important;}
+.freebieTileMobilePrice .freebieOldPriceMobile,
+.freebieTitleTd2col .freebieOldPriceMobile,
+.freebieTitleTd2colLast .freebieOldPriceMobile {margin-right: 0;}
+.newsletterSubtitleTimer {font-size: 27px;line-height: 1.25;font-family: "Open Sans", sans-serif;}
+
+@media screen and (max-width: 768px) {
+  .newsletterSubtitleTimer {font-size: 20px !important;}
+}

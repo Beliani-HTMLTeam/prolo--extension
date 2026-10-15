@@ -11,9 +11,10 @@ export type ModalProps = {
   height?: string;
   maxWidth?: string;
   maxHeight?: string;
+  headerActions?: React.ReactNode;
 };
 
-const Modal = ({ isOpen, onClose, title, children, width, height, maxWidth, maxHeight }: ModalProps) => {
+const Modal = ({ isOpen, onClose, title, children, width, height, maxWidth, maxHeight, headerActions }: ModalProps) => {
   useEffect(() => {
     if (!isOpen) return;
 
@@ -41,6 +42,7 @@ const Modal = ({ isOpen, onClose, title, children, width, height, maxWidth, maxH
       <div className={styles.modal} style={modalStyle} onClick={event => event.stopPropagation()}>
         <div className={styles.header}>
           <h2>{title}</h2>
+          {headerActions && <div className={styles.headerActions}>{headerActions}</div>}
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close modal">
             <Icon icon="mdi:close" width="18" height="18" />
           </button>

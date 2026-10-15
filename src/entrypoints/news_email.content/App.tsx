@@ -445,6 +445,7 @@ const NewsEmailAppContent = () => {
         <TimerBannerModal
           isOpen={pendingTimerBanner !== null}
           initialConfig={pendingTimerBanner?.timerConfig}
+          templates={translations?.templates ?? null}
           onClose={() => setPendingTimerBanner(null)}
           onConfirm={handleTimerConfirm}
           onRemove={pendingTimerBanner?.timerConfig ? handleTimerRemove : undefined}
