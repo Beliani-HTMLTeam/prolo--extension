@@ -13,114 +13,275 @@
     <meta name="supported-color-schemes" content="light only" />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&amp;subset=cyrillic-ext,latin-ext" />
     <style>
-      table, td {
-        mso-table-lspace: 0;
-        mso-table-rspace: 0;
-      }
-      img {
-        -ms-interpolation-mode: bicubic;
-      }
-      .newsletterContainer {
+            table, td {
+              mso-table-lspace: 0;
+              mso-table-rspace: 0;
+            }
+            img {
+              -ms-interpolation-mode: bicubic;
+            }
+            .newsletterContainer {
+              padding-left: 20px;
+              padding-right: 20px;
+            }
+            .newsletterContainer60px {
+              padding-left: 60px;
+              padding-right: 60px;
+            }
+            .newsletterBottom10px {
+              padding-bottom: 10px;
+            }
+            .newsletterBottom20px {
+              padding-bottom: 20px;
+            }
+            .newsletterBottom35px {
+              padding-bottom: 35px;
+            }
+            .newsletterBottom80px {
+              padding-bottom: 80px;
+            }
+            .newsletterConditions {
+              color: #000;
+              font-family: 'Open Sans', sans-serif;
+              font-size: 8px;
+            }
+            .newsletterFooterCompanyDetails {
+              vertical-align: middle;
+              padding-top: 20px;
+              padding-right: 0;
+              padding-bottom: 20px;
+              font-size: 11px;
+              font-family: 'Open Sans', sans-serif !important;
+              color: #000;
+              background: #ffffff;
+              width: 100%;
+            }
+            .newsletterFooterTitle {
+              text-align: left;
+              color: #000;
+              font-family: 'Open Sans', sans-serif;
+              font-size: 20px;
+            }
+            .newsletterFooterCategoryLEFT {
+              padding-bottom: 20px !important;
+              padding-right: 10px !important;
+            }
+            .newsletterFooterCategoryRIGHT {
+              padding-bottom: 20px !important;
+              padding-left: 10px !important;
+            }
+            .newsletterFooterCategoryLEFTBottom {
+              padding-right: 10px !important;
+            }
+            .newsletterFooterCategoryRIGHTBottom {
+              padding-left: 10px !important;
+            }
+            .newsletterSocialIcon {
+              padding-left: 25px !important;
+            }
+            .newsletterTopBottomContainer {
+              padding-top: 35px !important;
+              padding-bottom: 35px !important;
+            }
+            /* Peach side frame */
+      .newsletterContainerFooter20px {
         padding-left: 20px;
         padding-right: 20px;
       }
-      .newsletterContainer60px {
-        padding-left: 60px;
-        padding-right: 60px;
+
+      /* White panel inner padding */
+      .newsletterContainer30px {
+        padding-left: 30px;
+        padding-right: 30px;
       }
-      .newsletterBottom10px {
-        padding-bottom: 10px;
+
+      .newsletterContainer40px {
+        padding-left: 40px;
+        padding-right: 40px;
       }
+
+      /* Vertical spacers */
+      .newsletterBottom15px {
+        padding-bottom: 15px;
+      }
+
       .newsletterBottom20px {
         padding-bottom: 20px;
       }
+
+      .newsletterBottom30px {
+        padding-bottom: 30px;
+      }
+
       .newsletterBottom35px {
         padding-bottom: 35px;
       }
-      .newsletterBottom80px {
-        padding-bottom: 80px;
+
+      /* See thousands more */
+      .thousandsMoreTitle {
+        display: block;
+        text-align: left;
+        color: #750000;
+        font-family: "Open Sans", sans-serif;
+        font-size: 22px;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: -0.4px;
       }
-      .newsletterConditions {
-        color: #000;
-        font-family: 'Open Sans', sans-serif;
-        font-size: 8px;
+
+      .thousandsMoreRowGap {
+        padding-bottom: 18px;
       }
-      .newsletterFooterCompanyDetails {
+
+      .thousandsMoreBtnCellLEFT {
+        padding-right: 5px;
+      }
+
+      .thousandsMoreBtnCellRIGHT {
+        padding-left: 5px;
+      }
+
+      /* Follow us */
+      .newsletterNewFooterTitle {
+        color: #750000;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 18px;
+        line-height: 24px;
+        font-weight: 700;
+      }
+
+      .newsletterFooterSubtitle {
+        text-align: left;
+        color: #750000;
+        font-family: "Open Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 400;
+      }
+
+      .newsletterNewSocialIcon {
+        width: 28px;
+        padding-left: 20px !important;
+        padding-right: 5px;
+        font-size: 0;
+        text-align: center;
         vertical-align: middle;
-        padding-top: 20px;
-        padding-right: 0;
-        padding-bottom: 20px;
+      }
+
+      /* Conditions */
+      .newsletterNewFooterConditions {
+        color: #750000;
+        font-family: "Open Sans", sans-serif;
         font-size: 11px;
-        font-family: 'Open Sans', sans-serif !important;
-        color: #000;
-        background: #ffffff;
+        line-height: 1.2;
+      }
+
+      /* Company details */
+      .newsletterNewFooterCompanyDetails {
+        vertical-align: middle;
+        padding: 10px 15px 15px 15px;
+        font-size: 10px;
+        line-height: 15px;
+        font-family: "Open Sans", sans-serif !important;
+        color: #750000;
+        background: #FFCCB7;
+        text-align: center;
         width: 100%;
       }
-      .newsletterFooterTitle {
-        text-align: left;
-        color: #000;
-        font-family: 'Open Sans', sans-serif;
-        font-size: 20px;
+
+      .newsletterNewFooterCompanyDetails a {
+        color: #750000;
+        text-decoration: underline;
       }
-      .newsletterFooterCategoryLEFT {
-        padding-bottom: 20px !important;
-        padding-right: 10px !important;
-      }
-      .newsletterFooterCategoryRIGHT {
-        padding-bottom: 20px !important;
-        padding-left: 10px !important;
-      }
-      .newsletterFooterCategoryLEFTBottom {
-        padding-right: 10px !important;
-      }
-      .newsletterFooterCategoryRIGHTBottom {
-        padding-left: 10px !important;
-      }
-      .newsletterSocialIcon {
-        padding-left: 25px !important;
-      }
-      .newsletterTopBottomContainer {
-        padding-top: 35px !important;
-        padding-bottom: 35px !important;
-      }
-      {{timer_css}}
+
       @media screen and (max-width: 768px) {
-        .newsletterFooterCategoryLEFTBottom {
-          padding-right: 5px !important;
-        }
-        .newsletterFooterCategoryRIGHTBottom {
-          padding-left: 5px !important;
-        }
-        .newsletterFooterCategoryLEFT {
-          padding-bottom: 10px !important;
-          padding-right: 5px !important;
-        }
-        .newsletterFooterCategoryRIGHT {
-          padding-bottom: 10px !important;
-          padding-left: 5px !important;
-        }
-        .newsletterSocialIcon {
-          padding-left: 13px !important;
-        }
-        .newsletterTopBottomContainer {
-          padding-top: 20px !important;
-          padding-bottom: 20px !important;
-        }
-        .newsletterFooterTitle {
-          font-size: 18px;
-        }
-        .newsletterContainer {
+        .newsletterContainerFooter20px {
           padding-left: 10px;
           padding-right: 10px;
         }
-        .newsletterBottom35px {
-          padding-bottom: 20px;
+
+        .newsletterContainer30px {
+          padding-left: 15px;
+          padding-right: 15px;
         }
+
+        .newsletterContainer40px {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+
+        .newsletterBottom15px {
+          padding-bottom: 10px;
+        }
+
         .newsletterBottom20px {
           padding-bottom: 10px;
         }
-        .newsletterBottom80px {
-          padding-bottom: 50px;
+
+        .newsletterBottom30px {
+          padding-bottom: 15px;
+        }
+
+        .newsletterBottom35px {
+          padding-bottom: 20px;
+        }
+
+        .thousandsMoreTitle {
+          font-size: 20px;
+        }
+
+        .thousandsMoreRowGap {
+          padding-bottom: 10px;
+        }
+
+        .newsletterNewSocialIcon {
+          padding-left: 13px !important;
+        }
+      }
+            {{timer_css}}
+            @media screen and (max-width: 768px) {
+              .newsletterFooterCategoryLEFTBottom {
+                padding-right: 5px !important;
+              }
+              .newsletterFooterCategoryRIGHTBottom {
+                padding-left: 5px !important;
+              }
+              .newsletterFooterCategoryLEFT {
+                padding-bottom: 10px !important;
+                padding-right: 5px !important;
+              }
+              .newsletterFooterCategoryRIGHT {
+                padding-bottom: 10px !important;
+                padding-left: 5px !important;
+              }
+              .newsletterSocialIcon {
+                padding-left: 13px !important;
+              }
+              .newsletterTopBottomContainer {
+                padding-top: 20px !important;
+                padding-bottom: 20px !important;
+              }
+              .newsletterFooterTitle {
+                font-size: 18px;
+              }
+              .newsletterContainer {
+                padding-left: 10px;
+                padding-right: 10px;
+              }
+              .newsletterBottom35px {
+                padding-bottom: 20px;
+              }
+              .newsletterBottom20px {
+                padding-bottom: 10px;
+              }
+              .newsletterBottom80px {
+                padding-bottom: 50px;
+              }
+            }
+            @media screen and (max-width: 650px) {
+        .newsletterNewSocialIcon {
+          width: 22px !important;
+          padding-left: 3px !important;
+          padding-right: 3px !important;
         }
       }
     </style>
@@ -144,7 +305,7 @@
       ✔️ {{header["Free Delivery"]}} ✔️ {{header["365-Day Return"]}}
     </div>
     <div style="display: none; max-height: 0px; overflow: hidden">
-      &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr>&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr>&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr>&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr>&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr>&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr>&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+      &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr />&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr />&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr />&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr />&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr />&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;<wbr />&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
     </div>
 
     <table
@@ -326,476 +487,584 @@
     </table>
 
     <!-- services banner -->
-    {{#footer["Sunday Services Src"]}}
     <table
-      align="center"
-      border="0"
-      cellpadding="0"
+      role="presentation"
       cellspacing="0"
-      class="newsletterContainer"
-      style="max-width: 650px; width: 100%; background-color: #ffffff"
+      cellpadding="0"
+      border="0"
+      align="center"
+      width="100%"
+      bgcolor="#FFCCB7"
+      id="newsletter"
+      style="
+        max-width: 650px;
+        width: 100%;
+        background-color: #ffccb7;
+        border-collapse: collapse;
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      "
     >
       <tbody>
         <tr>
-          <td class="newsletterBottom35px">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <td class="newsletterContainerFooter20px" bgcolor="#FFCCB7" style="background-color: #ffccb7">
+            <table
+              role="presentation"
+              cellspacing="0"
+              cellpadding="0"
+              border="0"
+              width="100%"
+              style="width: 100%; border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt"
+            >
               <tbody>
+                <tr style="background-color: #ffccb7" bgcolor="#FFCCB7">
+                  <td class="newsletterBottom30px" style="background-color: #ffccb7" bgcolor="#FFCCB7"></td>
+                </tr>
                 <tr>
-                  <td>
-                    <img
-                      alt="Line separator"
-                      src="https://pictureserver.net/static/2025/line.jpg"
-                      style="display: block"
+                  <td style="background-color: #fff">
+                    <a href='{{footer["See you soon href"]}}{{utm}}{{id}}'>
+                      <img
+                        loading="lazy"
+                        alt="See you soon"
+                        src='{{footer["See you soon src"]}}'
+                        width="550"
+                        style="display: block; width: 100%; max-width: 100%; height: auto"
+                      />
+                    </a>
+                  </td>
+                </tr>
+                <tr style="background-color: #fff" bgcolor="#fff">
+                  <td class="newsletterBottom30px" style="background-color: #fff" bgcolor="#fff"></td>
+                </tr>
+                <tr>
+                  <td class="newsletterContainer30px" style="background-color: #fff">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <img
+                              src="https://pictureserver.net/static/footer/new_footer_line.png"
+                              style="display: block"
+                              width="100%"
+                              alt="Line separator"
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr style="background-color: #fff" bgcolor="#fff">
+                  <td class="newsletterBottom30px" style="background-color: #fff" bgcolor="#fff"></td>
+                </tr>
+                <tr>
+                  <td class="newsletterContainer30px" style="background-color: #fff">
+                    <a href='{{footer["Delivery href"]}}{{utm}}{{id}}'>
+                      <img
+                        loading="lazy"
+                        alt="work banner"
+                        src='{{footer["Delivery src"]}}'
+                        width="550"
+                        style="display: block; width: 100%; max-width: 100%; height: auto"
+                      />
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="newsletterBottom35px" style="background-color: #fff"></td>
+                </tr>
+
+                <tr>
+                  <td class="newsletterContainer30px" style="background-color: #ffffff">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <img
+                              src="https://pictureserver.net/static/footer/new_footer_line.png"
+                              style="display: block"
+                              width="100%"
+                              alt="Line separator"
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr style="background-color: #ffffff" bgcolor="#ffffff">
+                  <td class="newsletterBottom30px" style="background-color: #ffffff" bgcolor="#ffffff"></td>
+                </tr>
+                <tr>
+                  <td class="newsletterContainer30px" style="background-color: #ffffff">
+                    <span class="thousandsMoreTitle" style="color: #750000; font-weight: 700">
+                      {{footer["Title"]}}
+                    </span>
+                  </td>
+                </tr>
+                <tr style="background-color: #ffffff" bgcolor="#FFFFFF">
+                  <td class="newsletterBottom20px" style="background-color: #ffffff" bgcolor="#FFFFFF"></td>
+                </tr>
+                <tr>
+                  <td class="newsletterContainer30px" style="background-color: #ffffff">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%">
+                      <tbody>
+                        <tr>
+                          <td class="thousandsMoreRowGap">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <tbody>
+                                <tr>
+                                  <td width="50%" valign="top" style="padding-right: 5px">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                      <tbody>
+                                        <tr>
+                                          <td class="thousandsMoreBtnCellLEFT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 1"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 1 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                          <td class="thousandsMoreBtnCellRIGHT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 2"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 2 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </td>
+
+                                  <td width="50%" valign="top" style="padding-left: 5px">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                      <tbody>
+                                        <tr>
+                                          <td class="thousandsMoreBtnCellLEFT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 3"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 3 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                          <td class="thousandsMoreBtnCellRIGHT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 4"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 4 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <tbody>
+                                <tr>
+                                  <td width="50%" valign="top" style="padding-right: 5px">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                      <tbody>
+                                        <tr>
+                                          <td class="thousandsMoreBtnCellLEFT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 5"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 5 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                          <td class="thousandsMoreBtnCellRIGHT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 6"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 6 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </td>
+
+                                  <td width="50%" valign="top" style="padding-left: 5px">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                      <tbody>
+                                        <tr>
+                                          <td class="thousandsMoreBtnCellLEFT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 7"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 7 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                          <td class="thousandsMoreBtnCellRIGHT" width="50%" valign="top">
+                                            <a href='{{footer["Category href 8"]}}{{utm}}{{id}}'>
+                                              <img
+                                                loading="lazy"
+                                                src='{{footer["Category src 8 new"]}}'
+                                                alt="Category"
+                                                width="130"
+                                                border="0"
+                                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                                              />
+                                            </a>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr style="background-color: #ffffff" bgcolor="#FFFFFF">
+                  <td class="newsletterBottom30px" style="background-color: #ffffff" bgcolor="#FFFFFF"></td>
+                </tr>
+
+                <tr>
+                  <td
+                    class="newsletterContainer30px"
+                    bgcolor="#ffffff"
+                    style="background-color: #ffffff; mso-padding-alt: 0px 20px 0px 20px"
+                  >
+                    <table
+                      role="presentation"
+                      align="center"
+                      cellspacing="0"
+                      cellpadding="0"
+                      border="0"
+                      style="margin: 0 auto; background-color: #ffffff"
+                    >
+                      <tbody>
+                        <tr>
+                          <td valign="top">
+                            <a href='{{footer["Advantages href 1"]}}{{utm}}{{id}}'>
+                              <img
+                                loading="lazy"
+                                src='{{footer["Advantages src 1 new"]}}'
+                                alt="Advantages"
+                                border="0"
+                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                              />
+                            </a>
+                          </td>
+
+                          <td valign="top">
+                            <a href='{{footer["Advantages href 2"]}}{{utm}}{{id}}'>
+                              <img
+                                loading="lazy"
+                                src='{{footer["Advantages src 2 new"]}}'
+                                alt="Advantages"
+                                border="0"
+                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                              />
+                            </a>
+                          </td>
+
+                          <td valign="top">
+                            <a href='{{footer["Advantages href 3"]}}{{utm}}{{id}}'>
+                              <img
+                                loading="lazy"
+                                src='{{footer["Advantages src 3 new"]}}'
+                                alt="Advantages"
+                                border="0"
+                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                              />
+                            </a>
+                          </td>
+
+                          <td valign="top">
+                            <a href='{{footer["Advantages href 4"]}}{{utm}}{{id}}'>
+                              <img
+                                loading="lazy"
+                                src='{{footer["Advantages src 4 new"]}}'
+                                alt="Advantages"
+                                border="0"
+                                style="display: block; width: 100%; max-width: 100%; height: auto"
+                              />
+                            </a>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr style="background-color: #ffffff" bgcolor="#FFFFFF">
+                  <td class="newsletterBottom30px" style="background-color: #ffffff" bgcolor="#FFFFFF"></td>
+                </tr>
+
+                {{#footer["Klarna src new"]}}
+                <tr>
+                  <td class="newsletterContainer30px" style="background-color: #ffffff">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <img
+                              src="https://pictureserver.net/static/footer/new_footer_line.png"
+                              style="display: block"
+                              width="100%"
+                              alt="Line separator"
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr style="background-color: #ffffff" bgcolor="#FFFFFF">
+                  <td class="newsletterBottom30px" style="background-color: #ffffff" bgcolor="#FFFFFF"></td>
+                </tr>
+
+                <tr>
+                  <td class="newsletterContainer30px" style="background-color: #ffffff">
+                    <a href='{{footer["Klarna href"]}}{{utm}}{{id}}'>
+                      <img
+                        alt="Klarna"
+                        border="0"
+                        src='{{footer["Klarna src new"]}}'
+                        width="550"
+                        style="display: block; width: 100%; max-width: 100%; height: auto"
+                      />
+                    </a>
+                  </td>
+                </tr>
+                <tr style="background-color: #ffffff" bgcolor="#FFFFFF">
+                  <td class="newsletterBottom30px" style="background-color: #ffffff" bgcolor="#FFFFFF"></td>
+                </tr>
+                {{/footer["Klarna src new"]}}
+
+                <tr>
+                  <td align="center" class="newsletterContainer30px" style="background-color: #ffffff">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tbody>
+                        <tr>
+                          <td align="left" class="footer">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    <span class="newsletterNewFooterTitle"> {{footer["Stay up to date"]}} </span>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                          <td align="right" class="footer" style="padding-right: 5px; vertical-align: middle">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                              <tbody>
+                                <tr>
+                                  <td
+                                    class="newsletterNewSocialIcon"
+                                    valign="middle"
+                                    style="line-height: 28px; mso-line-height-rule: at-least"
+                                  >
+                                    <a href='{{footer["Instagram href"]}}{{utm}}{{id}}'>
+                                      <img
+                                        loading="lazy"
+                                        src='{{footer["Instagram src new"]}}'
+                                        width="28"
+                                        border="0"
+                                        style="display: block; max-width: 100%; vertical-align: middle"
+                                        alt="Instagram"
+                                      />
+                                    </a>
+                                  </td>
+
+                                  <td
+                                    class="newsletterNewSocialIcon"
+                                    valign="middle"
+                                    style="line-height: 28px; mso-line-height-rule: at-least"
+                                  >
+                                    <a href='{{footer["Facebook href"]}}{{utm}}{{id}}'>
+                                      <img
+                                        loading="lazy"
+                                        src='{{footer["Facebook src new"]}}'
+                                        width="28"
+                                        border="0"
+                                        style="display: block; max-width: 100%; vertical-align: middle"
+                                        alt="Facebook"
+                                      />
+                                    </a>
+                                  </td>
+
+                                  {{#footer["Youtube src new"]}}{{#footer["Youtube href"]}}
+                                  <td
+                                    class="newsletterNewSocialIcon"
+                                    valign="middle"
+                                    style="line-height: 28px; mso-line-height-rule: at-least"
+                                  >
+                                    <a href='{{footer["Youtube href"]}}{{utm}}{{id}}'>
+                                      <img
+                                        loading="lazy"
+                                        src='{{footer["Youtube src new"]}}'
+                                        width="28"
+                                        border="0"
+                                        style="display: block; max-width: 100%; vertical-align: middle"
+                                        alt="YouTube"
+                                      />
+                                    </a>
+                                  </td>
+                                  {{/footer["Youtube href"]}}{{/footer["Youtube src new"]}}
+
+                                  <td
+                                    class="newsletterNewSocialIcon"
+                                    valign="middle"
+                                    style="line-height: 28px; mso-line-height-rule: at-least"
+                                  >
+                                    <a href='{{footer["Pinterest href"]}}{{utm}}{{id}}'>
+                                      <img
+                                        loading="lazy"
+                                        src='{{footer["Pinterest src new"]}}'
+                                        width="28"
+                                        border="0"
+                                        style="display: block; max-width: 100%; vertical-align: middle"
+                                        alt="Pinterest"
+                                      />
+                                    </a>
+                                  </td>
+
+                                  {{#footer["Tiktok src new"]}}{{#footer["Tiktok href"]}}
+                                  <td
+                                    class="newsletterNewSocialIcon"
+                                    valign="middle"
+                                    style="line-height: 28px; mso-line-height-rule: at-least"
+                                  >
+                                    <a href='{{footer["Tiktok href"]}}{{utm}}{{id}}'>
+                                      <img
+                                        loading="lazy"
+                                        src='{{footer["Tiktok src new"]}}'
+                                        width="28"
+                                        border="0"
+                                        style="display: block; max-width: 100%; vertical-align: middle"
+                                        alt="Tik-Tok"
+                                      />
+                                    </a>
+                                  </td>
+                                  {{/footer["Tiktok href"]}}{{/footer["Tiktok src new"]}} {{#footer["X src
+                                  new"]}}{{#footer["X href"]}}
+                                  <td
+                                    class="newsletterNewSocialIcon"
+                                    valign="middle"
+                                    style="line-height: 28px; mso-line-height-rule: at-least"
+                                  >
+                                    <a href='{{footer["X href"]}}{{utm}}{{id}}'>
+                                      <img
+                                        loading="lazy"
+                                        src='{{footer["X src new"]}}'
+                                        width="28"
+                                        border="0"
+                                        style="display: block; max-width: 100%; vertical-align: middle"
+                                        alt="X"
+                                      />
+                                    </a>
+                                  </td>
+                                  {{/footer["X href"]}}{{/footer["X src new"]}}
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr style="background-color: #ffffff" bgcolor="#FFFFFF">
+                  <td class="newsletterBottom30px" style="background-color: #ffffff" bgcolor="#FFFFFF"></td>
+                </tr>
+
+                <tr>
+                  <td bgcolor="#FFCCB7" style="background-color: #ffccb7">
+                    <table
+                      role="presentation"
+                      cellspacing="0"
+                      cellpadding="0"
+                      border="0"
                       width="100%"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <a href='{{footer["Sunday Services Href"]}}{{utm}}{{id}}'>
-              <img
-                loading="lazy"
-                alt="Service banner"
-                src='{{footer["Sunday Services Src"]}}'
-                style="display: block; max-width: 610px; width: 100%"
-                width="610"
-            /></a>
-          </td>
-        </tr>
-        <tr>
-          <td class="newsletterBottom35px"></td>
-        </tr>
-      </tbody>
-    </table>
-    {{/footer["Sunday Services Src"]}}
-
-    <!-- footer categories -->
-    <table
-      align="center"
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      class="newsletterContainer"
-      style="background-color: #ffffff"
-    >
-      <tbody>
-        <tr>
-          <td>
-            <img
-              alt="Line separator"
-              loading="lazy"
-              src="https://pictureserver.net/static/2025/line.jpg"
-              style="display: block; max-width: 100%"
-            />
-          </td>
-        </tr>
-        <tr>
-          <td class="newsletterTopBottomContainer"><span class="newsletterFooterTitle">{{footer["Title"]}}</span></td>
-        </tr>
-        <tr>
-          <td class="newsletterBottom35px">
-            <table align="center" border="0" cellpadding="0" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td class="newsletterFooterCategoryLEFT">
-                    <a href='{{footer["Category href 1"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 1"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                  <td class="newsletterFooterCategoryRIGHT">
-                    <a href='{{footer["Category href 2"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 2"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="newsletterFooterCategoryLEFT">
-                    <a href='{{footer["Category href 3"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 3"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                  <td class="newsletterFooterCategoryRIGHT">
-                    <a href='{{footer["Category href 4"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 4"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="newsletterFooterCategoryLEFT">
-                    <a href='{{footer["Category href 5"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 5"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                  <td class="newsletterFooterCategoryRIGHT">
-                    <a href='{{footer["Category href 6"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 6"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="newsletterFooterCategoryLEFTBottom">
-                    <a href='{{footer["Category href 7"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 7"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                  <td class="newsletterFooterCategoryRIGHTBottom">
-                    <a href='{{footer["Category href 8"]}}{{utm}}{{id}}'>
-                      <img
-                        alt="Category"
-                        border="0"
-                        loading="lazy"
-                        src='{{footer["Category src 8"]}}'
-                        style="display: block; max-width: 100%"
-                    /></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- klarna -->
-    {{#footer["Klarna src"]}}
-    <table
-      align="center"
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      class="newsletterContainer"
-      style="background-color: #ffffff"
-    >
-      <tbody>
-        <tr>
-          <td>
-            <img
-              alt="Line separator"
-              src="https://pictureserver.net/static/2025/line.jpg"
-              style="display: block; max-width: 100%"
-            />
-          </td>
-        </tr>
-        <tr>
-          <td class="newsletterTopBottomContainer">
-            <a href='{{footer["Klarna href"]}}{{utm}}{{id}}'>
-              <img alt="Klarna" border="0" src='{{footer["Klarna src"]}}' style="display: block; max-width: 100%"
-            /></a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    {{/footer["Klarna src"]}}
-
-    <!-- socials -->
-    <table
-      align="center"
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      class="newsletterContainer"
-      style="background-color: #ffffff"
-    >
-      <tbody>
-        <tr>
-          <td>
-            <img
-              alt="Line separator"
-              loading="lazy"
-              src="https://pictureserver.net/static/2025/line.jpg"
-              style="display: block; max-width: 100%"
-            />
-          </td>
-        </tr>
-
-        <tr>
-          <td align="center">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-              <tbody>
-                <tr>
-                  <td align="left" class="footer">
-                    <table border="0" cellpadding="0" cellspacing="0">
+                      style="width: 100%; line-height: 10px; mso-line-height-rule: exactly; border-collapse: collapse"
+                    >
                       <tbody>
-                        <tr>
-                          <td class="newsletterTopBottomContainer">
-                            <span class="newsletterFooterTitle">{{footer["Socials Title"]}}</span>
-                          </td>
+                        <tr style="background-color: #ffccb7" bgcolor="#FFCCB7">
+                          <td class="newsletterBottom15px" style="background-color: #ffccb7" bgcolor="#FFCCB7"></td>
                         </tr>
-                      </tbody>
-                    </table>
-                  </td>
-                  <td align="right" class="footer" style="padding-right: 5px; vertical-align: middle">
-                    <table border="0" cellpadding="0" cellspacing="0">
-                      <tbody>
                         <tr>
-                          <td class="newsletterSocialIcon">
-                            <a href='{{footer["Instagram href"]}}{{utm}}{{id}}'>
-                              <img
-                                alt="Instagram"
-                                border="0"
-                                loading="lazy"
-                                src='{{footer["Instagram src"]}}'
-                                style="display: block; max-width: 100%"
-                              />
-                            </a>
-                          </td>
-
-                          <td class="newsletterSocialIcon">
-                            <a href='{{footer["Facebook href"]}}{{utm}}{{id}}'>
-                              <img
-                                alt="Facebook"
-                                border="0"
-                                loading="lazy"
-                                src='{{footer["Facebook src"]}}'
-                                style="display: block; max-width: 100%"
-                              />
-                            </a>
-                          </td>
-
-                          {{#footer["Youtube src"]}} {{#footer["Youtube href"]}}
-                          <td class="newsletterSocialIcon">
-                            <a href='{{footer["Youtube href"]}}{{utm}}{{id}}'>
-                              <img
-                                alt="YouTube"
-                                border="0"
-                                loading="lazy"
-                                src='{{footer["Youtube src"]}}'
-                                style="display: block; max-width: 100%"
-                            /></a>
-                          </td>
-                          {{/footer["Youtube href"]}} {{/footer["Youtube src"]}}
-
-                          <td class="newsletterSocialIcon">
-                            <a href='{{footer["Pinterest href"]}}{{utm}}{{id}}'>
-                              <img
-                                alt="Pinterest"
-                                border="0"
-                                loading="lazy"
-                                src='{{footer["Pinterest src"]}}'
-                                style="display: block; max-width: 100%"
-                            /></a>
-                          </td>
-
-                          <td class="newsletterSocialIcon">
-                            <a href='{{footer["X href"]}}{{utm}}{{id}}'>
-                              <img
-                                alt="X"
-                                border="0"
-                                loading="lazy"
-                                src='{{footer["X src"]}}'
-                                style="display: block; max-width: 100%"
-                            /></a>
-                          </td>
-
-                          <td class="newsletterSocialIcon">
-                            <a href='{{footer["Tiktok href"]}}{{utm}}{{id}}'>
-                              <img
-                                alt="TikTok"
-                                border="0"
-                                loading="lazy"
-                                src='{{footer["Tiktok src"]}}'
-                                style="display: block; max-width: 100%"
-                            /></a>
+                          <td align="center">
+                            <span class="newsletterNewFooterConditions" style="color: #750000; text-align: center"
+                              >{{footer["Conditions title"]}} {{footer["Conditions_description"]}}
+                              {{footer["Conditions_unsubscribe new"]}}</span
+                            >
                           </td>
                         </tr>
                       </tbody>
                     </table>
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
 
-    <!-- advantages -->
-    <table
-      cellspacing="0"
-      class="newsletterContainer"
-      cellpadding="0"
-      border="0"
-      align="center"
-      style="background-color: #ffffff"
-    >
-      <tbody>
-        <tr>
-          <td>
-            <img
-              loading="lazy"
-              src="https://pictureserver.net/static/2025/line.jpg"
-              style="display: block; max-width: 100%"
-              alt="Line separator"
-            />
-          </td>
-        </tr>
-
-        <tr>
-          <td class="newsletterTopBottomContainer">
-            <table cellspacing="0" cellpadding="0" border="0" style="background-color: #f5f5f5">
-              <tbody>
                 <tr>
-                  <td>
-                    <a href='{{footer["Advantages href 1"]}}{{utm}}{{id}}'>
-                      <img
-                        loading="lazy"
-                        src='{{footer["Advantages src 1"]}}'
-                        alt="Advantage"
-                        style="display: block; max-width: 100%"
-                        border="0"
-                      />
-                    </a>
+                  <td
+                    align="center"
+                    class="newsletterNewFooterCompanyDetails"
+                    bgcolor="#FFCCB7"
+                    style="background-color: #ffccb7; color: #750000"
+                  >
+                    <span style="color: #750000; text-align: center; font-size: 13px">
+                      {{footer["Address new"]}} | {{footer["Commercial register new"]}}
+                    </span>
                   </td>
                 </tr>
-
-                <tr>
-                  <td>
-                    <a href='{{footer["Advantages href 2"]}}{{utm}}{{id}}'>
-                      <img
-                        loading="lazy"
-                        src='{{footer["Advantages src 2"]}}'
-                        alt="Advantage"
-                        style="display: block; max-width: 100%"
-                        border="0"
-                      />
-                    </a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>
-                    <a href='{{footer["Advantages href 3"]}}{{utm}}{{id}}'>
-                      <img
-                        loading="lazy"
-                        src='{{footer["Advantages src 3"]}}'
-                        alt="Advantage"
-                        style="display: block; max-width: 100%"
-                        border="0"
-                      />
-                    </a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>
-                    <a href='{{footer["Advantages href 4"]}}{{utm}}{{id}}'>
-                      <img
-                        loading="lazy"
-                        src='{{footer["Advantages src 4"]}}'
-                        alt="Advantage"
-                        style="display: block; max-width: 100%"
-                        border="0"
-                      />
-                    </a>
-                  </td>
+                <tr style="background-color: #ffccb7" bgcolor="#FFCCB7">
+                  <td class="newsletterBottom15px" style="background-color: #ffccb7" bgcolor="#FFCCB7"></td>
                 </tr>
               </tbody>
             </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- footer conditions -->
-    <table
-      align="center"
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      class="newsletterContainer"
-      style="max-width: 650px; width: 100%; background-color: #ffffff"
-      width="650"
-    >
-      <tbody>
-        <tr>
-          <td>
-            <img
-              alt="Line Separator"
-              loading="lazy"
-              src="https://pictureserver.net/static/2025/line.jpg"
-              style="display: block; max-width: 100%"
-            />
-          </td>
-        </tr>
-        <tr>
-          <td align="left" class="newsletterTopBottomContainer">
-            <span class="newsletterConditions" style="color: #000000">
-              {{footer["Conditions title"]}} {{footer["Conditions_description"]}} {{footer["Conditions_unsubscribe"]}}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- company details -->
-    <table cellspacing="0" cellpadding="0" border="0" align="center">
-      <tbody>
-        <tr>
-          <td align="center" class="newsletterFooterCompanyDetails">
-            <span style="color: #000000; text-align: center; font-size: 11px">
-              <b>
-                <span style="font-size: 11px">{{footer["Company Details"]}}</span>
-              </b>
-
-              <br />
-
-              {{footer["Address"]}}
-
-              <br />
-
-              {{footer["Mobile number"]}} {{footer["Email address"]}}
-
-              <a href='{{footer["Mail to"]}}'>{{footer["Email"]}}</a>
-
-              <br />
-
-              {{footer["Commercial register"]}}
-
-              <br />
-              {{footer["VAT"]}}
-            </span>
           </td>
         </tr>
       </tbody>
