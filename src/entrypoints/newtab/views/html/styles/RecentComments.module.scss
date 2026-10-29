@@ -22,9 +22,8 @@
 
 .scrollWrapper {
   width: 100%;
-  max-height: 400px;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
   padding: 4px 4px 12px 4px; // padding to prevent box-shadow clipping during hover scales
 
   // Custom styling for horizontal scrollbar
@@ -46,17 +45,19 @@
 .cardsFlex {
   display: flex;
   gap: 16px;
-  height: 100%;
 }
 
 .issueCard {
   flex-shrink: 0;
   width: 300px;
+  height: 360px;
   background: var(--theme-surface-color);
   border-radius: 12px;
   border: 2px solid var(--theme-border-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -69,7 +70,6 @@
   &:hover {
     border-color: var(--theme-accent-color);
     box-shadow: 0 4px 16px rgba(255, 47, 0, 0.15);
-    transform: translateY(-2px);
   }
 }
 
@@ -114,7 +114,9 @@
   flex-direction: column;
   gap: 8px;
   backdrop-filter: none;
-  overflow-y: scroll;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding-inline: 12px;
   padding-bottom: 12px;
 }
@@ -123,19 +125,33 @@
   display: flex;
   overflow: hidden;
   white-space: nowrap;
-  width: 300px;
+  flex: 1;
+  min-width: 0;
 }
 
 .marquee__item {
   animation-duration: var(--marquee-duration, 10s);
   animation-iteration-count: infinite;
-  animation-name: marquee-content;
+  animation-name: none;
   animation-timing-function: linear;
   padding: 5px 15px 5px 15px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  & + & {
+    display: none;
+  }
 }
 
-.marquee:hover .marquee__item {
-  animation-play-state: paused;
+.issueLink:hover .marquee__item {
+  animation-name: marquee-content;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.issueLink:hover .marquee__item + .marquee__item {
+  display: block;
 }
 
 @keyframes marquee-content {
@@ -161,6 +177,11 @@
 
   &:hover {
     border-color: var(--theme-accent-color);
+  }
+
+  &.isNew {
+    border-color: var(--theme-accent-color);
+    box-shadow: inset 3px 0 0 var(--theme-accent-color);
   }
 }
 

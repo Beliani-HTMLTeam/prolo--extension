@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react';
 import { Icon } from '@iconify/react';
+import { AnimatePresence, motion, type Transition } from 'motion/react';
 import styles from './styles/RecentComments.module.scss';
 import { type Comment } from '@/entrypoints/issue.content/api/comments';
 
@@ -19,7 +20,10 @@ interface RecentCommentsProps {
   issues: IssueWithComments[];
   loading?: boolean;
   error?: string | null;
+  highlightNewerThan?: number | null;
 }
+
+const CARD_SPRING: Transition = { type: 'spring', stiffness: 380, damping: 30 };
 
 const formatRelativeTime = (dateString: string): string => {
   const date = new Date(dateString);
@@ -48,13 +52,17 @@ const handleScroll = (event: React.WheelEvent<HTMLDivElement>) => {
   event.currentTarget.scrollLeft += event.deltaY;
 };
 
-export default function RecentComments({ issues, loading = false, error = null }: RecentCommentsProps) {
+export default function RecentComments({
+  issues,
+  loading = false,
+  error = null,
+  highlightNewerThan = null,
+}: RecentCommentsProps) {
   const recentIssues = issues.filter(issue => issue.recentCommentsCount > 0);
 
-  // Sort by isOther first (true first), then by latest comment
   const sortedIssues = [...recentIssues].sort((a, b) => {
     if (a.isOther !== b.isOther) {
-      return a.isOther ? -1 : 1;
+      return a.isOther ? 1 : -1;
     }
 
     const aLatest = a.comments.reduce((latest, comment) => {
@@ -94,62 +102,78 @@ export default function RecentComments({ issues, loading = false, error = null }
 
   return (
     <aside className={styles.recentCommentsContainer}>
-      <div className={styles.scrollWrapper} onWheel={handleScroll}>
+      <motion.div className={styles.scrollWrapper} onWheel={handleScroll} layoutScroll>
         <div className={styles.cardsFlex}>
-          {sortedIssues.map(issue => {
-            const sortedComments = [...issue.comments].sort(
-              (a, b) => new Date(b.create_date).getTime() - new Date(a.create_date).getTime(),
-            );
-            const marqueeStyle = { '--marquee-duration': getMarqueeDuration(issue.issue) } as CSSProperties & {
-              '--marquee-duration': string;
-            };
+          <AnimatePresence mode="popLayout">
+            {sortedIssues.map((issue, index) => {
+              const sortedComments = [...issue.comments].sort(
+                (a, b) => new Date(b.create_date).getTime() - new Date(a.create_date).getTime(),
+              );
+              const marqueeStyle = { '--marquee-duration': getMarqueeDuration(issue.issue) } as CSSProperties & {
+                '--marquee-duration': string;
+              };
 
-            return (
-              <div 
-                className={`${styles.issueCard} ${issue.isOther ? styles.isOther : ''}`.trim()} 
-                key={issue.id}
-              >
-                {/* Issue Title Link */}
-                <a href={issue.link} target="_blank" rel="noopener noreferrer" className={styles.issueLink}>
-                  {/* {issue.issue.substring(0, 50) + (issue.issue.length > 50 ? '...' : '')} */}
-                  <div className={styles.marquee} style={marqueeStyle}>
-                    <div className={styles.marquee__item}>{issue.issue}</div>
+              return (
+                <motion.div
+                  className={`${styles.issueCard} ${issue.isOther ? styles.isOther : ''}`.trim()}
+                  key={issue.id}
+                  layout
+                  initial={{ opacity: 0, y: 16, scale: 0.96 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    transition: { ...CARD_SPRING, delay: Math.min(index, 8) * 0.04 },
+                  }}
+                  exit={{ opacity: 0, scale: 0.9, transition: CARD_SPRING }}
+                  whileHover={{ y: -3, transition: CARD_SPRING }}
+                  transition={CARD_SPRING}
+                >
+                  <a href={issue.link} target="_blank" rel="noopener noreferrer" className={styles.issueLink}>
+                    <div className={styles.marquee} style={marqueeStyle}>
+                      <div className={styles.marquee__item}>{issue.issue}</div>
 
-                    <div className={styles.marquee__item}>{issue.issue}</div>
+                      <div className={styles.marquee__item}>{issue.issue}</div>
+                    </div>
+
+                    <Icon icon="gg:external" className={styles.externalIcon} />
+                  </a>
+
+                  <div className={styles.commentsCount}>
+                    <Icon icon="lucide:message-square" />
+                    {issue.recentCommentsCount} recent comment
+                    {issue.recentCommentsCount !== 1 ? 's' : ''}
                   </div>
 
-                  <Icon icon="gg:external" className={styles.externalIcon} />
-                </a>
-
-                {/* Comments Meta */}
-                <div className={styles.commentsCount}>
-                  <Icon icon="lucide:message-square" />
-                  {issue.recentCommentsCount} recent comment
-                  {issue.recentCommentsCount !== 1 ? 's' : ''}
-                </div>
-
-                {/* Nested Comments List */}
-                <div className={styles.commentsList} onWheel={(e) => e.stopPropagation()}>
-                  {sortedComments
-                    .filter(comment => comment.comment_type)
-                    .map(comment => (
-                      <div className={styles.commentItem} key={comment.id}>
-                        <div className={styles.commentMeta}>
-                          <span className={styles.commentAuthor}>{comment.full_username}</span>
-                          <span className={styles.commentTime}>{formatRelativeTime(comment.create_date)}</span>
+                  <div className={styles.commentsList} onWheel={event => event.stopPropagation()}>
+                    {sortedComments
+                      .filter(comment => comment.comment_type)
+                      .map(comment => (
+                        <div
+                          className={`${styles.commentItem} ${
+                            highlightNewerThan !== null && new Date(comment.create_date).getTime() > highlightNewerThan
+                              ? styles.isNew
+                              : ''
+                          }`.trim()}
+                          key={comment.id}
+                        >
+                          <div className={styles.commentMeta}>
+                            <span className={styles.commentAuthor}>{comment.full_username}</span>
+                            <span className={styles.commentTime}>{formatRelativeTime(comment.create_date)}</span>
+                          </div>
+                          <p className={styles.commentBody}>
+                            {comment.comment.substring(0, 100)}
+                            {comment.comment.length > 100 ? '...' : ''}
+                          </p>
                         </div>
-                        <p className={styles.commentBody}>
-                          {comment.comment.substring(0, 100)}
-                          {comment.comment.length > 100 ? '...' : ''}
-                        </p>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            );
-          })}
+                      ))}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
     </aside>
   );
 }
