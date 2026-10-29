@@ -34,3 +34,5 @@ web-ext.config.ts
 # custom
 old-code/
 *example_responses/
+.playwright-mcp/
+teams_todo.md
