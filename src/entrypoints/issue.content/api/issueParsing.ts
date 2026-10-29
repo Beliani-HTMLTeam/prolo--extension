@@ -34,6 +34,12 @@ export const parseIssueInfo =(issueItem: IssueListItem): ParsedIssueInfo => {
   const issueDateMatch =
     rawTitle.match(/(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+(\d{4}\.\d{2}\.\d{2})/i) ??
     rawTitle.match(/(\d{4}\.\d{2}\.\d{2})/);
+  const dmyMatch = issueDateMatch ? null : rawTitle.match(/(?<![\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?![\d.]\d)/);
+  const issueDate = issueDateMatch
+    ? issueDateMatch[1]
+    : dmyMatch
+      ? `${dmyMatch[3]}.${dmyMatch[2].padStart(2, '0')}.${dmyMatch[1].padStart(2, '0')}`
+      : '';
 
   let newsletterIssueId: number | null = null;
   const dueFields: Array<{ name: string; value: string }> = [];
@@ -85,7 +91,7 @@ export const parseIssueInfo =(issueItem: IssueListItem): ParsedIssueInfo => {
   return {
     title: truncateText(rawTitle),
     description: truncateText(rawDescription),
-    issueDate: issueDateMatch?.[1] ?? '',
+    issueDate,
     issueTypes: issueItem.issue_type ?? [],
     solvingUserName: issueItem.solving_user_name ?? '',
     status: issueItem.status ?? '',

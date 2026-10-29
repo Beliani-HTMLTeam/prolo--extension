@@ -29,8 +29,8 @@ export const SHOP_TRANSLATORS: Record<string, string[]> = {
   BENL: ['3734'],
   SK: ['3158', '3942'],
   CZ: ['4571', '5180'],
-  HR: ['6004', '6005', '5692'],
-  SI: ['5692'],
+  HR: ['6004', '6005', '5692', '1312'],
+  SI: ['5692', '1312'],
 };
 
 export type TranslatorGroup = {
