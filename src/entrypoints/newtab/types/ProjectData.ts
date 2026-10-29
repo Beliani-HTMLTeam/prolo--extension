@@ -9,6 +9,7 @@ export interface ProjectData {
   commits: Commit[];
   commitActivity: number[];
   isLoading: boolean;
+  disabled?: boolean;
   error?: string;
   lastFetched?: number;
 }

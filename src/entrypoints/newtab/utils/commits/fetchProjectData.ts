@@ -26,7 +26,7 @@ export async function fetchProjectData(
     );
 
     if (!commitsResponse.ok) {
-      throw new Error('Failed to fetch commits');
+      throw new Error(`HTTP ${commitsResponse.status}`);
     }
 
     const commits = await commitsResponse.json();
@@ -51,7 +51,7 @@ export async function fetchProjectData(
       newProjects[index] = {
         ...newProjects[index],
         isLoading: false,
-        error: 'Failed to load data',
+        error: `Failed to load commits (${error instanceof Error ? error.message : 'network error'})`,
       };
       return newProjects;
     });

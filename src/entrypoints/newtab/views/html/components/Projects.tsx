@@ -27,9 +27,12 @@ const projectsConfig = [
   { name: 'Extension - Legacy', user: 'Beliani-HTMLTeam', repo: 'prolo--extension-legacy', branch: 'future' },
   { name: 'Extension for Graphics', user: 'Beliani-HTMLTeam', repo: 'prolo--extension-for-graphics', branch: 'dev' },
   { name: 'Top Image Generator', user: 'Beliani-HTMLTeam', repo: 'figma--top-image-title-generator', branch: 'main' },
+  { name: 'AI Toolset', user: 'Beliani-HTMLTeam', repo: 'ai-toolset', branch: 'main', private: true },
 ];
 
 const DAYS_SINCE = 14;
+const HAS_GITHUB_TOKEN = Boolean(import.meta.env.VITE_GITHUB_TOKEN);
+const MISSING_TOKEN_TOOLTIP = 'Private repo - please set GitHub token/PAT (VITE_GITHUB_TOKEN) in .env and build extension again';
 
 function getChartColor() {
   let chartColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent-color');
@@ -62,6 +65,7 @@ export default function Projects() {
       const owner = project.user;
       const repo = project.repo;
       const branch = project.branch || 'main';
+      const disabled = Boolean(project.private) && !HAS_GITHUB_TOKEN;
 
       return {
         name: project.name,
@@ -71,7 +75,8 @@ export default function Projects() {
         url: `https://github.com/${owner}/${repo}/tree/${branch}`,
         commits: [],
         commitActivity: [],
-        isLoading: true,
+        isLoading: !disabled,
+        disabled,
       };
     });
   });
@@ -94,7 +99,7 @@ export default function Projects() {
 
   useEffect(() => {
     projects.forEach((project, index) => {
-      if (project.owner && project.repo && project.branch) {
+      if (!project.disabled && project.owner && project.repo && project.branch) {
         fetchProjectData(project, index, DAYS_SINCE, setProjects);
       }
     });
@@ -306,7 +311,7 @@ export default function Projects() {
 
       <div style={{ display: 'flex', flexDirection: 'row', gap: '4px', whiteSpace: 'nowrap' }}>
         <span style={{ display: 'flex', flexDirection: 'row', gap: '32px' }}>
-          Projects tracked (gray - no commits in last {DAYS_SINCE} days):
+          Projects tracked (gray - no commits in last {DAYS_SINCE} days, red - failed to load):
           {projects.map(project => (
             <a
               key={project.name}
@@ -314,17 +319,24 @@ export default function Projects() {
                 display: 'flex',
                 flexDirection: 'row',
                 gap: '8px',
-                color: activeProjects.includes(project)
-                  ? 'var(--theme-text-color)'
-                  : 'var(--theme-text-color-secondary)',
+                color: project.error
+                  ? '#cc0000'
+                  : activeProjects.includes(project)
+                    ? 'var(--theme-text-color)'
+                    : 'var(--theme-text-color-secondary)',
                 alignItems: 'center',
-                textDecoration: 'none',
+                textDecoration: project.disabled ? 'line-through' : 'none',
+                cursor: project.disabled || project.error ? 'help' : undefined,
               }}
+              title={project.disabled ? MISSING_TOKEN_TOOLTIP : project.error}
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Icon style={{ fontSize: '24px' }} icon="icon-park-outline:github" />
+              <Icon
+                style={{ fontSize: '24px' }}
+                icon={project.error ? 'icon-park-outline:attention' : 'icon-park-outline:github'}
+              />
               {project.repo}
             </a>
           ))}
