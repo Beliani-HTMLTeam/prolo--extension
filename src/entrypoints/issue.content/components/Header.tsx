@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Icon } from '@iconify/react';
 import IssueInfo from './IssueInfo';
 import styles from '../styles/header.module.scss';
@@ -12,14 +13,16 @@ type HeaderProps = {
   priorityName: string;
   priorityColor: string;
   boardColumnName: string;
-  checkpointsDone: number;
-  checkpointsTotal: number;
   issueDate?: string;
   dueDate?: Date | null;
   dueDateName?: string | null;
   dueDateText?: string | null;
   issueCreatedAt?: string;
   tags?: string[];
+  progress?: ReactNode;
+  links?: ReactNode;
+  action?: ReactNode;
+  deadlineOnPreviousFriday?: boolean;
 };
 
 const Header = ({
@@ -31,14 +34,16 @@ const Header = ({
   priorityName,
   priorityColor,
   boardColumnName,
-  checkpointsDone,
-  checkpointsTotal,
   issueDate,
   dueDate,
   dueDateName,
   dueDateText,
   issueCreatedAt,
   tags = [],
+  progress,
+  links,
+  action,
+  deadlineOnPreviousFriday = false,
 }: HeaderProps) => {
   let titleDate: Date | null = null;
   if (issueDate) {
@@ -48,10 +53,16 @@ const Header = ({
     }
   }
 
+  let titleDeadline = titleDate;
+  if (titleDate && deadlineOnPreviousFriday) {
+    const back = ((titleDate.getDay() - 5 + 7) % 7) || 7;
+    titleDeadline = new Date(titleDate.getFullYear(), titleDate.getMonth(), titleDate.getDate() - back);
+  }
+
   const calendarDate = dueDate ?? titleDate;
   // date shown in the deadline box: due date field, or the date from the issue title (newsletters, banners)
   // unless the due date field holds free text, which is then shown as-is
-  const deadlineDate = dueDate ?? (dueDateText ? null : titleDate);
+  const deadlineDate = dueDate ?? (dueDateText ? null : titleDeadline);
   const deadlineName = dueDate || dueDateText ? dueDateName : 'Deadline';
 
   const getCalendarDateString = (date: Date) => {
@@ -63,9 +74,41 @@ const Header = ({
 
   return (
     <div className={styles.header}>
-      <div className={styles.headerLeft}>
-        <IssueInfo title={issueTitle} description={issueDescription} />
-        <div className={styles.deadlineAndActions}>
+      <div className={styles.topRow}>
+        <IssueInfo
+          title={issueTitle}
+          description={issueDescription}
+          badges={
+            <>
+              {priorityName &&
+            (() => {
+              const isHighSeverity = /high|urgent|critical/i.test(priorityName);
+              return (
+                <span
+                  className={`${styles.metaBadge} ${isHighSeverity ? styles.priorityHigh : ''}`}
+                  style={
+                    isHighSeverity
+                      ? { backgroundColor: priorityColor, borderColor: priorityColor }
+                      : { borderColor: priorityColor }
+                  }
+                >
+                  <Icon
+                    icon={isHighSeverity ? 'mdi:flag' : 'mdi:flag-outline'}
+                    width="13"
+                    style={isHighSeverity ? {} : { color: priorityColor }}
+                  />
+                  {priorityName}
+                </span>
+              );
+            })()}
+              {status && <span className={`${styles.metaBadge} ${styles[`status--${status}`]}`}>{status}</span>}
+            </>
+          }
+        />
+        {action && <div className={styles.topActions}>{action}</div>}
+      </div>
+
+      <div className={styles.deadlineAndActions}>
           {!deadlineDate && dueDateText && (
             <div className={styles.deadlineWrapper}>
               <div className={styles.deadlineInfo}>
@@ -149,72 +192,59 @@ const Header = ({
               })()}
             </div>
           )}
-        </div>
-      </div>
+          {progress}
+          {links}
 
-      <div className={styles.meta}>
-        {(issueTypes.length > 0 || tags.length > 0) && (
-          <div className={styles.typeTags}>
-            {issueTypes.map(type => (
-              <span
-                key={type.id}
-                className={styles.typeTag}
-                style={{ '--type-color': type.color ?? '#ebf5ff' } as React.CSSProperties}
-              >
-                {type.name}
-              </span>
-            ))}
-            {tags.map(tag => (
-              <span key={`tag-${tag}`} className={styles.typeTag} title="Newsletter TAG">
-                <Icon icon="mdi:tag-outline" width="11" />
-                {tag}
-              </span>
-            ))}
+          <div className={styles.stripMeta}>
+            {issueTypes.length > 0 && (
+              <div className={styles.headerCard}>
+                <span className={styles.headerCardLabel}>Type</span>
+                <div className={styles.headerCardBody}>
+                  {issueTypes.map(type => (
+                    <span
+                      key={type.id}
+                      className={styles.typeTag}
+                      style={{ '--type-color': type.color ?? '#ebf5ff' } as React.CSSProperties}
+                    >
+                      {type.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {tags.length > 0 && (
+              <div className={styles.headerCard}>
+                <span className={styles.headerCardLabel}>Tags</span>
+                <div className={styles.headerCardBody}>
+                  {tags.map(tag => (
+                    <span key={`tag-${tag}`} className={styles.typeTag} title="Newsletter TAG">
+                      <Icon icon="mdi:tag-outline" width="11" />
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(solvingUserName || boardColumnName) && (
+              <div className={styles.headerCard}>
+                <span className={styles.headerCardLabel}>Owner</span>
+                <div className={styles.headerCardBody}>
+                  {solvingUserName && (
+                    <span className={styles.plainMeta}>
+                      <Icon icon="mdi:account-outline" width="13" />
+                      {solvingUserName}
+                    </span>
+                  )}
+                  {boardColumnName && (
+                    <span className={styles.plainMeta}>
+                      <Icon icon="mdi:view-column-outline" width="13" />
+                      {boardColumnName}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        )}
-
-        <div className={styles.metaRow}>
-          {solvingUserName && (
-            <span className={styles.metaBadge}>
-              <Icon icon="mdi:account-outline" width="13" />
-              {solvingUserName}
-            </span>
-          )}
-          {priorityName &&
-            (() => {
-              const isHighSeverity = /high|urgent|critical/i.test(priorityName);
-              return (
-                <span
-                  className={`${styles.metaBadge} ${isHighSeverity ? styles.priorityHigh : ''}`}
-                  style={
-                    isHighSeverity
-                      ? { backgroundColor: priorityColor, borderColor: priorityColor }
-                      : { borderColor: priorityColor }
-                  }
-                >
-                  <Icon
-                    icon={isHighSeverity ? 'mdi:flag' : 'mdi:flag-outline'}
-                    width="13"
-                    style={isHighSeverity ? {} : { color: priorityColor }}
-                  />
-                  {priorityName}
-                </span>
-              );
-            })()}
-          {boardColumnName && (
-            <span className={styles.metaBadge}>
-              <Icon icon="mdi:view-column-outline" width="13" />
-              {boardColumnName}
-            </span>
-          )}
-          {checkpointsTotal > 0 && (
-            <span title={`${checkpointsTotal - checkpointsDone} missing banners`} className={styles.metaBadge}>
-              <Icon icon="mdi:checkbox-marked-outline" width="13" />
-              Campaign Banners: {checkpointsDone}/{checkpointsTotal}
-            </span>
-          )}
-          {status && <span className={`${styles.metaBadge} ${styles[`status--${status}`]}`}>{status}</span>}
-        </div>
       </div>
     </div>
   );

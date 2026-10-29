@@ -48,11 +48,6 @@ export const COLUMN_GROUPS: Array<{ key: string; label: string; columnIds: strin
       COLUMN_IDS.LP_B_ACCEPTED,
     ],
   },
-  {
-    key: 'utility',
-    label: 'Timer/Push',
-    columnIds: [COLUMN_IDS.TIMER_DONE, COLUMN_IDS.PUSH_DONE],
-  },
 ];
 
 export const TABLE_HEADERS = [
@@ -73,8 +68,6 @@ export const CGB_HEADERS = ['SHOP', 'Test Request'];
 export const createNewsletterColumns = (
   hasGroupedNslt: boolean,
   hasGroupedLp: boolean,
-  showTimer: boolean,
-  showPush: boolean,
   options?: {
     includeTranslations?: boolean;
     includeLp?: boolean;
@@ -88,16 +81,6 @@ export const createNewsletterColumns = (
   if (includeTranslations) {
     columns.push({ id: COLUMN_IDS.TRANSLATIONS, label: 'Translations', kind: 'request' });
   }
-
-  if (showTimer) {
-    columns.push({ id: COLUMN_IDS.TIMER_DONE, label: 'Timer Done', kind: 'status' });
-  }
-  if (showPush) {
-    columns.push({ id: COLUMN_IDS.PUSH_DONE, label: 'Push Done', kind: 'status' });
-  }
-
-  columns.push({ id: COLUMN_IDS.TEST_SENT, label: 'Test Sent', kind: 'status' });
-  columns.push({ id: COLUMN_IDS.TEST_REQUEST, label: 'Test Request', kind: 'request' });
 
   if (hasGroupedNslt) {
     columns.push({ id: COLUMN_IDS.NSLT_A_ID, label: 'NSLT A ID', kind: 'link', openAllLinks: true });
@@ -126,7 +109,7 @@ export const createNewsletterColumns = (
 
 export const createCgbColumns = (
   dynamicColumns: Array<{ id: string; label: string }>,
-  options?: { includeTranslations?: boolean; includeTestSent?: boolean },
+  options?: { includeTranslations?: boolean },
 ): ChecklistColumn[] => {
   const columns: ChecklistColumn[] = [{ id: COLUMN_IDS.SHOP, label: 'SHOP', kind: 'shop' }];
 
@@ -135,12 +118,6 @@ export const createCgbColumns = (
   }
 
   columns.push(...dynamicColumns.map(column => ({ id: column.id, label: column.label, kind: 'status' as const })));
-
-  if (options?.includeTestSent) {
-    columns.push({ id: COLUMN_IDS.TEST_SENT, label: 'Test Sent', kind: 'status' });
-  }
-
-  columns.push({ id: COLUMN_IDS.TEST_REQUEST, label: 'Test Request', kind: 'request' });
 
   return columns;
 };

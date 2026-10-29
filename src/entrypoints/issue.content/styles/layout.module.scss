@@ -64,7 +64,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: 10;
+  z-index: 100;
   width: 280px;
   max-height: 300px;
   overflow-y: auto;
@@ -81,6 +81,15 @@
 .popoverPanelWide {
   width: 420px;
   max-width: calc(100vw - 48px);
+}
+
+.popoverGroupLabel {
+  padding: 6px 8px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: $grey-text;
 }
 
 .popoverList {
@@ -138,28 +147,29 @@
 }
 
 .linkChipCount {
-  min-width: 18px;
-  padding: 0 6px;
-  border-radius: 10px;
+  min-width: 16px;
+  padding: 0 5px;
+  border-radius: 8px;
   background: $grey-border-dark;
-  font-size: 11px;
-  line-height: 18px;
+  font-size: 10px;
+  line-height: 16px;
   text-align: center;
 }
 
 .linkChipActive {
-  border-color: $happy-red;
+  background: $soft-peach !important;
+  color: $happy-red !important;
 }
 
 .linkChip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: $pure-white !important;
-  border: 1.5px solid $grey-border-dark;
-  border-radius: 20px;
-  font-size: 12px;
+  gap: 5px;
+  padding: 3px 8px;
+  background: transparent !important;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 500;
   color: $dawn-grey !important;
   text-decoration: none !important;
@@ -168,11 +178,19 @@
   white-space: nowrap;
   font-family: 'Poppins', sans-serif;
 
+  svg {
+    color: $grey-text;
+    transition: color 0.15s ease;
+  }
+
   &:hover {
     background: $soft-peach !important;
-    border-color: $happy-red;
     color: $happy-red !important;
     text-decoration: none !important;
+
+    svg {
+      color: $happy-red;
+    }
   }
 
   &:active {

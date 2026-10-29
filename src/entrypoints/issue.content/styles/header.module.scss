@@ -3,26 +3,77 @@
 
 .header {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
-  justify-content: space-between;
   padding: 12px;
   color: $dawn-grey;
   background: $soft-peach;
 
-  .headerLeft {
+  .topRow {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 60%;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .topActions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .titleLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
   }
 
   .deadlineAndActions {
     display: flex;
     flex-direction: row;
+    flex-wrap: nowrap;
     align-items: stretch;
-    gap: 8px;
-    margin-top: 4px;
+    width: 100%;
+    background: $pure-white;
+    border: 1px solid $grey-border-dark;
+    border-radius: 8px;
+
+    > * + * {
+      border-left: 1px solid $grey-border;
+    }
+
+    .stripMeta {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      min-width: 0;
+      margin-left: auto;
+
+      > * + * {
+        border-left: 1px solid $grey-border;
+      }
+    }
+
+    .typeTag {
+      padding: 2px 6px;
+      background: transparent;
+      border: none;
+    }
+
+    .plainMeta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: 500;
+      color: $dawn-grey;
+      white-space: nowrap;
+    }
   }
 
   .actionsRow {
@@ -30,7 +81,6 @@
   }
 
   .actionBtn {
-    border-radius: 8px;
     font-family: 'Poppins', sans-serif;
     text-decoration: none;
     display: inline-flex;
@@ -39,9 +89,8 @@
     justify-content: center;
     gap: 4px;
     cursor: pointer;
-    background: $pure-white;
-    border: 1px solid $grey-border-dark;
-    padding: 8px 12px;
+    background: transparent;
+    padding: 8px 16px;
     color: $grey-dark;
     font-size: 11px;
     font-weight: 500;
@@ -69,71 +118,6 @@
       font-weight: 600;
     }
   }
-
-  .buttons {
-    display: flex;
-    gap: 6px;
-    flex-direction: row;
-
-    button {
-      border-radius: 6px;
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-      background: $soft-peach;
-      border: 2px solid $cozy-brown;
-      padding: 8px 12px;
-      color: $cozy-brown;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-
-      svg {
-        width: 16px;
-        height: 16px;
-        display: flex;
-        flex-shrink: 0;
-      }
-
-      span {
-        display: inline;
-      }
-
-      &:hover {
-        background: color.adjust($soft-peach, $lightness: -8%);
-        border-color: color.adjust($cozy-brown, $lightness: -10%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      &:active {
-        background: color.adjust($soft-peach, $lightness: -12%);
-        border-color: $cozy-brown;
-        transform: translateY(0);
-        box-shadow: none;
-      }
-    }
-  }
-}
-
-.meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.typeTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
 }
 
 .typeTag {
@@ -160,13 +144,6 @@
     flex-shrink: 0;
     border: 1px solid rgba(0, 0, 0, 0.12);
   }
-}
-
-.metaRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
 }
 
 .metaBadge {
@@ -205,11 +182,9 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: flex-start;
   gap: 4px;
-  background: $pure-white;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid $grey-border-dark;
+  padding: 8px 16px;
   min-width: 220px;
 }
 
@@ -219,6 +194,7 @@
   width: 100%;
   font-family: 'Poppins', sans-serif;
   font-size: 12px;
+  line-height: 16px;
 }
 
 .deadlineName {
@@ -278,4 +254,30 @@
   font-weight: 600;
   color: $grey-dark;
   white-space: nowrap;
+}
+
+.headerCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 8px 16px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.headerCardLabel {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: $grey-dark;
+}
+
+.headerCardBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 24px;
+  gap: 2px;
 }

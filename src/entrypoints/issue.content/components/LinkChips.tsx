@@ -3,8 +3,6 @@ import styles from '../styles/layout.module.scss';
 import type { IssueLink } from '../lib/types';
 import ChipPopover from './ChipPopover';
 
-const MAX_VISIBLE_CHIPS = 6;
-
 const LINK_ICON_MAP: [string, string][] = [
   ['figma', 'simple-icons:figma'],
   ['spreadsheet', 'mdi:google-spreadsheet'],
@@ -121,54 +119,46 @@ ${link.url}`}
   </div>
 );
 
-const GroupChip = ({ group }: { group: LinkGroup }) => {
-  const icon = <Icon icon={getLinkIcon(`${group.label} ${getHost(group.links[0].url)}`)} width="14" height="14" />;
-
-  if (group.links.length === 1) {
-    const [link] = group.links;
-    return (
-      <a href={link.url} target="_blank" rel="noopener noreferrer" className={styles.linkChip} title={link.name}>
-        {icon}
-        <span className={styles.linkChipLabel}>{group.label}</span>
-      </a>
-    );
-  }
+const LinksDropdown = ({ links }: { links: IssueLink[] }) => {
+  const groups = groupLinks(links);
+  if (groups.length === 0) return null;
 
   return (
     <ChipPopover
-      title={group.links.map(link => link.name).join('\n')}
+      title={`${links.length} links`}
       trigger={
         <>
-          {icon}
-          <span className={styles.linkChipLabel}>{group.label}</span>
-          <span className={styles.linkChipCount}>{group.links.length}</span>
+          <Icon icon="mdi:link-variant" width="14" height="14" />
+          <span className={styles.linkChipLabel}>Open link</span>
+          <span className={styles.linkChipCount}>{links.length}</span>
+          <Icon icon="mdi:chevron-down" width="14" height="14" />
         </>
       }
     >
-      <LinkList links={group.links} />
+      <div className={styles.popoverList}>
+        {groups.map(group =>
+          group.links.length === 1 ? (
+            <a
+              key={group.key}
+              href={group.links[0].url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.popoverLink}
+              title={`${group.links[0].name}\n${group.links[0].url}`}
+            >
+              <Icon icon={getLinkIcon(`${group.label} ${getHost(group.links[0].url)}`)} width="14" height="14" />
+              <span className={styles.popoverLinkText}>{group.label}</span>
+            </a>
+          ) : (
+            <div key={group.key}>
+              <div className={styles.popoverGroupLabel}>{group.label}</div>
+              <LinkList links={group.links} />
+            </div>
+          ),
+        )}
+      </div>
     </ChipPopover>
   );
 };
 
-// one chip per link kind, repeated kinds collapse into a counted dropdown, overflow goes into "+N"
-const LinkChips = ({ links }: { links: IssueLink[] }) => {
-  const groups = groupLinks(links);
-  const visible = groups.slice(0, MAX_VISIBLE_CHIPS);
-  const hidden = groups.slice(MAX_VISIBLE_CHIPS);
-  const hiddenLinks = hidden.flatMap(group => group.links);
-
-  return (
-    <>
-      {visible.map(group => (
-        <GroupChip key={group.key} group={group} />
-      ))}
-      {hiddenLinks.length > 0 && (
-        <ChipPopover trigger={<span className={styles.linkChipLabel}>+{hiddenLinks.length} more</span>}>
-          <LinkList links={hiddenLinks} />
-        </ChipPopover>
-      )}
-    </>
-  );
-};
-
-export default LinkChips;
+export default LinksDropdown;

@@ -1,6 +1,7 @@
 import styles from '../../styles/FamilyTable.module.scss';
+import { COLUMN_IDS } from '../../api/checklistShared';
 import { Icon } from '@iconify/react';
-import { getLinkUrl, getLinkValue } from './cellHelpers';
+import { getLinkUrl, getLinkValue, getStatusValue, isColumnHiddenForRow } from './cellHelpers';
 import type { ChecklistColumn, ChecklistTableRow } from '../../lib/types';
 
 type TableHeadersProps = {
@@ -26,8 +27,23 @@ const openAllLinksFromColumn = (column: ChecklistColumn, rows: ChecklistTableRow
   });
 };
 
+const getColumnProgress = (column: ChecklistColumn, rows: ChecklistTableRow[], isCgbView: boolean) => {
+  if (column.kind !== 'status' && column.id !== COLUMN_IDS.TRANSLATIONS) return null;
+
+  const relevant = rows.filter(
+    row => row.columnStatuses?.[column.id] !== undefined && !isColumnHiddenForRow(column.id, row, isCgbView),
+  );
+  if (relevant.length === 0) return null;
+
+  const done = relevant.filter(row => getStatusValue(row, column.id) === 1).length;
+  return { done, total: relevant.length };
+};
+
 export const TableHeaders = ({ columns, rows }: TableHeadersProps) => {
+  const isCgbView = columns.some(column => column.id.startsWith('cgb:'));
+
   return columns.map(column => {
+    const progress = getColumnProgress(column, rows, isCgbView);
     const isClickable = column.kind === 'link' && column.openAllLinks;
 
     return (
@@ -42,7 +58,9 @@ export const TableHeaders = ({ columns, rows }: TableHeadersProps) => {
           justifyContent: 'center',
           gap: '4px',
         }}
-        title={isClickable ? `Click to open all ${column.label} links` : ''}
+        title={[isClickable && `Click to open all ${column.label} links`, progress && `${progress.done} of ${progress.total} done`]
+          .filter(Boolean)
+          .join('\n')}
       >
         {column.label}
         {isClickable && <Icon icon="charm:link-external" width="12" height="12" style={{ marginLeft: '2px' }} />}

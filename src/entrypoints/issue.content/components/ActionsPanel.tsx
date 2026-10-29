@@ -1,18 +1,18 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import styles from '../styles/layout.module.scss';
 import chatStyles from '../styles/chat.module.scss';
 import { CommentsView } from './CommentsView';
 import GenerateChecklistModal from './GenerateChecklistModal';
-import type { ChecklistMode, ChecklistTableData, IssueExtraField, IssueLink } from '../lib/types';
-import ExtraFieldsMenu from './ExtraFieldsMenu';
-import LinkChips from './LinkChips';
+import type { ChecklistMode, ChecklistTableData } from '../lib/types';
+import ActionsMenu, { type ActionsMenuItem } from './ActionsMenu';
 import { getShopId } from '../lib/shopIdMap';
 import { LP_SHOPS_ORDER, SHOP_DOMAIN_MAP } from '../lib/shopConfig';
 import { fetchLandingPageAliases } from '../api/shopContentService';
 import PlanningModal from './PlanningModal';
 import UpdaterModal from './UpdaterModal';
+import { START_PLANNING_EVENT } from '../lib/dashboardEvents';
+import { isPlanningAllowed } from '@/entrypoints/issue.content/utils/planning/isPlanningAllowed';
 import { useTableDataIds } from '@/entrypoints/issue.content/utils/updater/hooks/useTableDataIds';
-import ActionButton from '@/components/Button';
 
 type ActionsPanelProps = {
   tableData: ChecklistTableData | null;
@@ -20,8 +20,6 @@ type ActionsPanelProps = {
   mode?: ChecklistMode;
   showDashboardActions?: boolean;
   showRenameChecklists?: boolean;
-  issueLinks?: IssueLink[];
-  extraFields?: IssueExtraField[];
   issueDate?: string;
   onGeneratedChecklist?: () => Promise<void> | void;
   onStartPlanning?: (chdeId: string | null) => Promise<void> | void;
@@ -41,14 +39,11 @@ const ActionsPanel = ({
   mode,
   showDashboardActions,
   showRenameChecklists = false,
-  issueLinks = [],
-  extraFields = [],
   issueDate,
   onGeneratedChecklist,
   onStartPlanning,
 }: ActionsPanelProps) => {
   const shouldShowActions = showDashboardActions ?? mode !== 'cgb';
-  const showExtraFields = (mode === 'graphics' || mode === 'campaign') && extraFields.length > 0;
   const shouldShowSLPTUpdater = mode === 'newsletter' || mode === 'sunday';
   const hasLpActions = mode !== 'sunday';
   const hasGroupedNslt = tableData?.hasGroupedNslt ?? false;
@@ -65,15 +60,13 @@ const ActionsPanel = ({
 
   const { newsletterIds, landingPageIds } = useTableDataIds(rows);
 
-  const isPlanningAllowed = useMemo(() => {
-    if (mode === 'cgb') {
-      return false;
-    }
-    if (mode === 'sunday') {
-      return rows.length > 0 && rows.every(r => r.columnStatuses.nsltAccepted === 1);
-    }
-    return true;
-  }, [mode, rows]);
+  const canPlan = shouldShowActions && isPlanningAllowed(mode, rows);
+  useEffect(() => {
+    if (!canPlan) return;
+    const open = () => setShowPlanningModal(true);
+    document.addEventListener(START_PLANNING_EVENT, open);
+    return () => document.removeEventListener(START_PLANNING_EVENT, open);
+  }, [canPlan]);
 
   const filteredRows = useMemo(() => {
     if (mode === 'sunday') {
@@ -188,236 +181,86 @@ const ActionsPanel = ({
   const openLpShopsTestA = useOpenButton(useCallback(() => buildLpShopsTestLinks('lpAId'), [rows]));
   const openLpShopsTestB = useOpenButton(useCallback(() => buildLpShopsTestLinks('lpBId'), [rows]));
 
+  const copyItem = (key: string, label: string, icon: string, action: { copied: boolean; loading?: boolean; onClick: () => void }): ActionsMenuItem => ({
+    key,
+    label: action.loading ? 'Loading...' : label,
+    icon,
+    done: action.copied,
+    disabled: action.loading,
+    keepOpen: true,
+    onClick: action.onClick,
+  });
+
+  const openItem = (key: string, label: string, icon: string, action: { loading?: boolean; onClick: () => void }): ActionsMenuItem => ({
+    key,
+    label: action.loading ? 'Loading...' : label,
+    icon,
+    disabled: action.loading,
+    onClick: action.onClick,
+  });
+
+  const copyItems: ActionsMenuItem[] = [
+    ...(hasGroupedNslt
+      ? [copyItem('copy-nslt-a', 'NSLT A Prolo', 'mdi:link-variant', nsltA), copyItem('copy-nslt-b', 'NSLT B Prolo', 'mdi:link-variant', nsltB)]
+      : [copyItem('copy-nslt', 'NSLT Prolo', 'mdi:link-variant', nslt)]),
+    ...(hasLpActions
+      ? [
+          ...(hasGroupedLp
+            ? [copyItem('copy-lp-a', 'Prolo Test A', 'mdi:link-variant', lpA), copyItem('copy-lp-b', 'Prolo Test B', 'mdi:link-variant', lpB)]
+            : [copyItem('copy-lp', 'LP Prolo', 'mdi:link-variant', lp)]),
+          ...(hasGroupedLp
+            ? [copyItem('copy-shop-a', 'Shop Test A', 'mdi:web', lpShopsTestA), copyItem('copy-shop-b', 'Shop Test B', 'mdi:web', lpShopsTestB)]
+            : [copyItem('copy-lp-shops', 'LP Shops', 'mdi:web', lpShops)]),
+        ]
+      : []),
+  ];
+
+  const openItems: ActionsMenuItem[] = [
+    ...(hasGroupedNslt
+      ? [openItem('open-nslt-a', 'NSLT A Prolo', 'mdi:link-variant', openNsltA), openItem('open-nslt-b', 'NSLT B Prolo', 'mdi:link-variant', openNsltB)]
+      : [openItem('open-nslt', 'NSLT Prolo', 'mdi:link-variant', openNslt)]),
+    ...(hasLpActions
+      ? [
+          ...(hasGroupedLp
+            ? [openItem('open-lp-a', 'Prolo Test A', 'mdi:link-variant', openLpA), openItem('open-lp-b', 'Prolo Test B', 'mdi:link-variant', openLpB)]
+            : [openItem('open-lp', 'LP Prolo', 'mdi:link-variant', openLp)]),
+          ...(hasGroupedLp
+            ? [openItem('open-shop-a', 'Shop Test A', 'mdi:web', openLpShopsTestA), openItem('open-shop-b', 'Shop Test B', 'mdi:web', openLpShopsTestB)]
+            : [openItem('open-lp-shops', 'LP Shops', 'mdi:web', openLpShops)]),
+        ]
+      : []),
+  ];
+
+  const menuItems: ActionsMenuItem[] = [
+    ...(shouldShowActions
+      ? [
+          ...(shouldShowSLPTUpdater
+            ? [
+                {
+                  key: 'update-slpt',
+                  label: mode === 'newsletter' ? 'Update SL/PT' : 'Update SL',
+                  icon: 'mdi:format-title',
+                  primary: true,
+                  onClick: () => setShowSLPTUpdaterModal(true),
+                },
+              ]
+            : []),
+          { key: 'generate', label: 'Generate Checklists', icon: 'mdi:auto-fix', primary: true, onClick: () => setShowGenerateModal(true) },
+          { key: 'copy', label: 'Copy...', icon: 'mdi:content-copy', children: copyItems },
+          { key: 'open', label: 'Open...', icon: 'mdi:open-in-new', children: openItems },
+        ]
+      : []),
+  ];
+
   return (
     <div className={styles.rightPanel}>
-      {/* links from response.additional_fields, plus brief/notes for issues without a standard checklist flow */}
-      {(issueLinks.length > 0 || showExtraFields) && (
-        <div className={styles.linkChipsRow}>
-          <LinkChips links={issueLinks} />
-          {showExtraFields && <ExtraFieldsMenu fields={extraFields} />}
-        </div>
-      )}
-
-      {shouldShowActions && (
-        <div className={styles.actionsContainer}>
-          <div className={styles.actionsGrid}>
-            {shouldShowSLPTUpdater && (
-              <ActionButton
-                variant="primary"
-                label={mode === 'newsletter' ? 'Update SL/PT' : 'Update SL'}
-                icon="mdi:format-title"
-                onClick={() => setShowSLPTUpdaterModal(true)}
-              />
-            )}
-            <ActionButton
-              variant="primary"
-              label="Generate Checklists"
-              icon="mdi:auto-fix"
-              onClick={() => setShowGenerateModal(true)}
-            />
-
-            <div className={styles.dropdownWrapper}>
-              <ActionButton
-                variant="ghost"
-                label="Copy..."
-                icon="mdi:content-copy"
-                onClick={() => {}}
-								
-              />
-              <div className={styles.dropdownMenu}>
-                {hasGroupedNslt ? (
-                  <>
-                    <ActionButton
-                      variant="ghost"
-                      label="Copy NSLT A Prolo"
-                      icon="mdi:link-variant"
-                      copied={nsltA.copied}
-                      onClick={nsltA.onClick}
-                    />
-                    <ActionButton
-                      variant="ghost"
-                      label="Copy NSLT B Prolo"
-                      icon="mdi:link-variant"
-                      copied={nsltB.copied}
-                      onClick={nsltB.onClick}
-                    />
-                  </>
-                ) : (
-                  <ActionButton
-                    variant="ghost"
-                    label="Copy NSLT Prolo"
-                    icon="mdi:link-variant"
-                    copied={nslt.copied}
-                    onClick={nslt.onClick}
-                  />
-                )}
-
-                {hasLpActions && (
-                  <>
-                    {hasGroupedLp ? (
-                      <>
-                        <ActionButton
-                          variant="ghost"
-                          label="Copy Prolo Test A"
-                          icon="mdi:link-variant"
-                          copied={lpA.copied}
-                          onClick={lpA.onClick}
-                        />
-                        <ActionButton
-                          variant="ghost"
-                          label="Copy Prolo Test B"
-                          icon="mdi:link-variant"
-                          copied={lpB.copied}
-                          onClick={lpB.onClick}
-                        />
-                      </>
-                    ) : (
-                      <ActionButton
-                        variant="ghost"
-                        label="Copy LP Prolo"
-                        icon="mdi:link-variant"
-                        copied={lp.copied}
-                        onClick={lp.onClick}
-                      />
-                    )}
-
-                    {hasGroupedLp ? (
-                      <>
-                        <ActionButton
-                          variant="ghost"
-                          label={lpShopsTestA.loading ? 'Loading...' : 'Copy Shop Test A'}
-                          icon="mdi:web"
-                          copied={lpShopsTestA.copied}
-                          disabled={lpShopsTestA.loading}
-                          onClick={lpShopsTestA.onClick}
-                        />
-                        <ActionButton
-                          variant="ghost"
-                          label={lpShopsTestB.loading ? 'Loading...' : 'Copy Shop Test B'}
-                          icon="mdi:web"
-                          copied={lpShopsTestB.copied}
-                          disabled={lpShopsTestB.loading}
-                          onClick={lpShopsTestB.onClick}
-                        />
-                      </>
-                    ) : (
-                      <ActionButton
-                        variant="ghost"
-                        label="Copy LP Shops"
-                        icon="mdi:web"
-                        copied={lpShops.copied}
-                        onClick={lpShops.onClick}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.dropdownWrapper}>
-              <ActionButton
-                variant="ghost"
-                label="Open..."
-                icon="mdi:open-in-new"
-                onClick={() => {}}
-              />
-              <div className={styles.dropdownMenu}>
-                {hasGroupedNslt ? (
-                  <>
-                    <ActionButton
-                      variant="ghost"
-                      label="Open NSLT A Prolo"
-                      icon="mdi:link-variant"
-                      onClick={openNsltA.onClick}
-                    />
-                    <ActionButton
-                      variant="ghost"
-                      label="Open NSLT B Prolo"
-                      icon="mdi:link-variant"
-                      onClick={openNsltB.onClick}
-                    />
-                  </>
-                ) : (
-                  <ActionButton
-                    variant="ghost"
-                    label="Open NSLT Prolo"
-                    icon="mdi:link-variant"
-                    onClick={openNslt.onClick}
-                  />
-                )}
-
-                {hasLpActions && (
-                  <>
-                    {hasGroupedLp ? (
-                      <>
-                        <ActionButton
-                          variant="ghost"
-                          label="Open Prolo Test A"
-                          icon="mdi:link-variant"
-                          onClick={openLpA.onClick}
-                        />
-                        <ActionButton
-                          variant="ghost"
-                          label="Open Prolo Test B"
-                          icon="mdi:link-variant"
-                          onClick={openLpB.onClick}
-                        />
-                      </>
-                    ) : (
-                      <ActionButton
-                        variant="ghost"
-                        label="Open LP Prolo"
-                        icon="mdi:link-variant"
-                        onClick={openLp.onClick}
-                      />
-                    )}
-
-                    {hasGroupedLp ? (
-                      <>
-                        <ActionButton
-                          variant="ghost"
-                          label={openLpShopsTestA.loading ? 'Loading...' : 'Open Shop Test A'}
-                          icon="mdi:web"
-                          disabled={openLpShopsTestA.loading}
-                          onClick={openLpShopsTestA.onClick}
-                        />
-                        <ActionButton
-                          variant="ghost"
-                          label={openLpShopsTestB.loading ? 'Loading...' : 'Open Shop Test B'}
-                          icon="mdi:web"
-                          disabled={openLpShopsTestB.loading}
-                          onClick={openLpShopsTestB.onClick}
-                        />
-                      </>
-                    ) : (
-                      <ActionButton
-                        variant="ghost"
-                        label="Open LP Shops"
-                        icon="mdi:web"
-                        onClick={openLpShops.onClick}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {isPlanningAllowed && (
-            <ActionButton
-              variant="primary"
-              label="Start Planning"
-              icon="mdi:web"
-              onClick={() => setShowPlanningModal(true)}
-            />
-          )}
-        </div>
-      )}
-
       <div className={chatStyles.chatPreview}>
         <div className={chatStyles.chatPreviewHeader}>
-          <h3>Chat Preview</h3>
-          <div className={chatStyles.chatHeaderButtons} id={`chat-buttons-${issueId}`}></div>
+          <div className={chatStyles.chatHeaderFilters} id={`chat-filters-${issueId}`}></div>
+          <div className={chatStyles.chatHeaderRight}>
+            <div className={chatStyles.chatHeaderButtons} id={`chat-buttons-${issueId}`}></div>
+            <ActionsMenu items={menuItems} />
+          </div>
         </div>
         <div className={chatStyles.chatContent}>
           <CommentsView
@@ -425,6 +268,7 @@ const ActionsPanel = ({
             mode={mode}
             showRenameChecklists={showRenameChecklists}
             onRenamed={onGeneratedChecklist}
+            rows={tableData?.rows}
           />
         </div>
       </div>

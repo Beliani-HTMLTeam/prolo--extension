@@ -5,7 +5,7 @@ import { createCgbColumns, createRow, normalizeTitle, parseCheckpointDescription
 export const mapCgbChecklistsToTableData = (
   apiResponse: ChecklistApiResponse,
   newsletterApiResponse?: ChecklistApiResponse | null,
-  options?: { isGraphicsMode?: boolean }
+  options?: { isGraphicsMode?: boolean; includeTestSent?: boolean }
 ): ChecklistTableData => {
   const rowsByShop = new Map<string, ChecklistTableRow>();
   const includedChecklists = (apiResponse.checklists ?? [])
@@ -81,15 +81,13 @@ export const mapCgbChecklistsToTableData = (
   }
 
   // columns only make sense when the source checklist exists (e.g. CGB issues have neither)
-  let hasTestSent = false;
   let hasTranslations = false;
 
   if (options?.isGraphicsMode) {
     const testSentChecklist = (apiResponse.checklists ?? []).find(
       c => normalizeTitle(c.title) === CHECKLIST_TITLES_NORM.SENT_NSLT_LP_FOR_TESTING
     );
-    if (testSentChecklist) {
-      hasTestSent = true;
+    if (testSentChecklist && options.includeTestSent !== false) {
       for (const checkpoint of testSentChecklist.checkpoints ?? []) {
         const parsed = parseCheckpointDescription(checkpoint.description || '');
         if (!parsed) continue;
@@ -142,9 +140,6 @@ export const mapCgbChecklistsToTableData = (
   // checklists without any shop checkpoint (e.g. photostudio steps in Content Graphics) would be empty columns
   const usedColumns = dynamicColumns.filter(column => rows.some(row => row.columnStatuses[column.id] !== undefined));
 
-  const columns = createCgbColumns(usedColumns, {
-    includeTranslations: hasTranslations,
-    includeTestSent: hasTestSent,
-  });
+  const columns = createCgbColumns(usedColumns, { includeTranslations: hasTranslations });
   return { headers: columns.map(column => column.label), columns, rows, hasGroupedNslt: false };
 };

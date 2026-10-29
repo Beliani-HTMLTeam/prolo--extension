@@ -1,0 +1,124 @@
+@use '@/assets/styles/variables' as *;
+
+.wrapper {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: $pure-white;
+  border: 1.5px solid $grey-border-dark;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  color: $dawn-grey;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: $happy-red;
+    color: $happy-red;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.triggerActive {
+  border-color: $happy-red;
+  color: $happy-red;
+}
+
+.badge {
+  min-width: 16px;
+  padding: 0 4px;
+  background: $happy-red;
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  color: $pure-white;
+}
+
+.popup {
+  z-index: 2137420;
+  width: 300px;
+  padding: 6px;
+  background: $pure-white;
+  border: 1px solid $grey-border-dark;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid $grey-border;
+
+  button {
+    flex: 1;
+    padding: 3px 0;
+    background: $light-grey;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+
+    &:hover {
+      background: $subtle-peach;
+    }
+  }
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 10px;
+  background: $pure-white;
+  border: 1px solid $grey-border-dark;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $dawn-grey;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: $subtle-peach;
+  }
+
+  svg {
+    color: #6d28d9;
+  }
+}
+
+.itemOn {
+  background: $happy-red;
+  border-color: $happy-red;
+  color: $pure-white;
+
+  &:hover {
+    background: $happy-red;
+  }
+
+  svg {
+    color: $pure-white;
+  }
+
+}

@@ -32,7 +32,8 @@ const sundayPlugin: IssueModePlugin = {
 const cgbPlugin: IssueModePlugin = {
   mode: 'cgb',
   showDashboardActions: false,
-  mapTableData: (apiResponse, _, newsletterApiResponse) => mapCgbChecklistsToTableData(apiResponse, newsletterApiResponse, { isGraphicsMode: true }),
+  mapTableData: (apiResponse, _, newsletterApiResponse) =>
+    mapCgbChecklistsToTableData(apiResponse, newsletterApiResponse, { isGraphicsMode: true, includeTestSent: false }),
 };
 
 const graphicsPlugin: IssueModePlugin = {

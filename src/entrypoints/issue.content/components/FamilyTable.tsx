@@ -23,7 +23,7 @@ const FamilyTable = ({ data, owner }: FamilyTableProps) => {
   }, [data.rows]);
 
   const columns = data.columns;
-  useMentionCommentSync(rows, columns, setRows);
+  useMentionCommentSync(rows, setRows);
 
   const hiddenColumnIds = useMemo(() => {
     const ids = new Set<string>();
@@ -41,10 +41,7 @@ const FamilyTable = ({ data, owner }: FamilyTableProps) => {
   return (
     <>
       <ColumnGroupToggle columns={columns} hiddenGroups={hiddenGroups} onToggle={toggleGroup} />
-      <div
-        className={styles.familyTable}
-        style={{ gridTemplateColumns: `repeat(${visibleColumns.length}, auto)` }}
-      >
+      <div className={styles.familyTable} style={{ gridTemplateColumns: `repeat(${visibleColumns.length}, auto)` }}>
         <TableHeaders columns={visibleColumns} rows={rows} />
         <TableRows
           columns={visibleColumns}

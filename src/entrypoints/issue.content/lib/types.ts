@@ -59,12 +59,16 @@ export type ChecklistTableRow = {
   order: number;
 };
 
+export type ProgressChip = { key: 'timer' | 'push'; label: string; missing: string[]; total: number };
+
 export type ChecklistTableData = {
   headers: string[];
   columns: ChecklistColumn[];
   rows: ChecklistTableRow[];
   hasGroupedNslt?: boolean;
   hasGroupedLp?: boolean;
+  progressChips?: ProgressChip[];
+  allTranslationsDone?: boolean;
 };
 
 export type ChecklistApiResponse = {

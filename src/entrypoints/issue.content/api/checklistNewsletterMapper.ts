@@ -4,6 +4,7 @@ import type {
   ChecklistApiResponse,
   ChecklistTableData,
   ChecklistTableRow,
+  ProgressChip,
   SpreadsheetTranslations,
 } from '../lib/types';
 import {
@@ -45,6 +46,19 @@ export const mapNewsletterChecklistsToTableData = (
   const orderIndex = new Map<string, number>();
   let hasGroupedNslt = false;
   let hasGroupedLp = false;
+
+  const allChecklists = apiResponse.checklists ?? [];
+  const hasShopTranslations = allChecklists.some(
+    checklist => normalizeTitle(checklist.title) === CHECKLIST_TITLES_NORM.NEWSLETTER_TRANSLATIONS,
+  );
+  const allTranslationsChecklist = allChecklists.find(
+    checklist => normalizeTitle(checklist.title) === CHECKLIST_TITLES_NORM.ALL_TRANSLATIONS_DONE,
+  );
+  const useAllTranslationsDone = !hasShopTranslations && !!allTranslationsChecklist;
+  const allTranslationsDone =
+    useAllTranslationsDone &&
+    (allTranslationsChecklist!.checkpoints ?? []).length > 0 &&
+    allTranslationsChecklist!.checkpoints.every(checkpoint => checkpoint.done === '1');
 
   TABLE_SHOP_ORDER.forEach((shop, index) => {
     orderIndex.set(shop, index);
@@ -281,19 +295,35 @@ export const mapNewsletterChecklistsToTableData = (
     return left.shop.localeCompare(right.shop);
   });
 
+  const withNewsletter = rows.filter(row => row.nsltId || row.nsltAId || row.nsltBId);
+  const progressRows = withNewsletter.length > 0 ? withNewsletter : rows;
+  const progressChips: ProgressChip[] = [];
   if (spreadsheet?.timer != null) {
     for (const row of rows) {
       row.timerDone = spreadsheet.timer[row.shop] ? 1 : 0;
       setStatus(row, COLUMN_IDS.TIMER_DONE, row.timerDone);
     }
+    progressChips.push({ key: 'timer', label: 'Timer', missing: progressRows.filter(row => !row.timerDone).map(row => row.shop), total: progressRows.length });
   }
   if (spreadsheet?.push != null) {
     for (const row of rows) {
       row.pushDone = spreadsheet.push[row.shop] ? 1 : 0;
       setStatus(row, COLUMN_IDS.PUSH_DONE, row.pushDone);
     }
+    progressChips.push({ key: 'push', label: 'Push', missing: progressRows.filter(row => !row.pushDone).map(row => row.shop), total: progressRows.length });
   }
 
-  const columns = createNewsletterColumns(hasGroupedNslt, hasGroupedLp, spreadsheet?.timer != null, spreadsheet?.push != null, options);
-  return { headers: columns.map(column => column.label), columns, rows, hasGroupedNslt, hasGroupedLp };
+  const columns = createNewsletterColumns(hasGroupedNslt, hasGroupedLp, {
+    ...options,
+    includeTranslations: useAllTranslationsDone ? false : options?.includeTranslations,
+  });
+  return {
+    headers: columns.map(column => column.label),
+    columns,
+    rows,
+    hasGroupedNslt,
+    hasGroupedLp,
+    progressChips,
+    ...(useAllTranslationsDone ? { allTranslationsDone } : {}),
+  };
 };

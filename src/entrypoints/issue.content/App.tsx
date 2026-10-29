@@ -8,6 +8,7 @@ import Header from './components/Header';
 
 import styles from './styles/layout.module.scss';
 import FamilyTable from './components/FamilyTable';
+import { HeaderLinks, HeaderPlanningButton, HeaderProgress } from './components/DashboardToolbar';
 import ActionsPanel from './components/ActionsPanel';
 import {
   fetchIssueData,
@@ -20,6 +21,7 @@ import { type ChecklistOwner, type ChecklistApiResponse, type ChecklistTableData
 import { fetchBannersChecklistCounts, fetchChecklists, mapChecklistsToTableData } from './api/checklists';
 import { getIssueModePlugin } from './api/issueModePlugins';
 import { getChecklistOwner, isCgbIssue } from './api/issueParsing';
+import { isPlanningAllowed } from './utils/planning/isPlanningAllowed';
 
 const IssueAppContent = () => {
   const issueId = useMemo(() => {
@@ -126,14 +128,31 @@ const IssueAppContent = () => {
           priorityName={issueInfo.priorityName}
           priorityColor={issueInfo.priorityColor}
           boardColumnName={issueInfo.boardColumnName}
-          checkpointsDone={issueInfo.checkpointsDone}
-          checkpointsTotal={issueInfo.checkpointsTotal}
           issueDate={issueInfo.issueDate}
+          deadlineOnPreviousFriday={issueInfo.mode === 'sunday' || issueInfo.mode === 'cgb'}
           dueDate={issueInfo.dueDate}
           dueDateName={issueInfo.dueDateName}
           dueDateText={issueInfo.dueDateText}
           issueCreatedAt={issueInfo.issueCreatedAt}
           tags={issueInfo.tags}
+          links={
+            <HeaderLinks
+              issueLinks={issueLinks}
+              extraFields={issueInfo.extraFields}
+              showExtraFields={issueInfo.mode === 'graphics' || issueInfo.mode === 'campaign'}
+            />
+          }
+          action={
+            getIssueModePlugin(issueInfo.mode).showDashboardActions && isPlanningAllowed(issueInfo.mode, tableData?.rows ?? []) ? (
+              <HeaderPlanningButton />
+            ) : null
+          }
+          progress={
+            <HeaderProgress
+              tableData={tableData}
+              banners={{ done: issueInfo.checkpointsDone, total: issueInfo.checkpointsTotal }}
+            />
+          }
         />
 
         <div className={styles.dashboard}>
@@ -149,8 +168,6 @@ const IssueAppContent = () => {
             mode={issueInfo.mode}
             showDashboardActions={getIssueModePlugin(issueInfo.mode).showDashboardActions}
             showRenameChecklists={isCgbIssue(issueInfo.issueTypes)}
-            issueLinks={issueLinks}
-            extraFields={issueInfo.extraFields}
             issueDate={issueInfo.issueDate}
             onGeneratedChecklist={loadIssueData}
             onStartPlanning={() => {}}

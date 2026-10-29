@@ -19,6 +19,7 @@ export const ColumnGroupToggle = ({ columns, hiddenGroups, onToggle }: ColumnGro
 
   return (
     <div className={styles.groupToggleRow}>
+      <span className={styles.groupToggleLabel}>Columns</span>
       {visibleGroups.map(group => {
         const isHidden = hiddenGroups.has(group.key);
         return (

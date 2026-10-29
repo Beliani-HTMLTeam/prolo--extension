@@ -13,7 +13,8 @@ import { GifPicker } from './pickers/GifPicker';
 import { MentionPicker } from './pickers/MentionPicker';
 import { RichTextarea, type RichTextareaHandle, applyTwemoji } from './RichTextarea';
 import { FormatToolbar } from './FormatToolbar';
-import type { ChecklistMode } from '../lib/types';
+import { TestRequestMenu } from './TestRequestMenu';
+import type { ChecklistMode, ChecklistTableRow } from '../lib/types';
 import { TRANSLATOR_GROUPS } from '../lib/translators';
 import { filterCommentsByGroup } from '../utils/commentShopFilter';
 
@@ -69,9 +70,10 @@ type CommentsViewProps = {
   mode?: ChecklistMode;
   showRenameChecklists?: boolean;
   onRenamed?: () => Promise<void> | void;
+  rows?: ChecklistTableRow[];
 };
 
-export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRenamed }: CommentsViewProps) => {
+export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRenamed, rows }: CommentsViewProps) => {
   const [cookies] = useCookies(['ebas_username']);
   const [oldTitle, setOldTitle] = useState(document.title);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -93,6 +95,7 @@ export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRe
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const messagesAreaRef = useRef<HTMLDivElement>(null);
   const buttonContainerRef = useRef<HTMLElement | null>(null);
+  const filterContainerRef = useRef<HTMLElement | null>(null);
   const richInputRef = useRef<RichTextareaHandle>(null);
   const lastSeenCountRef = useRef<number | null>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
@@ -153,6 +156,10 @@ export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRe
     const container = document.getElementById(`chat-buttons-${issueId}`);
     if (container) {
       buttonContainerRef.current = container;
+    }
+    const filterContainer = document.getElementById(`chat-filters-${issueId}`);
+    if (filterContainer) {
+      filterContainerRef.current = filterContainer;
     }
   }, [issueId]);
 
@@ -422,6 +429,19 @@ export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRe
     return <div className={styles.commentLoading}>Loading chat...</div>;
   }
 
+  const renderFilterChips = () =>
+    TRANSLATOR_GROUPS.map(group => (
+      <button
+        key={group.key}
+        type="button"
+        className={clsx(styles.shopFilterChip, groupFilter === group.key && styles.shopFilterChipActive)}
+        title={group.shops.join(', ')}
+        onClick={() => setGroupFilter(groupFilter === group.key ? null : group.key)}
+      >
+        {group.label}
+      </button>
+    ));
+
   const renderHeaderButtons = () => (
     <>
       <button
@@ -439,6 +459,7 @@ export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRe
 
   return (
     <>
+      {filterContainerRef.current && createPortal(renderFilterChips(), filterContainerRef.current)}
       {buttonContainerRef.current && createPortal(renderHeaderButtons(), buttonContainerRef.current)}
       <div className={styles.messengerContainer}>
         {newCommentsCount > 0 && (
@@ -449,19 +470,6 @@ export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRe
             </span>
           </div>
         )}
-        <div className={styles.shopFilterBar}>
-          {TRANSLATOR_GROUPS.map(group => (
-            <button
-              key={group.key}
-              type="button"
-              className={clsx(styles.shopFilterChip, groupFilter === group.key && styles.shopFilterChipActive)}
-              title={group.shops.join(', ')}
-              onClick={() => setGroupFilter(groupFilter === group.key ? null : group.key)}
-            >
-              {group.label}
-            </button>
-          ))}
-        </div>
         <div className={styles.messagesArea} ref={messagesAreaRef} onScroll={handleScroll}>
           {sortedComments.length === 0 ? (
             <div className={styles.commentEmpty}>{activeGroup ? `No messages for ${activeGroup.label}` : 'No messages yet'}</div>
@@ -554,6 +562,7 @@ export const CommentsView = ({ issueId, mode, showRenameChecklists = false, onRe
             >
               <Icon icon="mdi:image-multiple-outline" width="18" height="18" />
             </button>
+            {rows && <TestRequestMenu rows={rows} disabled={isSending || previewMode !== 'edit'} />}
             {mode === 'cgb' && showRenameChecklists && (
               <button
                 className={clsx(formStyles.btn, formStyles['btn--ghost'])}

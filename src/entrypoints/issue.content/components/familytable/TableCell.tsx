@@ -16,7 +16,7 @@ type TableCellProps = {
 
 export const TableCell = ({ column, row, isCgbView, canEdit, onToggleMention, onToggleCheckpoint }: TableCellProps) => {
   if (column.kind === 'shop') {
-    return <ShopCell shop={row.shop} />;
+    return <ShopCell row={row} canEdit={canEdit} onToggleTestSent={onToggleCheckpoint} />;
   }
 
   if (column.kind === 'link') {

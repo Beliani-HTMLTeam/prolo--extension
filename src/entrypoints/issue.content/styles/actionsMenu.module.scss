@@ -1,0 +1,82 @@
+@use '@/assets/styles/variables' as *;
+
+.triggerActive {
+  background-color: $grey-surface !important;
+  border-color: $happy-red !important;
+  color: $happy-red !important;
+}
+
+.menu {
+  z-index: 2137420;
+  min-width: 200px;
+  padding: 4px;
+  background: $pure-white;
+  border: 1px solid $grey-border-dark;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-family: 'Poppins', sans-serif;
+}
+
+.itemWrapper {
+  position: relative;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $dawn-grey;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled),
+  &.itemActive {
+    background: $subtle-peach;
+    color: $happy-red;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.itemPrimary .icon {
+  color: $happy-red;
+}
+
+.icon {
+  flex: 0 0 auto;
+}
+
+.label {
+  flex: 1;
+}
+
+.chevron {
+  flex: 0 0 auto;
+  margin-left: -4px;
+  color: $grey-text;
+}
+
+.submenu {
+  position: absolute;
+  top: -5px;
+  right: 100%;
+  min-width: 200px;
+  margin-right: 4px;
+  padding: 4px;
+  background: $pure-white;
+  border: 1px solid $grey-border-dark;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
