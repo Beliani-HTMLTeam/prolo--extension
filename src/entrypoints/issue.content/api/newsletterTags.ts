@@ -137,9 +137,12 @@ const copyTagsToFamily = async (nsltId: string) => {
 export const applyNewsletterTags = async ({
   issueId,
   newsletterIds,
+  extraTags = [],
 }: {
   issueId: number;
   newsletterIds?: Record<string, { aId?: string; bId?: string }>;
+  /** always added on top of the issue's tags, e.g. ['Sunday newsletter'] */
+  extraTags?: string[];
 }): Promise<TagSyncResult> => {
   const result: TagSyncResult = { success: false, issueTags: [], unmatchedTags: [], variants: [] };
  
@@ -156,7 +159,14 @@ export const applyNewsletterTags = async ({
     return result;
   }
  
-  result.issueTags = getIssueTags(issueItem);
+  // issue tags + extra tags, without duplicates ("Sunday newsletter" may already be on the issue)
+  const seen = new Set<string>();
+  result.issueTags = [...getIssueTags(issueItem), ...extraTags].filter(tag => {
+    const key = normalizeTag(tag);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   if (result.issueTags.length === 0) {
     result.success = true;
     result.skipped = 'No Newsletter TAGS set on the issue';
