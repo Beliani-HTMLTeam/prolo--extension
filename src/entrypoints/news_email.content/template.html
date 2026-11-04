@@ -172,7 +172,12 @@
         color: #750000;
         font-family: "Open Sans", sans-serif;
         font-size: 11px;
-        line-height: 1.2;
+        line-height: 13px;
+      }
+
+      .newsletterNewFooterConditions a {
+        color: inherit !important;
+        text-decoration: none !important;
       }
 
       /* Company details */
@@ -486,7 +491,7 @@
       </tbody>
     </table>
 
-    <!-- new footer (in step with footer_new.js / Thursday Footer.js, commit 495014a) -->
+    <!-- new footer (in step with footer_new.js / Thursday Footer.js, constructor commit 96fd404) -->
     <table
       role="presentation"
       width="100%"
@@ -542,7 +547,8 @@
                     cellpadding="0"
                     border="0"
                     width="100%"
-                    style="width: 100%; border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt"
+                    bgcolor="#FFCCB7"
+                    style="width: 100%; background-color: #ffccb7; border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt"
                   >
                     <tbody>
                       <tr>
@@ -1099,21 +1105,21 @@
                             border="0"
                             width="100%"
                             bgcolor="#FFCCB7"
-                            style="
-                              width: 100%;
-                              background-color: #ffccb7;
-                              line-height: 10px;
-                              mso-line-height-rule: exactly;
-                              border-collapse: collapse;
-                            "
+                            style="width: 100%; background-color: #ffccb7; border-collapse: collapse"
                           >
                             <tbody>
                               <tr style="background-color: #ffccb7" bgcolor="#FFCCB7">
                                 <td class="newsletterBottom15px" style="background-color: #ffccb7" bgcolor="#FFCCB7"></td>
                               </tr>
                               <tr>
-                                <td align="center" bgcolor="#FFCCB7" style="background-color: #ffccb7">
-                                  <span class="newsletterNewFooterConditions" style="color: #750000; text-align: center"
+                                <td
+                                  align="center"
+                                  bgcolor="#FFCCB7"
+                                  style="mso-line-height-rule: exactly; background-color: #ffccb7"
+                                >
+                                  <span
+                                    class="newsletterNewFooterConditions"
+                                    style="mso-line-height-rule: exactly; color: #750000; text-align: center"
                                     >{{footer["Conditions title"]}} {{footer["Conditions_description"]}}
                                     {{footer["Conditions_unsubscribe new"]}}</span
                                   >
@@ -1129,11 +1135,34 @@
                           align="center"
                           class="newsletterNewFooterCompanyDetails"
                           bgcolor="#FFCCB7"
-                          style="background-color: #ffccb7; color: #750000"
+                          style="background-color: #ffccb7; color: #750000; line-height: 18px; mso-line-height-rule: exactly"
                         >
-                          <span style="color: #750000; text-align: center; font-size: 13px">
+                          <span
+                            style="
+                              color: #750000;
+                              text-align: center;
+                              font-size: 11px;
+                              line-height: 13px;
+                              mso-line-height-rule: exactly;
+                            "
+                          >
                             {{footer["Address new"]}} | {{footer["Commercial register new"]}}
                           </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          bgcolor="#FFCCB7"
+                          height="1"
+                          style="
+                            background-color: #ffccb7;
+                            height: 1px;
+                            font-size: 1px;
+                            line-height: 1px;
+                            mso-line-height-rule: exactly;
+                          "
+                        >
+                          &nbsp;
                         </td>
                       </tr>
                     </tbody>

@@ -154,6 +154,55 @@ export const getTranslationVal = (dict: Record<string, any>, key: string, slug: 
   return str || null;
 };
 
+// Footer legal texts (conditions, impressum): links get the legal colour, also on a span inside
+// (Outlook ignores color:inherit and the <a> colour), bare www addresses become links.
+// Port of styleLinks in constructor src/components/footer_new.js (commit 96fd404).
+const FOOTER_LEGAL_COLOR = '#750000';
+const FOOTER_LINK_KEYS = [
+  'Conditions title',
+  'Conditions_description',
+  'Conditions_unsubscribe new',
+  'Address new',
+  'Commercial register new',
+];
+const URL_RE = /\b((?:https?:\/\/)?www\.[\w-]+(?:\.[\w-]+)+(?:\/[^\s<]*)?)/gi;
+
+const linkStyle = (color: string) => `color: ${color}; text-decoration: none;`;
+
+export const styleLinks = (html: string, color: string): string =>
+  String(html ?? '')
+    .split(/(<a\b[\s\S]*?<\/a>)/gi)
+    .map(part => {
+      if (/^<a\b/i.test(part)) {
+        return part
+          .replace(/^<a\b([^>]*)>/i, (tag, attrs: string) => {
+            const style = attrs.match(/\bstyle\s*=\s*(["'])([\s\S]*?)\1/i);
+            if (style) {
+              // drop any existing color (eg. color:inherit – Outlook doesn't support inherit)
+              const rest = style[2]
+                .replace(/(^|;)\s*color\s*:[^;]*/gi, '$1')
+                .replace(/;\s*;/g, ';')
+                .trim()
+                .replace(/^;/, '')
+                .replace(/;?$/, ';');
+              return tag.replace(style[0], `style=${style[1]}${rest === ';' ? '' : rest + ' '}color: ${color};${style[1]}`);
+            }
+            return `<a${attrs} style="${linkStyle(color)}">`;
+          })
+          .replace(
+            /^(<a\b[^>]*>)([\s\S]*?)(<\/a>)$/i,
+            (_m, open, inner, close) => `${open}<span style="color: ${color};">${inner}</span>${close}`,
+          );
+      }
+      return part.replace(URL_RE, url => {
+        const clean = url.replace(/[.,;:!?)]+$/, '');
+        const tail = url.slice(clean.length);
+        const href = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+        return `<a href="${href}" style="${linkStyle(color)}"><span style="color: ${color};">${clean}</span></a>${tail}`;
+      });
+    })
+    .join('');
+
 const buildRenderContext = (
   translations: Translations,
   slug: string,
@@ -179,6 +228,11 @@ const buildRenderContext = (
       const val = getTranslationVal(dict, key, slug);
       ctx[`${dictName}["${key}"]`] = val ?? '';
     }
+  }
+
+  for (const key of FOOTER_LINK_KEYS) {
+    const ctxKey = `footer["${key}"]`;
+    if (ctx[ctxKey]) ctx[ctxKey] = styleLinks(ctx[ctxKey], FOOTER_LEGAL_COLOR);
   }
 
   ctx['header["Sunday_TiT"]'] = `https://pictureserver.net/static/${slug}sunday_${titVersion}.png`;
