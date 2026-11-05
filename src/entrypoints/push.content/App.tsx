@@ -24,8 +24,10 @@ export default function App() {
   useHideAlertifyLogs();
 
   const generating = useGeneratingGuard(60_000);
-  const { availableTabs, isLoadingTabs } = useAvailableTabs();
+  const { availableTabs, isLoadingTabs, tabsError, reloadTabs } = useAvailableTabs();
   const [useOldNewsletterFamily, setUseOldNewsletterFamily] = useState(false);
+  const [appendSlugToImage, setAppendSlugToImage] = useState(false);
+  const [generatedAppendSlug, setGeneratedAppendSlug] = useState<boolean | null>(null);
   const [oldNewsletterFamilyIds, setOldNewsletterFamilyIds] = useState<Record<string, string>>({});
 
   const {
@@ -95,6 +97,17 @@ export default function App() {
   } = useCampaignPush(campaign);
 
   const customDate = useCustomDate(campaignName);
+  const { markGenerated } = customDate;
+
+  const handleGenerated = useCallback(
+    (info: { campaignName: string; effectiveCampaignName: string; appendSlugToImage: boolean }) => {
+      markGenerated(info);
+      setGeneratedAppendSlug(info.appendSlugToImage);
+    },
+    [markGenerated],
+  );
+
+  const isAppendSlugPending = !!campaign && generatedAppendSlug !== null && generatedAppendSlug !== appendSlugToImage;
 
   const { handleGenerateAllSlugs } = useGenerateCampaign({
     campaignName,
@@ -110,8 +123,9 @@ export default function App() {
     useOldNewsletterFamily, // Add this
     oldNewsletterFamilyIds, // Add this
     onShowSuccess: showSuccess,
-     effectiveCampaignName: customDate.effectiveCampaignName,
-  onGenerated: customDate.markGenerated
+    effectiveCampaignName: customDate.effectiveCampaignName,
+    appendSlugToImage,
+    onGenerated: handleGenerated,
   });
 
   const showOverlay = useCallback(() => setVisible(true), []);
@@ -143,6 +157,11 @@ export default function App() {
             isGenerating={generating.isGenerating}
             isLoadingTabs={isLoadingTabs}
             availableTabs={availableTabs}
+            tabsError={tabsError}
+            onReloadTabs={reloadTabs}
+            appendSlugToImage={appendSlugToImage}
+            isAppendSlugPending={isAppendSlugPending}
+            onSetAppendSlugToImage={setAppendSlugToImage}
             onHideOverlay={hideOverlay}
             onSetCampaignName={handleCampaignNameChange}
             onSetChdeTemplateId={setChdeTemplateId}

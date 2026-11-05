@@ -127,6 +127,11 @@ export const Sidebar = memo(
     isGenerating,
     isLoadingTabs,
     availableTabs,
+    tabsError,
+    onReloadTabs,
+    appendSlugToImage,
+    isAppendSlugPending,
+    onSetAppendSlugToImage,
     customTemplates,
     oldNewsletterFamilyIds,
     useOldNewsletterFamily = false,
@@ -160,6 +165,11 @@ export const Sidebar = memo(
           campaignName={campaignName}
           availableTabs={availableTabs ?? EMPTY_TABS}
           isLoadingTabs={isLoadingTabs}
+          tabsError={tabsError}
+          onReloadTabs={onReloadTabs}
+          appendSlugToImage={appendSlugToImage}
+          isAppendSlugPending={isAppendSlugPending}
+          onSetAppendSlugToImage={onSetAppendSlugToImage}
           isLoadingTranslations={isLoadingTranslations}
           dateWarning={dateWarning}
           onSetCampaignName={onSetCampaignName}

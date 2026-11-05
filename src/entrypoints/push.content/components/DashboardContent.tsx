@@ -26,6 +26,11 @@ export const DashboardContent = ({
   isGenerating,
   isLoadingTabs,
   availableTabs = EMPTY_TABS,
+  tabsError,
+  onReloadTabs,
+  appendSlugToImage,
+  isAppendSlugPending,
+  onSetAppendSlugToImage,
   onAddCustomTemplate,
   onRemoveCustomTemplate,
   onHideOverlay,
@@ -84,6 +89,11 @@ export const DashboardContent = ({
           isGenerating={isGenerating}
           isLoadingTabs={isLoadingTabs}
           availableTabs={availableTabs}
+          tabsError={tabsError}
+          onReloadTabs={onReloadTabs}
+          appendSlugToImage={appendSlugToImage}
+          isAppendSlugPending={isAppendSlugPending}
+          onSetAppendSlugToImage={onSetAppendSlugToImage}
           onSetCampaignName={onSetCampaignName}
           onSetChdeTemplateId={onSetChdeTemplateId}
           onGenerateAll={onGenerateAll}

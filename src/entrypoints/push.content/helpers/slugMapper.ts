@@ -213,11 +213,12 @@ export function generateIconUrl(): string {
   return 'https://pictureserver.net/static/2025/domainIcon_transparent.png';
 }
 
-export function generateImageUrl(campaignName: string): string {
+export function generateImageUrl(campaignName: string, slugPrefix = ''): string {
   const { date, version } = parseCampaignName(campaignName);
   const year = date.substring(0, 4);
   const fullDate = date;
-  return `https://pictureserver.net/static/${year}/${fullDate}push.png?ver=${version}`;
+  const prefix = slugPrefix.toLowerCase();
+  return `https://pictureserver.net/static/${year}/${prefix}${fullDate}push.png?ver=${version}`;
 }
 
 export function generateCustomImageUrl(
@@ -267,7 +268,8 @@ export function getSlugConfig(
   chdeTemplateId: string, 
   campaignName: string = 'lp26-07-24',
   customLpPath?: string,
-  oldNewsletterFamilyIds?: Record<string, string>
+  oldNewsletterFamilyIds?: Record<string, string>,
+  appendSlugToImage = false
 ): SlugConfig | null {
   const upperSlug = slug.toUpperCase();
   const baseConfig = BASE_SLUG_CONFIG[upperSlug];
@@ -285,7 +287,7 @@ export function getSlugConfig(
     ctaLang: baseConfig.ctaLang,
     clickAction: generateClickAction(upperSlug.toLowerCase(), baseConfig.domain, campaignName, customLpPath),
     icon: generateIconUrl(),
-    image: generateImageUrl(campaignName),
+    image: generateImageUrl(campaignName, appendSlugToImage ? upperSlug : ''),
     lpPath: lpPath,
   };
 }
@@ -354,7 +356,8 @@ export function generateCampaignData(
   campaignName: string = 'lp26-07-24',
   customLpPaths?: Record<string, string>,
   customConfigs?: Record<string, Partial<SlugConfig>>,
-  oldNewsletterFamilyIds?: Record<string, string>
+  oldNewsletterFamilyIds?: Record<string, string>,
+  appendSlugToImage = false
 ): Record<string, Record<string, string>> {
   const data: Record<string, Record<string, string>> = {};
   
@@ -370,7 +373,14 @@ export function generateCampaignData(
   for (const slug of sortedSlugs) {
     const upperSlug = slug.toUpperCase();
     const customLpPath = customLpPaths?.[upperSlug];
-    const config = getSlugConfig(upperSlug, chdeTemplateId, campaignName, customLpPath, oldNewsletterFamilyIds);
+    const config = getSlugConfig(
+      upperSlug,
+      chdeTemplateId,
+      campaignName,
+      customLpPath,
+      oldNewsletterFamilyIds,
+      appendSlugToImage
+    );
     
     if (!config) continue;
     

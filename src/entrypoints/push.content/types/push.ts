@@ -60,6 +60,14 @@ export type CampaignSelectorProps = {
   isLoadingTranslations?: boolean;
   dateWarning?: string | null;
   onSetCampaignName: (name: string) => void;
+} & CampaignSourceProps;
+
+export type CampaignSourceProps = {
+  tabsError?: string | null;
+  onReloadTabs?: () => void;
+  appendSlugToImage?: boolean;
+  isAppendSlugPending?: boolean;
+  onSetAppendSlugToImage?: (value: boolean) => void;
 };
 
 export type CampaignRowData = {
@@ -116,7 +124,7 @@ export type ConfirmationDialogProps = {
   onCancel: () => void;
 };
 
-export type DashboardContentProps = {
+export type DashboardContentProps = CampaignSourceProps & {
   visible: boolean;
   campaign: StoredCampaign | null;
   campaignVersion?: number;
@@ -238,7 +246,7 @@ export type OverlayToggleButtonProps = {
   onClick: () => void;
 };
 
-export type SidebarProps = {
+export type SidebarProps = CampaignSourceProps & {
   campaign: any;
   campaignName: string;
   chdeTemplateId: string;

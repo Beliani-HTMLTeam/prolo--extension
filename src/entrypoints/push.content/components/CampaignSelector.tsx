@@ -1,6 +1,7 @@
+import { Icon } from '@iconify/react';
 import { memo, useMemo } from 'react';
 import { type CustomDateProps, formatIsoDate } from '../helpers/customDate';
-import { generateImageUrl, generateLpPath, parseCampaignName } from '../helpers/slugMapper';
+import { generateImageUrl, generateLpPath, getCurrentDate, parseCampaignName } from '../helpers/slugMapper';
 import styles from '../push.module.scss';
 import { type CampaignSelectorProps } from '../types/push';
 
@@ -17,6 +18,11 @@ export const CampaignSelector = memo(
     isLoadingTabs,
     isLoadingTranslations,
     dateWarning,
+    tabsError = null,
+    onReloadTabs,
+    appendSlugToImage = false,
+    isAppendSlugPending = false,
+    onSetAppendSlugToImage,
     onSetCampaignName,
     isGenerating = false,
     customDate = '',
@@ -36,33 +42,89 @@ export const CampaignSelector = memo(
       if (!parsed) return null;
       return {
         parsed,
-        imageUrl: generateImageUrl(sourceName),
+        imageUrl: generateImageUrl(sourceName, appendSlugToImage ? '{slug}' : ''),
         lpPath: generateLpPath(sourceName),
       };
-    }, [sourceName]);
+    }, [sourceName, appendSlugToImage]);
+
+    const sortedTabs = useMemo(() => {
+      const today = getCurrentDate();
+      return availableTabs
+        .map((tab, index) => {
+          const { date, hasDate } = parseCampaignName(tab);
+          return { tab, index, date: hasDate ? date : '', isToday: hasDate && date === today };
+        })
+        .sort((a, b) => (a.date === b.date ? a.index - b.index : a.date < b.date ? 1 : -1));
+    }, [availableTabs]);
 
     const showDateField = !!campaignName && !!onSetCustomDate;
     const isBusy = isGenerating || isLoadingTranslations;
+    const hasTabs = availableTabs.length > 0;
+    const showRetry = !!onReloadTabs && !hasTabs && (isLoadingTabs || !!tabsError);
+
+    const placeholder = isLoadingTabs ? 'Loading campaigns...' : hasTabs ? 'Select a campaign' : 'No campaigns loaded';
+
+    const exampleImageName = `pl${meta?.parsed.date ?? 'YYYYMMDD'}push.png`;
 
     return (
       <div className={styles.fieldGroup}>
-        <label>Campaign Name:</label>
-        {isLoadingTabs ? (
-          <div className={styles.loadingIndicator}>Loading tabs...</div>
-        ) : (
+        <label htmlFor="push-campaign-select">Campaign Name:</label>
+        <div className={styles.campaignSelectRow}>
           <select
+            id="push-campaign-select"
             value={campaignName}
             onChange={e => onSetCampaignName(e.target.value)}
             className={styles.select}
-            disabled={availableTabs.length === 0}
+            disabled={!hasTabs || isLoadingTabs}
+            aria-busy={isLoadingTabs}
           >
-            <option value="">Select a campaign</option>
-            {availableTabs.map(tab => (
-              <option key={tab} value={tab}>
-                {tab}
+            <option value="">{placeholder}</option>
+            {sortedTabs.map(({ tab, isToday }) => (
+              <option key={tab} value={tab} className={isToday ? styles.todayOption : undefined}>
+                {isToday ? `${tab} (today)` : tab}
               </option>
             ))}
           </select>
+          {showRetry && (
+            <button
+              type="button"
+              onClick={onReloadTabs}
+              className={`${styles.retryButton} ${tabsError && !isLoadingTabs ? styles.retryButtonError : ''}`}
+              title={isLoadingTabs ? 'Loading campaigns...' : 'Retry loading campaigns'}
+              aria-label={isLoadingTabs ? 'Loading campaigns' : 'Retry loading campaigns'}
+              disabled={isLoadingTabs}
+            >
+              <Icon
+                icon="lucide:refresh-cw"
+                width="16"
+                height="16"
+                className={isLoadingTabs ? styles.spinning : undefined}
+              />
+            </button>
+          )}
+        </div>
+
+        {tabsError && !isLoadingTabs && (
+          <div className={styles.tabsError} role="alert">
+            <Icon icon="lucide:circle-alert" width="14" height="14" />
+            <span>{tabsError} Click the retry button to try again.</span>
+          </div>
+        )}
+
+        {onSetAppendSlugToImage && (
+          <label className={styles.appendSlugRow}>
+            <input
+              type="checkbox"
+              checked={appendSlugToImage}
+              onChange={e => onSetAppendSlugToImage(e.target.checked)}
+              disabled={isBusy}
+            />
+            <span>Append slug to image name</span>
+            <span className={styles.appendSlugHint}>e.g. {exampleImageName}</span>
+          </label>
+        )}
+        {isAppendSlugPending && (
+          <div className={styles.dateWarning}>Image name option changed — click "Generate All" to apply it.</div>
         )}
 
         {showDateField && (
