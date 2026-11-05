@@ -18,7 +18,7 @@ Package manager is **Bun** (`bun.lock` present); npm/pnpm also work per `README.
 - `bun run compile` — `tsc --noEmit`, use this as the type-check/lint gate (no ESLint/test runner configured)
 - `bun run format` / `bun run format:check` — Prettier (config in `.prettierrc`; `.prettierc.json` is a duplicate, keep both in sync if editing)
 
-There is no test suite in this repo (`popup/test.js` is a leftover boilerplate stub, not a real test). Verify changes with `bun run compile` and, for UI-affecting changes, `bun run dev` loaded against a real prolodev page.
+Unit tests are few: `bun run test` (`bun test`) runs the `*.test.ts` files (they start with `/// <reference types="bun" />`, because TS 7 does not auto-load `@types`). `popup/test.js` is a leftover boilerplate stub, not a real test. Verify changes with `bun run compile` and, for UI-affecting changes, `bun run dev` loaded against a real prolodev page.
 
 ## Architecture
 
