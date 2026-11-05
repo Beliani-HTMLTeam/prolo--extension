@@ -30,7 +30,7 @@
   .freebieImage {width: 80px;height: 80px;max-width: 80px;max-height: 80px;}
   .freebieTitleTd,
   .freebieTitleTdLast {padding-right: 10px;}
-  .newsletterProductTitleFreebie {font-size: 17px;line-height: 1.25;}
+  .newsletterProductTitleFreebie {font-size: 20px !important;line-height: 1.25 !important;}
   .freebiePriceDesktopTd,
   .freebiePriceDesktopTdLast {display: none !important;width: 0 !important;max-height: 0 !important;padding: 0 !important;overflow: hidden !important;font-size: 0 !important;line-height: 0 !important;}
   .freebiePriceMobile {display: block !important;max-height: none !important;font-size: inherit !important;line-height: inherit !important;overflow: visible !important;}
@@ -46,18 +46,6 @@
   .freebieTileMobilePrice {padding-top: 3px;}
   .freebieTileMobilePrice .freebieOldPriceMobile {font-size: 11px !important;}
   .freebieTileMobilePrice .freebieLowPriceMobile {font-size: 12px !important;font-weight: 600;}
-}
-
-@media screen and (max-width: 570px) {
-  .newsletterProductTitleFreebie {font-size: 16px;}
-}
-
-@media screen and (max-width: 460px) {
-  .newsletterProductTitleFreebie {font-size: 14px;}
-}
-
-@media screen and (max-width: 370px) {
-  .newsletterProductTitleFreebie {font-size: 12px;}
 }
 
 .freebiesContainer--list .newsletterProductTitleFreebie {font-size: 20px;}
