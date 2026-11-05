@@ -16,10 +16,7 @@
         "jszip": "^3.10.2",
         "motion": "^14.7.1",
         "p-limit": "^7.3.3",
-        "p-min-delay": "^4.2.0",
-        "p-props": "^6.1.0",
         "p-retry": "^8.0.1",
-        "p-timeout": "^8.0.0",
         "papaparse": "^5.7.0",
         "react": "^19.3.1",
         "react-chartjs-2": "^5.3.1",
@@ -511,15 +508,7 @@
 
     "p-limit": ["p-limit@7.3.3", "", { "dependencies": { "yocto-queue": "^1.2.1" } }, "sha512-SKgVvDU5TNIxQ4r30U75BNLC6a+6GOEjngrk/ysM5+Zu3oJuk1SC5ApzIzY/7PjCEjoVPMWJ0zho/4QUiEB7TQ=="],
 
-    "p-map": ["p-map@6.0.0", "", {}, "sha512-T8BatKGY+k5rU+Q/GTYgrEf2r4xRMevAN5mtXc2aPc4rS1j3s+vWTaO2Wag94neXuCAUAs8cxBL9EeB5EA6diw=="],
-
-    "p-min-delay": ["p-min-delay@4.2.0", "", { "dependencies": { "yoctodelay": "^2.0.0" } }, "sha512-VMj+bb3VIP9W4S5YHHqKLJlJv8M+qsrvMpbvZB8mk/DNhBGJhFW1rKpF2t+9cRPUzriplRKecIbdWiWjpKaDCw=="],
-
-    "p-props": ["p-props@6.1.0", "", { "dependencies": { "p-map": "^6.0.0" } }, "sha512-3a0WjevvN0Z9blrG5+Vpun2KIBfSAwQfUcIJkFamYRjS59KWQJk+X9q60uH/1PUJgpCe6Ur0j8u32qBUZDogLA=="],
-
     "p-retry": ["p-retry@8.0.1", "", { "dependencies": { "is-network-error": "^1.3.0" } }, "sha512-NAigyu8hfvJe7MsS18mnc4is0MZtau3QMdBklaJKK23oBQb6occO3UPM3vHmTckW8KhfyjMZaUOqdTFEYliHgg=="],
-
-    "p-timeout": ["p-timeout@8.0.0", "", {}, "sha512-IHjMTvwSvMPKVfGAVTRxI+Ea6Vu5soB0oaC3fuEc58EI01T36AiVclDTTYoHBO8M1gjxqAvgkRLm33TGUCzEDw=="],
 
     "pako": ["pako@1.0.11", "", {}, "sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw=="],
 
@@ -714,8 +703,6 @@
     "yargs-parser": ["yargs-parser@21.1.1", "", {}, "sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw=="],
 
     "yocto-queue": ["yocto-queue@1.2.2", "", {}, "sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ=="],
-
-    "yoctodelay": ["yoctodelay@2.0.0", "", {}, "sha512-0m1YaiUEnEPrZ7mKxkfRpPLfOjG1GeWd2E2IfB8toIUEhXjk5cW+czBDiQQkkMDycsuGDkG1dP40QQQoKJmEWw=="],
 
     "@aklinker1/rollup-plugin-visualizer/picomatch": ["picomatch@2.3.2", "", {}, "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA=="],
 

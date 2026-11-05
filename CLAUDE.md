@@ -43,7 +43,7 @@ Everything under `src/entrypoints/*.content/` is a **separate WXT content script
 | `popup` | extension toolbar popup | Popup UI |
 | `background.ts` | service worker | See below |
 
-Root-level `src/entrypoints/index.content.tsx` and `messaging.content.ts` are boilerplate/example content scripts (generic `<all_urls>` table scraper and a placeholder React overlay) — treat as reference scaffolding, not load-bearing features.
+Root-level `src/entrypoints/index.content.tsx` is a boilerplate/example content script (placeholder React overlay) — treat as reference scaffolding, not a load-bearing feature. Product fetching lives only in `saved_details.content` (button on the SA details page); the popup no longer fetches products.
 
 ### Background service worker (`src/entrypoints/background.ts`)
 
