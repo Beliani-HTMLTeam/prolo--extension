@@ -1,4 +1,6 @@
 import { fetchProducts } from '@/entrypoints/saved_details.content/fetchProducts';
+import { pickOwnProductRow } from '@/entrypoints/saved_details.content/masterRows';
+import type { ProductRaw } from '@/entrypoints/saved_details.content/types';
 import type { FreebieShopData } from '../../types';
 
 type ShopMeta = {
@@ -38,17 +40,17 @@ const toPrice = (value: unknown): string => {
   return String(value);
 };
 
-const load = async (masterId: string): Promise<Record<string, FreebieShopData>> => {
-  const rows = await fetchProducts([{ main_id: masterId }]);
+const sellerOf = (row: ProductRaw): string =>
+  String(row.saved_params?.username ?? '')
+    .replace(/\./g, '')
+    .trim();
+
+export const buildFreebieShops = (rows: ProductRaw[], masterId: string): Record<string, FreebieShopData> => {
   const result: Record<string, FreebieShopData> = {};
 
   for (const [slug, meta] of Object.entries(SHOP_META)) {
-    const row = rows.find(
-      item =>
-        String(item.saved_params?.username ?? '')
-          .replace(/\./g, '')
-          .trim() === meta.seller,
-    );
+    // Only this master's own rows: getList also returns old slaves of other masters with the same seller.
+    const row = pickOwnProductRow(rows, masterId, item => sellerOf(item) === meta.seller);
     if (!row) continue;
 
     const name = String(row.article_name ?? '').trim();
@@ -63,6 +65,11 @@ const load = async (masterId: string): Promise<Record<string, FreebieShopData>> 
   }
 
   return result;
+};
+
+const load = async (masterId: string): Promise<Record<string, FreebieShopData>> => {
+  const rows = await fetchProducts([{ main_id: masterId }]);
+  return buildFreebieShops(rows, masterId);
 };
 
 export const fetchFreebieShops = (masterId: string): Promise<Record<string, FreebieShopData>> => {
