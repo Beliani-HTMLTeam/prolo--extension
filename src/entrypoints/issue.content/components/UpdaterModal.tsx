@@ -406,10 +406,14 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     message: '',
   });
 
-  const runTagSync = useCallback(async () => {
+  // remembers the extra tags of the last run, so "Retry tags" repeats the same thing (Sunday or regular)
+  const lastExtraTagsRef = useRef<string[]>([]);
+
+  const runTagSync = useCallback(async (extraTags: string[] = lastExtraTagsRef.current) => {
+    lastExtraTagsRef.current = extraTags;
     setTagSync({ status: 'running', message: 'Setting newsletter tags on CHDE and copying to family...' });
     try {
-      const res = await applyNewsletterTags({ issueId, newsletterIds });
+      const res = await applyNewsletterTags({ issueId, newsletterIds, extraTags });
       setTagSync({ status: res.success ? 'done' : 'error', message: formatTagSyncResult(res) });
     } catch (e) {
       console.error('Newsletter tags failed:', e);
@@ -438,7 +442,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     console.log(
       `[Update All] SL/PT finished (${summary.successCount} ok, ${summary.failureCount} failed) -> setting tags`,
     );
-    await runTagSync();
+    await runTagSync([]);
   };
   const handleSelectAllReadyWrapper = () => handleSelectAllReady(translations);
 
@@ -521,7 +525,25 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
       content,
     }));
 
-    await handleUpdateSelected(selectedItems);
+    // 1) Sunday subject lines  2) only then the tags (issue tags + "Sunday newsletter")
+    setTagSync({ status: 'waiting', message: 'Tags: waiting for subject lines to finish...' });
+
+    let summary: UpdateRunSummary;
+    try {
+      summary = await handleUpdateSelected(selectedItems);
+    } catch (e) {
+      console.error('Sunday update failed:', e);
+      setTagSync({ status: 'error', message: 'Tags not set: the subject line update stopped with an error' });
+      return;
+    }
+
+    if (!summary.ran) {
+      setTagSync({ status: 'error', message: 'Tags not set: no subject lines were updated' });
+      return;
+    }
+
+    console.log(`[Sunday] SL finished (${summary.successCount} ok, ${summary.failureCount} failed) -> setting tags`);
+    await runTagSync(['Sunday newsletter']);
   };
 
   const getRefreshIcon = () => {
@@ -534,7 +556,44 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
     return <Icon icon="svg-spinners:180-ring" width="16" height="16" className={updaterStyles.refreshSpinner} />;
   };
 
-  const isSundayUpdating = isUpdating || updateProgress.total > 0 || updatingSlugs.size > 0;
+  const isTagging = tagSync.status === 'waiting' || tagSync.status === 'running';
+  const isSundayUpdating = isUpdating || updateProgress.total > 0 || updatingSlugs.size > 0 || isTagging;
+
+  // tag status line - shown in both the Sunday and the regular updater
+  const tagStatusBar =
+    tagSync.status !== 'idle' ? (
+      <div className={updaterStyles.progressStats}>
+        <div className={updaterStyles.progressInfo}>
+          <Icon
+            icon={
+              tagSync.status === 'waiting'
+                ? 'mdi:timer-sand'
+                : tagSync.status === 'running'
+                  ? 'svg-spinners:180-ring'
+                  : tagSync.status === 'done'
+                    ? 'mdi:tag-check'
+                    : 'mdi:alert-circle'
+            }
+            width="14"
+            height="14"
+            className={
+              isTagging
+                ? updaterStyles.progressSpinner
+                : tagSync.status === 'done'
+                  ? updaterStyles.successIcon
+                  : updaterStyles.errorIcon
+            }
+          />
+          <span>{tagSync.message}</span>
+        </div>
+        {tagSync.status === 'error' && (
+          <button className={updaterStyles.retryButtonInline} onClick={() => runTagSync()}>
+            <Icon icon="mdi:refresh" width="16" height="16" />
+            Retry tags
+          </button>
+        )}
+      </div>
+    ) : null;
 
   const getModalTitle = () => {
     if (isSundayNewsletter) return 'Sunday Newsletter Subject Line Updater';
@@ -595,6 +654,8 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               />
             </div>
           )}
+
+          {tagStatusBar}
 
           {showResults && <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />}
 
@@ -658,7 +719,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
               hasABLandingPages={hasABLandingPages}
               selectedSLCount={selectedSLCount}
               selectedPTCount={selectedPTCount}
-              isUpdating={isUpdating || tagSync.status === 'waiting' || tagSync.status === 'running'}
+              isUpdating={isUpdating || isTagging}
               onToggleGlobalDate={checked => setUseGlobalDate(checked)}
               onActivateDateChange={handleGlobalActivateDateChangeWithAutoSelect}
               onDeactivateDateChange={handleGlobalDeactivateDateChangeWithAutoSelect}
@@ -681,39 +742,7 @@ const UpdaterModal = ({ rows, issueId, newsletterIds, landingPageIds, onClose }:
             />
           </div>
           <div className={updaterStyles.rightContent}>
-            {tagSync.status !== 'idle' && (
-              <div className={updaterStyles.progressStats}>
-                <div className={updaterStyles.progressInfo}>
-                  <Icon
-                    icon={
-                      tagSync.status === 'waiting'
-                        ? 'mdi:timer-sand'
-                        : tagSync.status === 'running'
-                        ? 'svg-spinners:180-ring'
-                        : tagSync.status === 'done'
-                          ? 'mdi:tag-check'
-                          : 'mdi:alert-circle'
-                    }
-                    width="14"
-                    height="14"
-                    className={
-                      tagSync.status === 'running' || tagSync.status === 'waiting'
-                        ? updaterStyles.progressSpinner
-                        : tagSync.status === 'done'
-                          ? updaterStyles.successIcon
-                          : updaterStyles.errorIcon
-                    }
-                  />
-                  <span>{tagSync.message}</span>
-                </div>
-                {tagSync.status === 'error' && (
-                  <button className={updaterStyles.retryButtonInline} onClick={runTagSync}>
-                    <Icon icon="mdi:refresh" width="16" height="16" />
-                    Retry tags
-                  </button>
-                )}
-              </div>
-            )}
+            {tagStatusBar}
             {showResults && (
               <div className={updaterStyles.resultsContainer}>
                 <UpdateResults results={updateResults} onClose={handleModalClose} onRetry={handleRetry} />
