@@ -13,6 +13,7 @@ import { useAvailableTabs } from './components/hooks/useAvailableTabs';
 import { useHideAlertifyLogs } from './components/hooks/useHideAlertifyLogs';
 import { useCustomOverrides } from './components/hooks/useCustomOverrides';
 import { useCustomDate } from './components/hooks/useCustomDate';
+import { normalizeImageName } from './helpers/slugMapper';
 
 const NEWSLETTER_SPREADSHEET =
   'https://docs.google.com/spreadsheets/d/1RcsQspit0B3b3xX1NwZ9RWnUzZrkoVDULu2cnPMZ04U/edit?gid=337547236#gid=337547236';
@@ -28,6 +29,9 @@ export default function App() {
   const [useOldNewsletterFamily, setUseOldNewsletterFamily] = useState(false);
   const [appendSlugToImage, setAppendSlugToImage] = useState(false);
   const [generatedAppendSlug, setGeneratedAppendSlug] = useState<boolean | null>(null);
+  // Global image name override; belongs to one campaign (cleared when the campaign changes).
+  const [imageName, setImageName] = useState('');
+  const [generatedImageName, setGeneratedImageName] = useState<string | null>(null);
   const [oldNewsletterFamilyIds, setOldNewsletterFamilyIds] = useState<Record<string, string>>({});
 
   const {
@@ -51,6 +55,14 @@ export default function App() {
     handleCampaignNameChange,
     clearTranslations,
   } = useCampaignNameAndTranslations(NEWSLETTER_SPREADSHEET);
+
+  const handleSetCampaignName = useCallback(
+    (name: string) => {
+      setImageName('');
+      handleCampaignNameChange(name);
+    },
+    [handleCampaignNameChange],
+  );
 
   // Clear translations when storage is wiped on mount
   useEffect(() => {
@@ -100,14 +112,17 @@ export default function App() {
   const { markGenerated } = customDate;
 
   const handleGenerated = useCallback(
-    (info: { campaignName: string; effectiveCampaignName: string; appendSlugToImage: boolean }) => {
+    (info: { campaignName: string; effectiveCampaignName: string; appendSlugToImage: boolean; imageName: string }) => {
       markGenerated(info);
       setGeneratedAppendSlug(info.appendSlugToImage);
+      setGeneratedImageName(normalizeImageName(info.imageName));
     },
     [markGenerated],
   );
 
   const isAppendSlugPending = !!campaign && generatedAppendSlug !== null && generatedAppendSlug !== appendSlugToImage;
+  const isImageNamePending =
+    !!campaign && generatedImageName !== null && generatedImageName !== normalizeImageName(imageName);
 
   const { handleGenerateAllSlugs } = useGenerateCampaign({
     campaignName,
@@ -125,6 +140,7 @@ export default function App() {
     onShowSuccess: showSuccess,
     effectiveCampaignName: customDate.effectiveCampaignName,
     appendSlugToImage,
+    imageName,
     onGenerated: handleGenerated,
   });
 
@@ -162,8 +178,11 @@ export default function App() {
             appendSlugToImage={appendSlugToImage}
             isAppendSlugPending={isAppendSlugPending}
             onSetAppendSlugToImage={setAppendSlugToImage}
+            imageName={imageName}
+            isImageNamePending={isImageNamePending}
+            onSetImageName={setImageName}
             onHideOverlay={hideOverlay}
-            onSetCampaignName={handleCampaignNameChange}
+            onSetCampaignName={handleSetCampaignName}
             onSetChdeTemplateId={setChdeTemplateId}
             onGenerateAll={handleGenerateAllSlugs}
             onSelectAll={selectAllSlugs}

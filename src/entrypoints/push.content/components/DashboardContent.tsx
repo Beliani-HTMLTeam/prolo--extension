@@ -31,6 +31,9 @@ export const DashboardContent = ({
   appendSlugToImage,
   isAppendSlugPending,
   onSetAppendSlugToImage,
+  imageName,
+  isImageNamePending,
+  onSetImageName,
   onAddCustomTemplate,
   onRemoveCustomTemplate,
   onHideOverlay,
@@ -94,6 +97,9 @@ export const DashboardContent = ({
           appendSlugToImage={appendSlugToImage}
           isAppendSlugPending={isAppendSlugPending}
           onSetAppendSlugToImage={onSetAppendSlugToImage}
+          imageName={imageName}
+          isImageNamePending={isImageNamePending}
+          onSetImageName={onSetImageName}
           onSetCampaignName={onSetCampaignName}
           onSetChdeTemplateId={onSetChdeTemplateId}
           onGenerateAll={onGenerateAll}

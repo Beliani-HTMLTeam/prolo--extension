@@ -213,12 +213,22 @@ export function generateIconUrl(): string {
   return 'https://pictureserver.net/static/2025/domainIcon_transparent.png';
 }
 
-export function generateImageUrl(campaignName: string, slugPrefix = ''): string {
+/** Default image file name (no extension) derived from the campaign name, e.g. "20261118push". */
+export function getDefaultImageName(campaignName: string): string {
+  return `${parseCampaignName(campaignName).date}push`;
+}
+
+/** Cleans a user-entered image name: trims, drops slashes and a trailing ".png". '' = use the default. */
+export function normalizeImageName(imageName = ''): string {
+  return imageName.trim().replace(/^\/+|\/+$/g, '').replace(/\.png$/i, '').trim();
+}
+
+export function generateImageUrl(campaignName: string, slugPrefix = '', imageNameOverride = ''): string {
   const { date, version } = parseCampaignName(campaignName);
   const year = date.substring(0, 4);
-  const fullDate = date;
   const prefix = slugPrefix.toLowerCase();
-  return `https://pictureserver.net/static/${year}/${prefix}${fullDate}push.png?ver=${version}`;
+  const imageName = normalizeImageName(imageNameOverride) || getDefaultImageName(campaignName);
+  return `https://pictureserver.net/static/${year}/${prefix}${imageName}.png?ver=${version}`;
 }
 
 export function generateCustomImageUrl(
@@ -269,7 +279,8 @@ export function getSlugConfig(
   campaignName: string = 'lp26-07-24',
   customLpPath?: string,
   oldNewsletterFamilyIds?: Record<string, string>,
-  appendSlugToImage = false
+  appendSlugToImage = false,
+  imageNameOverride = ''
 ): SlugConfig | null {
   const upperSlug = slug.toUpperCase();
   const baseConfig = BASE_SLUG_CONFIG[upperSlug];
@@ -287,7 +298,7 @@ export function getSlugConfig(
     ctaLang: baseConfig.ctaLang,
     clickAction: generateClickAction(upperSlug.toLowerCase(), baseConfig.domain, campaignName, customLpPath),
     icon: generateIconUrl(),
-    image: generateImageUrl(campaignName, appendSlugToImage ? upperSlug : ''),
+    image: generateImageUrl(campaignName, appendSlugToImage ? upperSlug : '', imageNameOverride),
     lpPath: lpPath,
   };
 }
@@ -357,7 +368,8 @@ export function generateCampaignData(
   customLpPaths?: Record<string, string>,
   customConfigs?: Record<string, Partial<SlugConfig>>,
   oldNewsletterFamilyIds?: Record<string, string>,
-  appendSlugToImage = false
+  appendSlugToImage = false,
+  imageNameOverride = ''
 ): Record<string, Record<string, string>> {
   const data: Record<string, Record<string, string>> = {};
   
@@ -379,7 +391,8 @@ export function generateCampaignData(
       campaignName,
       customLpPath,
       oldNewsletterFamilyIds,
-      appendSlugToImage
+      appendSlugToImage,
+      imageNameOverride
     );
     
     if (!config) continue;

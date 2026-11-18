@@ -1,7 +1,14 @@
 import { Icon } from '@iconify/react';
 import { memo, useMemo } from 'react';
 import { type CustomDateProps, formatIsoDate } from '../helpers/customDate';
-import { generateImageUrl, generateLpPath, getCurrentDate, parseCampaignName } from '../helpers/slugMapper';
+import {
+  generateImageUrl,
+  generateLpPath,
+  getCurrentDate,
+  getDefaultImageName,
+  normalizeImageName,
+  parseCampaignName,
+} from '../helpers/slugMapper';
 import styles from '../push.module.scss';
 import { type CampaignSelectorProps } from '../types/push';
 
@@ -23,6 +30,9 @@ export const CampaignSelector = memo(
     appendSlugToImage = false,
     isAppendSlugPending = false,
     onSetAppendSlugToImage,
+    imageName = '',
+    isImageNamePending = false,
+    onSetImageName,
     onSetCampaignName,
     isGenerating = false,
     customDate = '',
@@ -42,10 +52,13 @@ export const CampaignSelector = memo(
       if (!parsed) return null;
       return {
         parsed,
-        imageUrl: generateImageUrl(sourceName, appendSlugToImage ? '{slug}' : ''),
+        imageUrl: generateImageUrl(sourceName, appendSlugToImage ? '{slug}' : '', imageName),
+        defaultImageName: getDefaultImageName(sourceName),
         lpPath: generateLpPath(sourceName),
       };
-    }, [sourceName, appendSlugToImage]);
+    }, [sourceName, appendSlugToImage, imageName]);
+
+    const isImageNameActive = !!normalizeImageName(imageName);
 
     const sortedTabs = useMemo(() => {
       const today = getCurrentDate();
@@ -64,7 +77,7 @@ export const CampaignSelector = memo(
 
     const placeholder = isLoadingTabs ? 'Loading campaigns...' : hasTabs ? 'Select a campaign' : 'No campaigns loaded';
 
-    const exampleImageName = `pl${meta?.parsed.date ?? 'YYYYMMDD'}push.png`;
+    const exampleImageName = `pl${normalizeImageName(imageName) || meta?.defaultImageName || 'YYYYMMDDpush'}.png`;
 
     return (
       <div className={styles.fieldGroup}>
@@ -127,6 +140,38 @@ export const CampaignSelector = memo(
           <div className={styles.dateWarning}>Image name option changed — click "Generate All" to apply it.</div>
         )}
 
+        {campaignName && onSetImageName && (
+          <div className={styles.customDateRow}>
+            <label className={styles.customDateLabel} htmlFor="push-image-name">
+              Image name:
+            </label>
+            <input
+              id="push-image-name"
+              type="text"
+              value={imageName}
+              onChange={e => onSetImageName(e.target.value)}
+              placeholder={meta?.defaultImageName ?? 'YYYYMMDDpush'}
+              title="Overrides the image file name for all slugs. Leave empty to use the name from the campaign."
+              className={styles.inputSmall}
+              disabled={isBusy}
+            />
+            {imageName && (
+              <button
+                type="button"
+                onClick={() => onSetImageName('')}
+                className={styles.iconCancel}
+                title="Reset to the image name from the campaign name"
+                disabled={isBusy}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
+        {isImageNamePending && (
+          <div className={styles.dateWarning}>Image name changed — click "Generate All" to apply it.</div>
+        )}
+
         {showDateField && (
           <div className={styles.customDateRow}>
             <label className={styles.customDateLabel} htmlFor="push-custom-date">
@@ -168,14 +213,16 @@ export const CampaignSelector = memo(
               Date: {meta.parsed.date}
               {isCustomDateActive && (
                 <span className={styles.customDateBadge} title={`Overridden: ${formatIsoDate(customDate)}`}>
-                  {' '}
-                  (custom)
+                  custom
                 </span>
               )}
             </span>
             <span>Version: {meta.parsed.version}</span>
-            <span>Image: {meta.imageUrl}</span>
             <span>LP Path: {meta.lpPath}</span>
+            <span className={styles.metaWide}>
+              Image: {meta.imageUrl}
+              {isImageNameActive && <span className={styles.customDateBadge}>custom</span>}
+            </span>
             {!meta.parsed.hasDate && <span>No date in name</span>}
           </div>
         )}

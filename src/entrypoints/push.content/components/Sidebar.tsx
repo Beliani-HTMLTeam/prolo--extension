@@ -132,6 +132,9 @@ export const Sidebar = memo(
     appendSlugToImage,
     isAppendSlugPending,
     onSetAppendSlugToImage,
+    imageName,
+    isImageNamePending,
+    onSetImageName,
     customTemplates,
     oldNewsletterFamilyIds,
     useOldNewsletterFamily = false,
@@ -170,6 +173,9 @@ export const Sidebar = memo(
           appendSlugToImage={appendSlugToImage}
           isAppendSlugPending={isAppendSlugPending}
           onSetAppendSlugToImage={onSetAppendSlugToImage}
+          imageName={imageName}
+          isImageNamePending={isImageNamePending}
+          onSetImageName={onSetImageName}
           isLoadingTranslations={isLoadingTranslations}
           dateWarning={dateWarning}
           onSetCampaignName={onSetCampaignName}
