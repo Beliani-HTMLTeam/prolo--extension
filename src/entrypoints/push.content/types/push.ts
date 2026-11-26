@@ -68,6 +68,10 @@ export type CampaignSourceProps = {
   appendSlugToImage?: boolean;
   isAppendSlugPending?: boolean;
   onSetAppendSlugToImage?: (value: boolean) => void;
+  /** Global image file name override (no extension). '' = default derived from the campaign name. */
+  imageName?: string;
+  isImageNamePending?: boolean;
+  onSetImageName?: (value: string) => void;
 };
 
 export type CampaignRowData = {

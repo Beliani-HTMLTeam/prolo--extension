@@ -14,8 +14,15 @@ type GenerateCampaignProps = Omit<UseGenerateCampaignProps, 'fetchTranslations'>
   /** Campaign name with the custom date applied (from useCustomDate). Defaults to campaignName. */
   effectiveCampaignName?: string;
   appendSlugToImage?: boolean;
+  /** Global image file name override ('' = default from the campaign name). */
+  imageName?: string;
   /** Called after a successful generation. */
-  onGenerated?: (info: { campaignName: string; effectiveCampaignName: string; appendSlugToImage: boolean }) => void;
+  onGenerated?: (info: {
+    campaignName: string;
+    effectiveCampaignName: string;
+    appendSlugToImage: boolean;
+    imageName: string;
+  }) => void;
 };
 
 export function useGenerateCampaign({
@@ -34,6 +41,7 @@ export function useGenerateCampaign({
   onShowSuccess,
   effectiveCampaignName,
   appendSlugToImage = false,
+  imageName = '',
   onGenerated,
 }: GenerateCampaignProps) {
   const handleGenerateAllSlugs = useCallback(async () => {
@@ -115,6 +123,7 @@ export function useGenerateCampaign({
         undefined,
         oldIds,
         appendSlugToImage,
+        imageName,
       );
 
       campaignData = applyOverridesToData(campaignData);
@@ -136,7 +145,7 @@ export function useGenerateCampaign({
       setActiveSlug(null);
 
       bumpVersion();
-      onGenerated?.({ campaignName, effectiveCampaignName: dateSourceName, appendSlugToImage });
+      onGenerated?.({ campaignName, effectiveCampaignName: dateSourceName, appendSlugToImage, imageName });
 
       generating.setIsGenerating(false);
 
@@ -166,6 +175,7 @@ export function useGenerateCampaign({
     oldNewsletterFamilyIds,
     effectiveCampaignName,
     appendSlugToImage,
+    imageName,
     onGenerated,
     onShowSuccess,
   ]);
