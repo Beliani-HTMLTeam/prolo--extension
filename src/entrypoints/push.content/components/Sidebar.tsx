@@ -208,7 +208,7 @@ export const Sidebar = memo(
           useOldFamily={useOldNewsletterFamily}
           hrId={oldNewsletterFamilyIds?.HR}
           siId={oldNewsletterFamilyIds?.SI}
-          disabled={isGenerating || isLoadingTranslations}
+          disabled={Boolean(isGenerating || isLoadingTranslations)}
           onUseOldNewsletterFamily={onUseOldNewsletterFamily}
           onOldNewsletterIdsChange={onOldNewsletterIdsChange}
         />
