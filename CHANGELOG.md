@@ -1,3 +1,56 @@
+[Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.4.0...v1.5.0)
+
+## ✨ Features
+
+- support of Advent ([640db51](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/640db51)) _(by ShadowDrake21 <dimka670020040@gmail.com>)_
+- **push**: per-slug images, retry tabs ([4a6758b](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/4a6758b)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- sunday automatic tag setting ([6341bba](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/6341bba)) _(by ShadowDrake21 <dimka670020040@gmail.com>)_
+- collapsible newtab comments ([b9a2aac](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/b9a2aac)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- issue dashboard toolbar ([655c4e1](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/655c4e1)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- teams link previews ([fc043cd](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/fc043cd)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- new sunday footer ([a1a5976](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/a1a5976)) _(by ShadowDrake21 <dimka670020040@gmail.com>)_
+- rework timer banner modal with live preview ([ffe89be](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/ffe89be)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- timer banner rendering engine with themes, freebies and header texts ([005915a](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/005915a)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- add headerActions slot to Modal ([65968c5](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/65968c5)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- enchanced push dashboard -> less lags and the campaigns without dates are workable ([0cabc6c](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/0cabc6c)) _(by ShadowDrake21 <dimka670020040@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **push**: pass boolean to NewsletterFamily disabled prop ([ba4e124](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/ba4e124)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- **issue**: rename CGB checklists from any banner list format ([6597d61](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/6597d61)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- **timer**: freebies only from the master's own slaves ([0427d6e](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/0427d6e)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- **timer**: freebie title 20px, same as timer title ([f6a034e](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/f6a034e)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- sunday footer in step with constructor (link colours, outlook line heights, impressum) ([3d07751](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/3d07751)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- newtab project error state ([410ca35](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/410ca35)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- sunday date parsing, HR/SI tag ([f83760e](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/f83760e)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- updated footer template ([f18de19](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/f18de19)) _(by ShadowDrake21 <dimka670020040@gmail.com>)_
+- footer advantages x2 sunday ([cfdbabf](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/cfdbabf)) _(by ShadowDrake21 <dimka670020040@gmail.com>)_
+- HR SI + tag updater ([d8431e8](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/d8431e8)) _(by ShadowDrake21 <dimka670020040@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **popup**: drop product fetching ([970ea3d](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/970ea3d)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## 🔧 Chores
+
+- release v1.5.0 ([aa9cfe5](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/aa9cfe5)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- bun test runner ([43e18d3](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/43e18d3)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- update deps, add motion ([d2fb446](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/d2fb446)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- gitignore playwright-mcp, teams todo ([b59781e](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/b59781e)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+
+## 🎉 Miscellaneous
+
+- Merge branch 'dev' of https://github.com/Beliani-HTMLTeam/prolo--extension into dev ([af84447](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/af84447)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- Merge branch 'dev' of https://github.com/Beliani-HTMLTeam/prolo--extension into dev ([a8c1a5a](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/a8c1a5a)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- Merge branch 'main' of https://github.com/Beliani-HTMLTeam/prolo--extension into dev ([fdc11e7](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/fdc11e7)) _(by kkazzann <kamil.kazaniecki@beliani.net>)_
+- Merge branch 'main' of https://github.com/Beliani-HTMLTeam/prolo--extension into dev ([99729c2](https://github.com/Beliani-HTMLTeam/prolo--extension/commit/99729c2)) _(by Krzysztof <krzysieq95.mail@gmail.com>)_
+
+## Contributors
+
+- _Krzysztof <krzysieq95.mail@gmail.com>_
+- _ShadowDrake21 <dimka670020040@gmail.com>_
+- _kkazzann <kamil.kazaniecki@beliani.net>_
+
 [Compare changes](https://github.com/Beliani-HTMLTeam/prolo--extension/compare/v1.3.0...v1.4.0)
 
 ## ✨ Features
