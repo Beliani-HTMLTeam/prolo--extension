@@ -19,6 +19,21 @@ export default defineConfig({
         'https://www.googleapis.com/auth/userinfo.profile'
       ],
     },
+    browser_specific_settings: {
+      gecko: {
+        id: 'prolo--extension@beliani',
+        strict_min_version: '140.0',
+        data_collection_permissions: {
+          required: [
+            'authenticationInfo',
+            'personalCommunications',
+            'personallyIdentifyingInfo',
+            'browsingActivity',
+            'websiteContent',
+          ],
+        },
+      },
+    },
   },
   hooks: {
     'build:manifestGenerated': (wxt, manifest) => {
